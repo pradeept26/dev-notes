@@ -150,6 +150,8 @@ See hardware/*.md files for detailed setup information.
 
 ## Firmware Update Procedure
 
+**See also:** [Firmware Partition Switch Procedure](./FIRMWARE-PARTITION-SWITCH.md) for switching between firmware partitions without reflashing.
+
 ### Complete Firmware Update Workflow
 
 **Step 1: Build Firmware**
