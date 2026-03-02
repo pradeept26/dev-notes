@@ -1,0 +1,189 @@
+---
+# SMC1 Vulcano Setup Configuration
+# Auto-generated from: Vulcano_Setup_Details(SMC1-2).csv
+# Last updated: 2026-02-25
+
+setup:
+  name: SMC1
+  status: active
+  location: lab
+  asic: vulcano
+  use_case: hydra_development_testing
+  init_script: /mnt/clusterfs/bringup/vulcano_hydra_rccl_bringup.sh
+  init_script_notes: "Run after card reset or host reboot"
+
+host:
+  hostname: SMC1
+  mgmt_ip: 10.30.75.198
+  os: ubuntu
+  credentials:
+    ssh_user: ubuntu
+    ssh_password: amd123
+
+bmc:
+  ip: 10.30.69.47
+  web_url: https://10.30.69.47/
+  credentials:
+    user: admin
+    password: "PenInfra$"
+
+power:
+  apc_ip: 10.30.69.46
+  apc_ports:
+    - p32
+    - p31
+    - p26
+    - p25
+    - p16
+    - p15
+  credentials:
+    user: apc
+    password: apc
+
+network:
+  switch:
+    name: Micas
+    ip: 10.30.75.77
+    credentials:
+      user: admin
+      password: Micas123
+  subnet_prefix: 30.1
+
+nics:
+  - id: ai0
+    interface: benic2p1
+    mac_address: "04:90:81:a1:b7:a0"
+    serial_number: FPR2552009D
+    pcie_bdf: "06:00.0"
+    switch:
+      port: eth1/18
+      ip: 30.1.1.2
+    consoles:
+      vulcano:
+        host: 10.30.69.42
+        port: 2003
+      suc:
+        host: 10.30.69.42
+        port: 2004
+
+  - id: ai1
+    interface: benic1p1
+    mac_address: "04:90:81:8c:7a:50"
+    serial_number: FPR25480016
+    pcie_bdf: "06:00.0"
+    switch:
+      port: eth1/17
+      ip: 30.1.2.2
+    consoles:
+      vulcano:
+        host: 10.30.69.42
+        port: 2005
+      suc:
+        host: 10.30.69.42
+        port: 2006
+
+  - id: ai2
+    interface: benic3p1
+    mac_address: "04:90:81:8c:5a:58"
+    serial_number: FPR25480003
+    switch:
+      port: eth1/19
+      ip: 30.1.3.2
+    consoles:
+      vulcano:
+        host: 10.30.69.42
+        port: 2008
+      suc:
+        host: 10.30.69.42
+        port: 2007
+
+  - id: ai3
+    interface: benic4p1
+    mac_address: "04:90:81:8c:79:18"
+    serial_number: FPR25480010
+    switch:
+      port: eth1/20
+      ip: 30.1.4.2
+    consoles:
+      vulcano:
+        host: 10.30.69.42
+        port: 2009
+      suc:
+        host: 10.30.69.42
+        port: 2010
+
+  - id: ai4
+    interface: benic6p1
+    mac_address: "04:90:81:a1:93:d0"
+    serial_number: FPR25520008
+    switch:
+      port: eth1/22
+      ip: 30.1.6.2
+    consoles:
+      vulcano:
+        host: 10.30.69.178
+        port: 2002
+      suc:
+        host: 10.30.69.178
+        port: 2003
+
+  - id: ai5
+    interface: benic5p1
+    mac_address: "04:90:81:a1:9b:20"
+    serial_number: FPR25520042
+    switch:
+      port: eth1/21
+      ip: 30.1.5.2
+    consoles:
+      vulcano:
+        host: 10.30.69.178
+        port: 2004
+      suc:
+        host: 10.30.69.178
+        port: 2005
+
+  - id: ai6
+    interface: benic7p1
+    mac_address: "04:90:81:a1:b2:a8"
+    serial_number: FPR2552006B
+    switch:
+      port: eth1/23
+      ip: 30.1.7.2
+    consoles:
+      vulcano:
+        host: 10.30.69.178
+        port: 2006
+      suc:
+        host: 10.30.69.178
+        port: 2007
+
+  - id: ai7
+    interface: benic8p1
+    mac_address: "04:90:81:a1:b5:78"
+    serial_number: FPR25520088
+    switch:
+      port: eth1/24
+      ip: 30.1.8.2
+    consoles:
+      vulcano:
+        host: 10.30.69.178
+        port: 2008
+      suc:
+        host: 10.30.69.178
+        port: 2018
+
+console_servers:
+  - host: 10.30.69.42
+    ports: "2003-2010"
+    nics_served:
+      - ai0
+      - ai1
+      - ai2
+      - ai3
+  - host: 10.30.69.178
+    ports: "2002-2008"
+    nics_served:
+      - ai4
+      - ai5
+      - ai6
+      - ai7

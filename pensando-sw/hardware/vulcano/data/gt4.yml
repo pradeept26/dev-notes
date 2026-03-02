@@ -1,0 +1,130 @@
+---
+# GT4 Vulcano Setup Configuration
+# Auto-generated from: Vulcano_Setup_Details(GT 1-4).csv
+# Last updated: 2026-02-25
+
+setup:
+  name: GT4
+  status: active
+  location: lab
+  asic: vulcano
+  use_case: 800g_leaf_spine_topology
+
+host:
+  hostname: GT4
+  mgmt_ip: 10.30.69.98
+  os: linux
+  credentials:
+    ssh_user: root
+    ssh_password: docker
+  console:
+    host: 10.30.69.75
+    ports: "2026/2027"
+
+bmc:
+  ip: 10.30.69.97
+  credentials:
+    user: root
+    password: "0penBmc"
+
+network:
+  topology: leaf_spine_800g
+  description: "GT4 connected to ports 9/11/13/15 on Leaf2"
+  switches:
+    - name: Leaf2
+      console_host: 10.30.69.75
+      console_port: 2009
+
+nics:
+  - id: ai0
+    serial_number: FPQ2549001E
+    consoles:
+      vulcano:
+        host: 10.30.69.75
+        port: 2026
+      suc:
+        host: 10.30.69.75
+        port: 2027
+
+  - id: ai1
+    serial_number: FPQ25510012
+    consoles:
+      vulcano:
+        host: 10.30.69.75
+        port: 2028
+      suc:
+        host: 10.30.69.75
+        port: 2029
+
+  - id: ai2
+    serial_number: FPQ25510018
+    consoles:
+      vulcano:
+        host: 10.30.69.75
+        port: 2030
+      suc:
+        host: 10.30.69.75
+        port: 2031
+
+  - id: ai3
+    serial_number: FPQ25510078
+    consoles:
+      vulcano:
+        host: 10.30.69.75
+        port: 2032
+      suc:
+        host: 10.30.69.75
+        port: 2033
+
+  - id: ai4
+    serial_number: FPQ2551008E
+    consoles:
+      vulcano:
+        host: 10.30.69.75
+        port: 2034
+      suc:
+        host: 10.30.69.75
+        port: 2035
+
+  - id: ai5
+    serial_number: FPQ2551006D
+    consoles:
+      vulcano:
+        host: 10.30.69.75
+        port: 2036
+      suc:
+        host: 10.30.69.75
+        port: 2037
+
+  - id: ai6
+    serial_number: FPQ25490022
+    consoles:
+      vulcano:
+        host: 10.30.69.75
+        port: 2038
+      suc:
+        host: 10.30.69.75
+        port: 2039
+
+  - id: ai7
+    serial_number: FPQ2551002B
+    consoles:
+      vulcano:
+        host: 10.30.69.75
+        port: 2040
+      suc:
+        host: 10.30.69.75
+        port: 2041
+
+console_servers:
+  - host: 10.30.69.75
+    ports: "2026-2041"
+    nics_served:
+      - ai0
+      - ai1
+      - ai2
+      - ai3
+      - ai4
+      - ai5
+      - ai6
+      - ai7

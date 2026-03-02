@@ -1,0 +1,121 @@
+---
+# GT2 Vulcano Setup Configuration
+# Auto-generated from: Vulcano_Setup_Details(GT 1-4).csv
+# Last updated: 2026-02-25
+# Note: First 2 NICs (ai0-ai1) marked as *removed* in CSV
+
+setup:
+  name: GT2
+  status: active
+  location: lab
+  asic: vulcano
+  use_case: 800g_leaf_spine_topology
+
+host:
+  hostname: GT2
+  mgmt_ip: 10.30.69.100
+  os: linux
+  credentials:
+    ssh_user: root
+    ssh_password: docker
+
+bmc:
+  ip: 10.30.69.87
+  credentials:
+    user: root
+    password: "0penBmc"
+
+network:
+  topology: leaf_spine_800g
+
+nics:
+  - id: ai0
+    serial_number: FPQ25510009
+    status: removed
+    consoles:
+      vulcano:
+        host: 10.30.69.179
+        port: 2003
+        status: removed
+      suc:
+        host: 10.30.69.179
+        port: 2002
+        status: removed
+
+  - id: ai1
+    serial_number: null
+    status: removed
+    consoles:
+      vulcano:
+        host: 10.30.69.179
+        port: 2004
+        status: removed
+      suc:
+        host: 10.30.69.179
+        port: 2005
+        status: removed
+
+  - id: ai2
+    serial_number: FPQ25490021
+    consoles:
+      vulcano:
+        host: 10.30.69.179
+        port: 2006
+      suc:
+        host: 10.30.69.179
+        port: 2007
+
+  - id: ai3
+    serial_number: FPQ25490026
+    consoles:
+      vulcano:
+        host: 10.30.69.179
+        port: 2008
+      suc:
+        host: 10.30.69.179
+        port: 2009
+
+  - id: ai4
+    serial_number: FPQ2551005E
+    consoles:
+      vulcano:
+        host: 10.30.69.179
+        port: 2010
+      suc:
+        host: 10.30.69.179
+        port: 2011
+
+  - id: ai5
+    serial_number: FPQ25510049
+    consoles:
+      vulcano:
+        host: 10.30.69.179
+        port: 2013
+      suc:
+        host: 10.30.69.179
+        port: 2012
+
+  - id: ai6
+    serial_number: FPQ25510041
+    consoles:
+      vulcano:
+        host: 10.30.69.179
+        port: 2015
+      suc:
+        host: 10.30.69.179
+        port: 2014
+
+  - id: ai7
+    serial_number: FPQ2551001F
+    consoles:
+      vulcano:
+        host: 10.30.69.179
+        port: 2017
+      suc:
+        host: 10.30.69.179
+        port: 2016
+
+console_servers:
+  - host: 10.30.69.179
+    ports: "2002-2017"
+    notes: "Ports 2002-2005 marked as removed in CSV"
