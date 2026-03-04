@@ -1,0 +1,150 @@
+---
+# Waco3 Vulcano Setup Configuration
+# Source: Vulcano_Setup_Details_Waco.csv
+# Last updated: 2026-03-03
+
+setup:
+  name: Waco3
+  status: active
+  location: lab
+  asic: vulcano
+  use_case: arista_leaf_spine_topology
+
+host:
+  hostname: waco3
+  mgmt_ip: 10.30.64.23
+  os: ubuntu
+  credentials:
+    ssh_user: ubuntu
+    ssh_password: amd123
+
+bmc:
+  ip: 10.30.64.13
+  credentials:
+    user: root
+    password: "Pen1nfra$"
+
+network:
+  topology: arista_leaf_spine
+  nfs_mount: /mnt/clusterfs
+  switches:
+    - name: Arista Spine
+      console_host: 10.30.69.120
+      console_port: 2011
+      mgmt_ip: 10.30.64.202
+      credentials:
+        user: admin
+        password: "Gr33nTr33s"
+    - name: Arista Leaf1
+      console_host: 10.30.69.120
+      console_port: 2014
+      mgmt_ip: 10.30.64.201
+      credentials:
+        user: admin
+        password: "Gr33nTr33s"
+      connected_to: "waco5-6"
+    - name: Arista Leaf2
+      console_host: 10.30.69.120
+      console_port: 2013
+      mgmt_ip: 10.30.64.203
+      credentials:
+        user: admin
+        password: "Gr33nTr33s"
+      connected_to: "waco7-8"
+
+nics:
+  - id: ai0
+    serial_number: FPR25520067
+    consoles:
+      vulcano:
+        host: 10.30.64.199
+        port: 2046
+      suc:
+        host: 10.30.64.199
+        port: 2047
+
+  - id: ai1
+    serial_number: FPR25520025
+    consoles:
+      vulcano:
+        host: 10.30.64.199
+        port: 2048
+      suc:
+        host: 10.30.64.199
+        port: 2049
+
+  - id: ai2
+    serial_number: FPR25520049
+    consoles:
+      vulcano:
+        host: 10.30.64.199
+        port: 2044
+      suc:
+        host: 10.30.64.199
+        port: 2045
+
+  - id: ai3
+    serial_number: FPR255200A7
+    consoles:
+      vulcano:
+        host: 10.30.64.199
+        port: 2042
+      suc:
+        host: 10.30.64.199
+        port: 2043
+
+  - id: ai4
+    serial_number: FPR25510019
+    consoles:
+      vulcano:
+        host: 10.30.64.120
+        port: 2002
+      suc:
+        host: 10.30.64.120
+        port: 2003
+
+  - id: ai5
+    serial_number: FPR2552006F
+    consoles:
+      vulcano:
+        host: 10.30.64.120
+        port: 2004
+      suc:
+        host: 10.30.64.120
+        port: 2005
+
+  - id: ai6
+    serial_number: FPR2551000D
+    consoles:
+      vulcano:
+        host: 10.30.64.120
+        port: 2006
+      suc:
+        host: 10.30.64.120
+        port: 2007
+
+  - id: ai7
+    serial_number: FPR25520020
+    consoles:
+      vulcano:
+        host: 10.30.64.120
+        port: 2008
+      suc:
+        host: 10.30.64.120
+        port: 2009
+
+console_servers:
+  - host: 10.30.64.199
+    ports: "2042-2049"
+    nics_served:
+      - ai0
+      - ai1
+      - ai2
+      - ai3
+  - host: 10.30.64.120
+    ports: "2002-2009"
+    nics_served:
+      - ai4
+      - ai5
+      - ai6
+      - ai7
