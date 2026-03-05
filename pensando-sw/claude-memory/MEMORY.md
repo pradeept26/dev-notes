@@ -168,6 +168,3 @@ Located in: `~/dev-notes/pensando-sw/hardware/vulcano/`
 ## Related Documentation
 - [context.md](file:///home/pradeept/dev-notes/pensando-sw/context.md) - Full development context
 - Hardware setups: `~/dev-notes/pensando-sw/hardware/`
-
-## Test Entry - Memory Sync Test
-This line added to test automatic sync - will be removed after verification.
