@@ -1,0 +1,92 @@
+---
+# Purico ByteDance TB - purico03 & purico04 (Paired Back-to-Back)
+# Auto-generated from: Pollara_rdma_tb.csv
+# Last updated: 2026-03-05
+
+setup:
+  name: Purico-ByteDance-03-04
+  status: active
+  location: Rack J7
+  asic: salina
+  product: pollara
+  topology: back_to_back_paired
+  use_case: bytedance_tb
+  owner: Balki/Mehul
+  notes: "Please dont use till Dec 31 - needed for BD"
+
+server1:
+  name: purico03
+  model: AMD Purico
+  rack: J7
+  ru: 18
+
+  host:
+    hostname: purico03
+    mgmt_ip: 10.11.79.221
+    os: linux
+    credentials:
+      ssh_user: root
+      ssh_password: docker
+
+  bmc:
+    ip: 10.11.73.96
+    credentials:
+      user: root
+      password: "0penBmc"
+
+  power:
+    apc_ip: 10.11.73.99
+    apc_port: 24
+    credentials:
+      user: apc
+      password: apc
+
+  nics:
+    - id: ai0
+      a35_console:
+        host: 10.11.73.104
+        port: 2010
+
+server2:
+  name: purico04
+  model: AMD Purico
+  rack: J7
+  ru: 16
+
+  host:
+    hostname: purico04
+    mgmt_ip: 10.11.81.165
+    os: linux
+    credentials:
+      ssh_user: root
+      ssh_password: docker
+
+  bmc:
+    ip: 10.11.73.94
+    credentials:
+      user: root
+      password: "0penBmc"
+
+  power:
+    apc_ip: 10.11.73.100
+    apc_port: 24
+    credentials:
+      user: apc
+      password: apc
+
+  nics:
+    - id: ai0
+      a35_console:
+        host: 10.11.73.104
+        port: 2009
+
+network:
+  topology: back_to_back_paired
+  description: "Two Purico servers, each with 2 Pollara cards connected back-to-back within server"
+  connectivity: back_to_back
+
+notes:
+  - "Status: Active"
+  - "Owner: Balki/Mehul"
+  - "ByteDance testbed"
+  - "Please dont use till Dec 31 - needed for BD"

@@ -1,0 +1,93 @@
+---
+# Purico Meta RoCE TB - purico07 & purico08 (Paired Back-to-Back)
+# Auto-generated from: Pollara_rdma_tb.csv
+# Last updated: 2026-03-05
+
+setup:
+  name: Purico-Meta-07-08
+  status: active
+  location: Rack J7
+  asic: salina
+  product: pollara
+  topology: back_to_back_paired
+  use_case: meta_roce_tb
+  owner: Balki/Lakshmikanth
+  notes: "Verify host-ip before use"
+
+server1:
+  name: purico07
+  model: AMD Purico
+  rack: J7
+  ru: 8
+
+  host:
+    hostname: purico07
+    mgmt_ip: 10.11.93.37
+    old_ip: 10.11.84.233
+    os: linux
+    credentials:
+      ssh_user: root
+      ssh_password: docker
+
+  bmc:
+    ip: 10.11.73.86
+    credentials:
+      user: root
+      password: "0penBmc"
+
+  power:
+    apc_ip: 10.11.73.99
+    apc_port: 23
+    credentials:
+      user: apc
+      password: apc
+
+  nics:
+    - id: ai0
+      a35_console:
+        host: 10.11.73.104
+        port: 2005
+
+server2:
+  name: purico08
+  model: AMD Purico
+  rack: J7
+  ru: 10
+
+  host:
+    hostname: purico08
+    mgmt_ip: 10.11.84.232
+    os: linux
+    credentials:
+      ssh_user: root
+      ssh_password: docker
+
+  bmc:
+    ip: 10.11.73.88
+    credentials:
+      user: root
+      password: "0penBmc"
+
+  power:
+    apc_ip: 10.11.73.99
+    apc_port: 22
+    credentials:
+      user: apc
+      password: apc
+
+  nics:
+    - id: ai0
+      a35_console:
+        host: 10.11.73.104
+        port: 2006
+
+network:
+  topology: back_to_back_paired
+  description: "Two Purico servers, each with 2 Pollara cards connected back-to-back within server"
+  connectivity: back_to_back
+
+notes:
+  - "Status: Active"
+  - "Owner: Balki/Lakshmikanth"
+  - "Meta RoCE testbed"
+  - "Verify host-ip before use"
