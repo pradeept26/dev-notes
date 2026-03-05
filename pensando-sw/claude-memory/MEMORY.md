@@ -156,10 +156,19 @@ PIPELINE=rudra ASIC=vulcano P4_PROGRAM=hydra PCIEMGR_IF=1 DMA_MODE=uxdma PROFILE
 - Add `-j` for JSON output: `nicctl show card -j`
 
 ## Hardware Setups
+
+### Vulcano ASIC Setups
 Located in: `~/dev-notes/pensando-sw/hardware/vulcano/`
 - SMC1, SMC2 - Development/testing
 - GT1, GT4 - 800G Leaf-Spine topology
 - Waco5, Waco6 - Arista Leaf-Spine setups
+
+### Salina (Pollara) ASIC Setups
+Located in: `~/dev-notes/pensando-sw/hardware/salina/`
+- Dell-Xeon-1-2 - Paired setup (10.11.x network)
+- Dell-Xeon-3-4 - Paired setup (10.30.x network)
+- Dell-Genoa-3-4 - Paired setup (Plan-B images)
+- Full inventory: `~/setups/Pollara_rdma_tb.csv`
 
 ## Common Issues
 - If cards don't come up after firmware update: Run recovery via SuC console reboot + host reboot
