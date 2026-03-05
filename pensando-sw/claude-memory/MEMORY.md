@@ -1,5 +1,17 @@
 # Pensando SW Development - Auto Memory
 
+## Memory Sync Protocol
+**IMPORTANT: After updating this memory file, ALWAYS run:**
+```bash
+~/dev-notes/pensando-sw/scripts/sync-claude-memory.sh
+```
+This automatically commits and pushes changes so all machines stay in sync.
+
+**To pull latest memory on any machine:**
+```bash
+cd ~/dev-notes && git pull
+```
+
 ## Critical Build and Test Requirements
 - **ALWAYS use tmux for builds AND long-running tests**: Session name is ALWAYS `pensando-sw` (one per workspace)
   - Check existing session: `tmux ls | grep pensando-sw`
