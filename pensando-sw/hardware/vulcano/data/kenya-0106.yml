@@ -1,0 +1,71 @@
+---
+# Kenya-0106 (perf-7) Vulcano Setup Configuration
+# Source: Vulcano_Setup_Details_datapath_setups.csv
+# Last updated: 2026-03-01
+
+setup:
+  name: kenya-0106
+  alias: perf-7
+  status: active
+  location: lab
+  asic: vulcano
+  use_case: mrc_perf_debug
+
+host:
+  hostname: kenya-0106
+  mgmt_ip: 10.30.52.119
+  os: linux
+  rack: SW N3 RU 22-23
+  credentials:
+    ssh_user: root
+    ssh_password: docker
+
+bmc:
+  ip: 10.30.52.110
+  credentials:
+    user: root
+    password: "0penBmc"
+
+apc:
+  ip: 10.30.52.111
+  port: 15
+  credentials:
+    user: apc
+    password: apc
+
+network:
+  mini_pc:
+    name: MiniPC3
+    ip: 10.30.51.85
+    credentials:
+      user: root
+      password: docker
+  j2c_connection: mini-pc-6
+
+nics:
+  - id: ai0
+    card_type: Gelso P1-A
+    card_number: P1A-30
+    serial_number: FPF254808B6
+    memory: 128GB
+    memory_count: 8
+    numa_nodes: 16
+    numa_present: 2
+    cpld_version: "1.05"
+    consoles:
+      vulcano:
+        host: 10.30.53.51
+        port: 2008
+      suc:
+        host: 10.30.53.51
+        port: 2009
+
+ownership:
+  current_user: Mehul
+  purpose: MRC Perf debug
+  last_updated: "2026-01-27"
+
+notes:
+  - "CPLD updated; needs cpld refresh"
+  - "128GB memory (8 count)"
+  - "j2c connected to mini-pc-6"

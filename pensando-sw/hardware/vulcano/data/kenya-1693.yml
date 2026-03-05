@@ -1,0 +1,72 @@
+---
+# Kenya-1693 Vulcano Setup Configuration
+# Source: Vulcano_Setup_Details_datapath_setups.csv
+# Last updated: 2026-03-01
+
+setup:
+  name: kenya-1693
+  status: active
+  location: lab
+  asic: vulcano
+  use_case: asic_testing_custom_pciemgr
+
+host:
+  hostname: kenya-1693
+  mgmt_ip: 10.30.52.65
+  os: linux
+  rack: SW N2 RU 11-12
+  credentials:
+    ssh_user: root
+    ssh_password: docker
+
+bmc:
+  ip: 10.30.52.64
+  credentials:
+    user: admin
+    password: Pen1nfra$
+
+apc:
+  ip: 10.30.52.57
+  port: 18
+  credentials:
+    user: apc
+    password: apc
+
+network:
+  mini_pc_usb:
+    ip: 10.30.52.73
+    credentials:
+      user: root
+      password: Pen1nfra$
+  mini_pc_j2c:
+    ip: 10.30.53.74
+    credentials:
+      user: root
+      password: docker
+
+nics:
+  - id: ai0
+    card_type: Gelso P1-A
+    serial_number: FPF255102BD
+    memory: 32GB
+    additional_memory: 128GB (8 count)
+    numa_nodes: 1
+    cpld_version: "1.05"
+    card_status: not_present
+    consoles:
+      vulcano:
+        host: 10.30.52.56
+        port: 2014
+      suc:
+        host: 10.30.52.56
+        port: 2015
+
+ownership:
+  owner: Yogesh
+  current_user: Yogesh
+  purpose: Running custom pciemgr only FW for ASIC testing
+
+notes:
+  - "CPLD updated; needs cpld refresh"
+  - "Running custom pciemgr FW"
+  - "Card status: Not present"

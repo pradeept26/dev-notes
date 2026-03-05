@@ -29,12 +29,147 @@ make pull-assets
 
 ### Docker Workflow Helper
 ```bash
-# Complete workflow: Check docker, launch if needed, build
-# If not in docker:
-cd /ws/pradeept/ws/usr/src/github.com/pensando/sw/nic && make docker/shell
-# Then inside docker:
+# Step 1: Check if already inside Docker
+pwd  # Should show /sw if in docker
+
+# Step 2: If on host, update git submodules (IMPORTANT: Outside docker)
+# Required when: switching branches, moving to new version/tag
+cd /ws/pradeept/ws/usr/src/github.com/pensando/sw
+git submodule update --init --recursive
+
+# Step 3: Check for existing workspace containers
+docker ps -a | grep "$(whoami)_"
+
+# Step 4: Clean up workspace containers (always recommended for fresh start)
+docker ps -a | grep "$(whoami)_" | awk '{print $1}' | xargs -r docker stop | xargs -r docker rm
+
+# Step 5: Launch new Docker container
+cd /ws/pradeept/ws/usr/src/github.com/pensando/sw/nic
+make docker/shell
+
+# Step 6: Inside docker, pull dependencies
+# Required when: launching new docker, switching branches, moving to new version
 cd /sw && make pull-assets
 ```
+
+### Docker Container Management
+
+**Check for existing workspace containers:**
+```bash
+# List all Docker containers for this workspace
+docker ps -a | grep "$(whoami)_"
+
+# Example output shows container ID, image, status, and timestamp-based name
+# CONTAINER ID   IMAGE          STATUS    NAMES
+# abc123def456   pensando/nic   Exited    pradeept_2026-03-03_10.30.45
+```
+
+**Clean up workspace containers:**
+```bash
+# Stop and remove all workspace-related containers
+# Recommended: Before switching branches or starting fresh builds
+docker ps -a | grep "$(whoami)_" | awk '{print $1}' | xargs -r docker stop | xargs -r docker rm
+
+# Verify cleanup
+docker ps -a | grep "$(whoami)_"  # Should return empty
+```
+
+**When to clean up containers:**
+- **Always recommended:** Before every new build session
+- **Required:** When switching branches
+- **Good practice:** After build failures or when starting fresh
+- **Ensures:** Clean, reproducible build environment
+
+**When to run `git submodule update` (outside docker):**
+- When switching branches
+- When moving to new version or tag
+- After pulling changes that update submodules
+- Command: `git submodule update --init --recursive`
+
+**When to run `make pull-assets` (inside docker):**
+- After launching new docker container
+- When switching branches
+- When moving to new version or tag
+- After cleaning docker containers
+
+### Docker Best Practices
+
+**Always start with fresh Docker container:**
+- Clean up workspace containers before starting new builds
+- Recommended when switching branches (to avoid config conflicts)
+- Recommended after build failures (to start with clean state)
+- Ensures consistent, reproducible build environment
+
+**Container cleanup command:**
+```bash
+# Stop and remove only workspace-related containers
+docker ps -a | grep "$(whoami)_" | awk '{print $1}' | xargs -r docker stop | xargs -r docker rm
+```
+
+**Container naming:**
+- Format: `username_YYYY-MM-DD_HH.MM.SS`
+- Each `make docker/shell` creates a new container with timestamp
+- Grep pattern `$(whoami)_` finds all your containers
+
+### Tmux-Based Build Workflow
+
+**Why use tmux:**
+- Builds continue if SSH session disconnects
+- Detach from long builds, reattach later to check progress
+- Run builds in background while working on other tasks
+- Single tmux session per workspace for consistency
+
+**Tmux session management:**
+```bash
+# Session name (one per workspace)
+TMUX_SESSION="pensando-sw"
+
+# Check if tmux session exists
+tmux ls
+
+# Create new session (if doesn't exist)
+tmux new-session -s pensando-sw -c /ws/pradeept/ws/usr/src/github.com/pensando/sw
+
+# Attach to existing session
+tmux attach -t pensando-sw
+
+# Detach from session (inside tmux)
+# Press: Ctrl+b then d
+
+# Kill session (when done)
+tmux kill-session -t pensando-sw
+```
+
+**Helper script:**
+```bash
+# Use helper script for automated tmux management
+~/dev-notes/pensando-sw/scripts/build-hydra.sh
+
+# Script auto-creates or attaches to tmux session
+# Then run build commands inside tmux
+```
+
+**Typical workflow:**
+1. Run helper script: `~/dev-notes/pensando-sw/scripts/build-hydra.sh`
+2. Script creates/attaches to tmux session `pensando-sw`
+3. Inside tmux, run standard build workflow:
+   ```bash
+   # Update submodules
+   cd /ws/pradeept/ws/usr/src/github.com/pensando/sw
+   git submodule update --init --recursive
+
+   # Clean Docker containers
+   docker ps -a | grep "$(whoami)_" | awk '{print $1}' | xargs -r docker stop | xargs -r docker rm
+
+   # Launch Docker
+   cd nic && make docker/shell
+
+   # Inside Docker: pull assets and build
+   cd /sw && make pull-assets
+   make -f Makefile.build build-rudra-vulcano-hydra-x86-dol
+   ```
+4. Detach with `Ctrl+b d` - build continues in background
+5. Reattach anytime with `tmux attach -t pensando-sw`
 
 ## Build Commands (Inside Docker)
 
@@ -378,14 +513,26 @@ PIPELINE=rudra P4_PROGRAM=hydra ASIC=vulcano /sw/devops/tools/rudra/hydra/instal
 
 ### Complete Build Workflow
 ```bash
-# 1. Check if in docker
-pwd  # Should show /sw if in docker
+# 0. Check if already in Docker
+pwd  # Shows /sw if in docker, /ws/pradeept/... if on host
 
-# 2. If not in docker, launch it
+# 1. If on host, update git submodules (outside docker)
+# IMPORTANT: Do this when switching branches or moving to new version/tag
+cd /ws/pradeept/ws/usr/src/github.com/pensando/sw
+git submodule update --init --recursive
+
+# 2. Check for existing workspace containers
+docker ps -a | grep "$(whoami)_"
+
+# 3. Clean up workspace containers (recommended for fresh start)
+docker ps -a | grep "$(whoami)_" | awk '{print $1}' | xargs -r docker stop | xargs -r docker rm
+
+# 4. Launch docker
 cd /ws/pradeept/ws/usr/src/github.com/pensando/sw/nic
 make docker/shell
 
-# 3. Inside docker, pull assets (first time or after updates)
+# 5. Inside docker, pull assets
+# IMPORTANT: Required after launching new docker, switching branches, or moving to new version
 cd /sw
 make pull-assets
 # Or specific asset sets:
@@ -393,7 +540,7 @@ make pull-assets
 # make pull-assets-ainic-rudra-vulcano      # For firmware
 # make pull-assets-zephyr-vulcano           # For Zephyr/RTOS
 
-# 4. Build hydra (choose one):
+# 6. Build hydra (choose one):
 # For development/testing:
 make -f Makefile.build build-rudra-vulcano-hydra-x86-dol
 # For firmware:
@@ -401,7 +548,7 @@ make -f Makefile.build build-rudra-vulcano-hydra-ainic-fw
 # For simulation:
 make -f Makefile.build build-rudra-vulcano-hydra-sim
 
-# 5. Run tests (optional)
+# 7. Run tests (optional)
 # See Testing section for specific test commands
 ```
 
@@ -493,26 +640,44 @@ git push origin 1x400g-breakout
 
 ### Most Used Commands
 ```bash
-# 1. Launch docker (from nic/ dir)
+# 0. Create/attach to tmux session (recommended for builds)
+~/dev-notes/pensando-sw/scripts/build-hydra.sh
+# Or manually: tmux new-session -s pensando-sw OR tmux attach -t pensando-sw
+
+# 1. Check if in docker
+pwd  # Should show /sw if in docker
+
+# 2. Update git submodules (outside docker, when switching branches/versions)
+cd /ws/pradeept/ws/usr/src/github.com/pensando/sw && git submodule update --init --recursive
+
+# 3. List workspace containers (if on host)
+docker ps -a | grep "$(whoami)_"
+
+# 4. Clean up workspace containers (recommended before every build)
+docker ps -a | grep "$(whoami)_" | awk '{print $1}' | xargs -r docker stop | xargs -r docker rm
+
+# 5. Launch docker (from nic/ dir)
 cd /ws/pradeept/ws/usr/src/github.com/pensando/sw/nic && make docker/shell
 
-# 2. Inside docker - pull assets (first time)
+# 6. Inside docker - pull assets (after launching docker or switching branches)
 cd /sw && make pull-assets
 
-# 3. Quick incremental build (after code changes)
+# 7. Quick incremental build (after code changes)
 make -C nic PIPELINE=rudra P4_PROGRAM=hydra ARCH=x86_64 ASIC=vulcano package
 
-# 4. Full build (for packaging/CI)
+# 8. Full build (for packaging/CI)
 make -f Makefile.build build-rudra-vulcano-hydra-x86-dol
 
-# 5. Run gtests
+# 9. Run gtests
 DMA_MODE=uxdma ASIC=vulcano /sw/nic/rudra/test/tools/run_gtests.sh --p4_program hydra --bin hydra_gtest
 
-# 6. Clean build
+# 10. Clean build
 make -f Makefile.ainic clean
 
-# 7. Check if in docker
-pwd  # Should show /sw if in docker
+# Tmux shortcuts (inside tmux):
+# Detach: Ctrl+b then d
+# Reattach: tmux attach -t pensando-sw
+# List sessions: tmux ls
 ```
 
 ### Build Artifacts & Outputs

@@ -1,0 +1,71 @@
+---
+# Kenya-3667 (perf-12) Vulcano Setup Configuration
+# Source: Vulcano_Setup_Details_datapath_setups.csv
+# Last updated: 2026-03-01
+
+setup:
+  name: kenya-3667
+  alias: perf-12
+  status: active
+  location: lab
+  asic: vulcano
+  use_case: performance_testing
+
+host:
+  hostname: kenya-3667
+  mgmt_ip: 10.30.52.115
+  os: linux
+  rack: SW N3 RU 26-27
+  credentials:
+    ssh_user: root
+    ssh_password: docker
+
+bmc:
+  ip: 10.30.52.113
+  credentials:
+    user: root
+    password: "0penBmc"
+
+apc:
+  ip: 10.30.52.111
+  port: 24
+  credentials:
+    user: apc
+    password: apc
+
+network:
+  switch:
+    name: Micas
+    ip: 10.30.52.100
+    port: "1/24"
+    credentials:
+      user: admin
+      password: Micas123
+  mini_pc:
+    name: mini-pc6
+    ip: 10.30.52.79
+    credentials:
+      user: root
+      password: Pen1nfra$
+
+nics:
+  - id: ai0
+    card_type: Gelso P1-A
+    serial_number: FPF2548089C
+    memory: 128GB
+    numa_nodes: 8
+    cpld_version: "1.05"
+    consoles:
+      vulcano:
+        host: 10.30.53.51
+        port: 2002
+      suc:
+        host: 10.30.53.51
+        port: 2003
+
+ownership:
+  owner: Tony
+  current_user: Prateek
+
+notes:
+  - "Connected to Micas switch port 1/24"

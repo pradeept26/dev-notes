@@ -1,0 +1,70 @@
+---
+# Kenya-3190 (perf-4) Vulcano Setup Configuration
+# Source: Vulcano_Setup_Details_datapath_setups.csv
+# Last updated: 2026-03-01
+
+setup:
+  name: kenya-3190
+  alias: perf-4
+  status: active
+  location: lab
+  asic: vulcano
+  use_case: meta_roce_bug_fixes
+
+host:
+  hostname: kenya-3190
+  mgmt_ip: 10.30.52.75
+  os: linux
+  rack: SW N2 RU 15-16
+  credentials:
+    ssh_user: root
+    ssh_password: docker
+
+bmc:
+  ip: 10.30.52.74
+  credentials:
+    user: admin
+    password: Pen1nfra$
+
+apc:
+  ip: 10.30.52.55
+  port: 23
+  credentials:
+    user: apc
+    password: apc
+
+network:
+  switch:
+    name: Micas
+    ip: 10.30.52.100
+    port: "1/14"
+    previous_port: "1/17"
+    credentials:
+      user: admin
+      password: Micas123
+
+nics:
+  - id: ai0
+    card_type: Saraceno
+    card_number: P1A-03
+    serial_number: FPR2605001C
+    memory: 32GB
+    numa_nodes: 16
+    cpld_version: "1.05"
+    consoles:
+      vulcano:
+        host: 10.30.52.56
+        port: 2009
+      suc:
+        host: 10.30.52.56
+        port: 2031
+
+ownership:
+  owners:
+    - Bharat
+    - David
+  current_user: Sunil Akella
+  purpose: Meta RoCE bug fixes
+
+notes:
+  - "IOMMU enabled for ATS work"

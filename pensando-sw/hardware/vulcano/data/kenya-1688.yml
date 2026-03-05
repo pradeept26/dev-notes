@@ -1,0 +1,76 @@
+---
+# Kenya-1688 (perf-11) Vulcano Setup Configuration
+# Source: Vulcano_Setup_Details_datapath_setups.csv
+# Last updated: 2026-03-01
+
+setup:
+  name: kenya-1688
+  alias: perf-11
+  status: active
+  location: lab
+  asic: vulcano
+  use_case: kernel_upgrade_testing
+
+host:
+  hostname: kenya-1688
+  mgmt_ip: 10.30.52.71
+  os: linux
+  rack: SW N2 RU 7-8
+  credentials:
+    ssh_user: root
+    ssh_password: docker
+
+bmc:
+  ip: 10.30.52.60
+  credentials:
+    user: admin
+    password: Pen1nfra$
+
+apc:
+  ip: 10.30.52.57
+  port: 20
+  credentials:
+    user: apc
+    password: apc
+
+network:
+  switch:
+    name: Micas
+    ip: 10.30.52.100
+    port: "1/11"
+    credentials:
+      user: admin
+      password: Micas123
+  mini_pc:
+    name: mini-pc7
+    ip: 10.30.52.81
+    credentials:
+      user: root
+      password: Pen1nfra$
+
+nics:
+  - id: ai0
+    card_type: Gelso P1-A
+    serial_number: FPF25511055
+    memory: 64GB
+    memory_count: 1
+    numa_nodes: 8
+    cpld_version: "1.05"
+    consoles:
+      vulcano:
+        host: 10.30.52.56
+        port: 2007
+      suc:
+        host: 10.30.52.56
+        port: 2008
+
+ownership:
+  owner: Tony
+  current_user: Prateek
+  purpose: Kernel upgrade testing (12/31)
+
+notes:
+  - "CPLD updated; needs cpld refresh"
+  - "Using to upgrade the kernel given by server team 12/31"
+  - "Connected to port 1/11 of Micas"
+  - "64 GB memory (1 count)"

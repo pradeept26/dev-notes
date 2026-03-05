@@ -1,0 +1,72 @@
+---
+# Kenya-1108 (perf-1) Vulcano Setup Configuration
+# Source: Vulcano_Setup_Details_datapath_setups.csv
+# Last updated: 2026-03-01
+
+setup:
+  name: kenya-1108
+  alias: perf-1
+  status: relocated
+  location: Meta Fremont Lab
+  asic: vulcano
+  use_case: meta_roce_testing
+
+host:
+  hostname: kenya-1108
+  mgmt_ip: 10.30.51.117
+  os: linux
+  rack: SW N1 RU 29
+  credentials:
+    ssh_user: root
+    ssh_password: docker
+
+bmc:
+  ip: 10.30.51.107
+  credentials:
+    user: root
+    password: "0penBmc"
+
+apc:
+  ip: 10.30.51.66
+  port: 14
+  credentials:
+    user: apc
+    password: apc
+
+network:
+  switch:
+    name: Micas
+    ip: 10.30.52.100
+    port: "1/1"
+    credentials:
+      user: admin
+      password: Micas123
+  mini_pc:
+    ip: 10.30.51.108
+    credentials:
+      user: amd
+      password: amd123
+
+nics:
+  - id: ai0
+    card_type: Saraceno
+    serial_number: FPF254808C0
+    memory: 128GB
+    numa_nodes: 16
+    cpld_version: "1.05"
+    consoles:
+      vulcano:
+        host: 10.30.52.56
+        port: 2048
+      suc:
+        host: 10.30.52.56
+        port: 2049
+
+ownership:
+  owner: Vijay
+  current_user: Loganathan
+  purpose: Meta RoCE testing
+
+notes:
+  - "Relocated to Meta Fremont Lab"
+  - "USB ID: df98bd9f13d74f5f87a599c0d53950b6"

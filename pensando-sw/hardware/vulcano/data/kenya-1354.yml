@@ -1,0 +1,66 @@
+---
+# Kenya-1354 (perf-3) Vulcano Setup Configuration
+# Source: Vulcano_Setup_Details_datapath_setups.csv
+# Last updated: 2026-03-01
+
+setup:
+  name: kenya-1354
+  alias: perf-3
+  status: active
+  location: lab
+  asic: vulcano
+  use_case: meta_roce_bug_fixes
+
+host:
+  hostname: kenya-1354
+  mgmt_ip: 10.30.52.66
+  os: linux
+  rack: SW N2 RU 9-10
+  credentials:
+    ssh_user: root
+    ssh_password: docker
+
+bmc:
+  ip: 10.30.52.61
+  credentials:
+    user: admin
+    password: Pen1nfra$
+
+apc:
+  ip: 10.30.52.57
+  port: 19
+  credentials:
+    user: apc
+    password: apc
+
+network:
+  switch:
+    name: Micas
+    ip: 10.30.52.100
+    port: "1/16"
+    previous_port: "1/18"
+    credentials:
+      user: admin
+      password: Micas123
+
+nics:
+  - id: ai0
+    card_type: Saraceno
+    serial_number: FPF254808A8
+    memory: 32GB
+    numa_nodes: 16
+    cpld_version: "1.05"
+    consoles:
+      vulcano:
+        host: 10.30.52.56
+        port: 2003  # NOTE: Ports are swapped - Vulcano is on port 2003
+      suc:
+        host: 10.30.52.56
+        port: 2002  # NOTE: Ports are swapped - SuC is on port 2002
+
+ownership:
+  owners:
+    - Bharat
+    - Matthew U
+  current_user: Sunil Akella
+  purpose: Meta RoCE bug fixes

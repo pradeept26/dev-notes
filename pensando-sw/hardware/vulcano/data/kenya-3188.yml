@@ -1,0 +1,61 @@
+---
+# Kenya-3188 (perf-8) Vulcano Setup Configuration
+# Source: Vulcano_Setup_Details_datapath_setups.csv
+# Last updated: 2026-03-01
+
+setup:
+  name: kenya-3188
+  alias: perf-8
+  status: active
+  location: lab
+  asic: vulcano
+  use_case: mrc_perf_debug
+
+host:
+  hostname: kenya-3188
+  mgmt_ip: 10.30.52.123
+  os: linux
+  rack: SW N3 RU 24-25
+  credentials:
+    ssh_user: root
+    ssh_password: docker
+
+apc:
+  ip: 10.30.52.111
+  port: 8
+  credentials:
+    user: apc
+    password: apc
+
+network:
+  mini_pc:
+    name: mini-pc7
+    ip: 10.30.52.81
+    credentials:
+      user: root
+      password: Pen1nfra$
+  j2c_connection: mini-pc-5
+
+nics:
+  - id: ai0
+    card_type: Gelso P1-A
+    serial_number: FPF2548089B
+    memory: 128GB
+    numa_nodes: 16
+    cpld_version: "1.05"
+    consoles:
+      vulcano:
+        host: 10.30.53.51
+        port: 2004
+      suc:
+        host: 10.30.53.51
+        port: 2005
+
+ownership:
+  current_user: Mehul
+  purpose: MRC Perf debug
+  last_updated: "2026-01-27"
+
+notes:
+  - "CPLD updated; needs cpld refresh"
+  - "j2c connected to mini-pc-5"
