@@ -10,7 +10,7 @@ DEV_NOTES_DIR="$HOME/dev-notes"
 cd "$DEV_NOTES_DIR"
 
 # Check if there are any changes to memory files
-if ! git diff --quiet pensando-sw/claude-memory/ 2>/dev/null && \
+if ! git diff --quiet pensando-sw/claude-memory/ 2>/dev/null || \
    ! git diff --cached --quiet pensando-sw/claude-memory/ 2>/dev/null; then
 
     echo "📝 Memory changes detected, syncing to git..."
