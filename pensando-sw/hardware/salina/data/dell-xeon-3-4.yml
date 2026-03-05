@@ -1,0 +1,82 @@
+---
+# Dell-Xeon-3 & Dell-Xeon-4 Salina/Pollara Setup Configuration
+# Auto-generated from: Pollara_rdma_tb.csv
+# Last updated: 2026-03-05
+
+setup:
+  name: Dell-Xeon-3-4
+  status: active
+  location: lab
+  asic: salina
+  product: pollara
+  topology: paired
+  use_case: rdma_testing
+
+server1:
+  name: Dell-Xeon-3
+  model: Dell PowerEdge R760
+  description: "Thor2 and Salina"
+
+  host:
+    hostname: Dell-Xeon-3
+    mgmt_ip: 10.30.0.106
+    os: linux
+    credentials:
+      ssh_user: root
+      ssh_password: docker
+
+  bmc:
+    ip: 10.30.0.86
+    credentials:
+      user: admin
+      password: "Pen1nfra$"
+
+  nic:
+    id: ai0
+    serial_number: unknown
+    a35_console:
+      host: 10.30.25.254
+      port: 2035
+      credentials:
+        user: admin
+        password: "N0isystem$"
+
+server2:
+  name: Dell-Xeon-4
+  model: Dell PowerEdge R760
+  description: "Thor2 and Salina"
+
+  host:
+    hostname: Dell-Xeon-4
+    mgmt_ip: 10.30.0.110
+    os: linux
+    credentials:
+      ssh_user: root
+      ssh_password: docker
+
+  bmc:
+    ip: 10.30.0.85
+    credentials:
+      user: admin
+      password: "Pen1nfra$"
+
+  nic:
+    id: ai0
+    serial_number: unknown
+    a35_console:
+      host: 10.30.25.254
+      port: 2034
+      credentials:
+        user: admin
+        password: "Pen1nfra$"
+
+network:
+  topology: paired
+  description: "Two servers connected for RDMA testing"
+  connectivity: switch_connected
+
+notes:
+  - "Status: Up"
+  - "JIRA: https://pensando.atlassian.net/browse/LAB-6941"
+  - "JIRA: https://pensando.atlassian.net/browse/LAB-7633 - for recovering the setup"
+  - "Paired setup for RDMA testing"

@@ -1,49 +1,52 @@
 # Salina Hardware Setups
 
-Salina ASIC based hardware configurations for Pulsar, Quasar, and other P4 programs development and testing.
+Salina (Pollara) ASIC based hardware configurations for Hydra (and other P4 programs) development and testing.
 
 ## Available Setups
 
-- **[Setup 1](./setup1.md)** - Primary development setup
-- **[Setup 2](./setup2.md)** - Secondary/testing setup
+### Paired Setups (Primary for RDMA Testing)
+- **Dell-Xeon-1-2** - Dell R7625 & R760 paired setup (10.11.x network)
+- **Dell-Xeon-3-4** - Dell R760 paired setup (10.30.x network)
+- **Dell-Genoa-3-4** - Dell R7625 paired setup (Plan-B images)
 
-## Salina Overview
+### Back-to-Back Setups (Single Server)
+- Multiple Purico servers with 2 Pollara cards each
+- Useful for local testing without network dependencies
 
-**ASIC:** Salina
-**Primary P4 Programs:** Pulsar, Quasar, Lynx
-**Product Family:** AINIC (AI NIC)
+## Salina/Pollara Overview
+
+**ASIC:** Salina (also known as Pollara in test bench naming)  
+**Primary P4 Programs:** Hydra, Pulsar, Lynx  
+**Product Family:** AINIC (AI NIC) / DPU  
+**Architecture:** A35 ARM processor + Salina ASIC
 
 ## Common Salina Commands
 
 ### Firmware Management
-```bash
-# Flash firmware
-nicctl fwupdate -p /path/to/ainic_fw_salina.pldmfw
+\`\`\`bash
+# Flash firmware (same as Vulcano)
+nicctl update firmware -i /path/to/ainic_fw_salina.tar
 
 # Check firmware version
 nicctl show version
 
 # View device info
+nicctl show card
 nicctl show device
-```
+\`\`\`
 
 ### Debug Tools
-```bash
-# ASIC monitor
+\`\`\`bash
+# ASIC monitor (Salina-specific)
 salinamon
 
-# AXI trace
-salaxitrace
-
-# Capture view
-capview
-
-# MPU trace
-saltrace
-```
+# Standard nicctl commands work identically to Vulcano
+nicctl show card -j
+nicctl show version -j
+\`\`\`
 
 ### RDMA Operations
-```bash
+\`\`\`bash
 # List RDMA devices
 ibv_devinfo
 
@@ -52,48 +55,66 @@ ibv_devinfo -v
 
 # Run perftest
 ib_write_bw -d <device>
-```
+ib_read_bw -d <device>
+\`\`\`
 
 ## Firmware Images
 
-**Location on build machine:** `/sw/ainic_fw_salina.pldmfw`
+**Location on build machine:** \`/sw/naples_salina_a35_ainic.tar\` or \`/sw/ainic_fw_salina.tar\`
 
 **Image types:**
-- Standard FW: `ainic_fw_salina.pldmfw`
-- Gold FW: `ainic_gold_fw_salina.pldmfw`
-- Secure FW: `ainic_fw_salina_secure.pldmfw`
+- A35 FW (most common): \`naples_salina_a35_ainic.tar\`
+- Full AINIC bundle: \`ainic_fw_salina.tar\`
+- Base/Plan-B FW: \`naples_salina_a35_ainic_base.tar\`
 
-## Network Topology
+## Build Commands (Salina Hydra)
 
-```
-[Host Machine] <--PCIe--> [Salina Card] <--Ethernet--> [Switch/DUT]
-```
+### Quick A35 Build (Most Common)
+\`\`\`bash
+# Inside Docker at /sw
+make PIPELINE=rudra P4_PROGRAM=hydra rudra-salina-ainic-a35-fw
+# Output: /sw/naples_salina_a35_ainic.tar
+\`\`\`
 
-## Troubleshooting
+### Full Bundle Build
+\`\`\`bash
+# Inside Docker at /sw
+make -f Makefile.build build-rudra-salina-hydra-ainic-bundle
+# Output: /sw/ainic_fw_salina.tar
+\`\`\`
 
-### Device not detected
-```bash
-# Rescan PCIe bus
-echo 1 > /sys/bus/pci/rescan
+## Key Differences from Vulcano
 
-# Check kernel logs
-dmesg | tail -50
+| Aspect | Vulcano | Salina |
+|--------|---------|--------|
+| **ASIC Name** | Vulcano | Salina (Pollara in TB) |
+| **Monitor Tool** | vulcanomon | salinamon |
+| **Console** | Vulcano console | A35 console |
+| **Firmware** | ainic_fw_vulcano.tar | ainic_fw_salina.tar |
 
-# Check PCIe link
-lspci -vvv | grep -A 20 Pensando
-```
+**Important:** \`nicctl\` commands work **identically** on both ASICs.
 
-### Firmware update failed
-```bash
-# Check device state
-nicctl show device
+## Console Access Pattern
 
-# Reset device
-nicctl reset
+Format: \`telnet <console_server_ip> <port>\`
 
-# Check logs
-journalctl -xe | grep -i pensando
-```
+**Console Servers:**
+- 10.11.2.23, 10.11.2.25, 10.11.2.26
+- 10.30.48.254, 10.30.25.254
+
+## Credentials
+
+- **BMC:** \`admin/Pen1nfra$\` or \`root/0penBmc\`
+- **Host:** \`root/docker\`
+- **A35 Console:** \`admin/N0isystem$\`
+- **APC Power:** \`apc/apc\`
+
+## Data Files
+
+All setup configurations are stored as YAML files in the \`data/\` directory:
+- \`dell-xeon-1-2.yml\`
+- \`dell-xeon-3-4.yml\`
+- \`dell-genoa-3-4.yml\`
 
 ---
-Last updated: 2026-02-25
+Last updated: 2026-03-05

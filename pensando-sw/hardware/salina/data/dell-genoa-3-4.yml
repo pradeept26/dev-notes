@@ -1,0 +1,101 @@
+---
+# Dell-Genoa-3 & Dell-Genoa-4 Salina/Pollara Setup Configuration
+# Auto-generated from: Pollara_rdma_tb.csv
+# Last updated: 2026-03-05
+
+setup:
+  name: Dell-Genoa-3-4
+  status: active
+  location: I9/RU10 and I9/RU8
+  asic: salina
+  product: pollara
+  topology: paired
+  use_case: rdma_testing
+  notes: "Updated to master (Plan-B A35 image for MRC)"
+
+server1:
+  name: Dell-Genoa-3
+  model: Dell PowerEdge R7625
+  description: "Thor2 and Salina"
+  rack: I9
+  ru: 10
+
+  host:
+    hostname: Dell-Genoa-3
+    mgmt_ip: 10.30.49.147
+    os: linux
+    credentials:
+      ssh_user: root
+      ssh_password: docker
+
+  bmc:
+    ip: 10.30.49.62
+    credentials:
+      user: admin
+      password: "Pen1nfra$"
+
+  power:
+    apc_ip: 10.30.49.52
+    apc_port: 16
+    credentials:
+      user: apc
+      password: apc
+
+  nic:
+    id: ai0
+    serial_number: "NA (LENI)"
+    a35_console:
+      host: 10.30.48.254
+      port: 2015
+      credentials:
+        user: admin
+        password: "N0isystem$"
+
+server2:
+  name: Dell-Genoa-4
+  model: Dell PowerEdge R7625
+  description: "Thor2 and Salina"
+  rack: I9
+  ru: 8
+
+  host:
+    hostname: Dell-Genoa-4
+    mgmt_ip: 10.30.49.67
+    os: linux
+    credentials:
+      ssh_user: root
+      ssh_password: docker
+
+  bmc:
+    ip: 10.30.49.64
+    credentials:
+      user: admin
+      password: "Pen1nfra$"
+
+  power:
+    apc_ip: 10.30.49.52
+    apc_port: 8
+    credentials:
+      user: apc
+      password: apc
+
+  nic:
+    id: ai0
+    serial_number: "NA (LENI)"
+    a35_console:
+      host: 10.30.48.254
+      port: 2014
+      credentials:
+        user: admin
+        password: "N0isystem$"
+
+network:
+  topology: paired
+  description: "Two servers connected for RDMA testing"
+  connectivity: switch_connected
+
+notes:
+  - "Status: Up"
+  - "Updated to master (Plan-B A35 image for MRC)"
+  - "JIRA: https://pensando.atlassian.net/browse/LAB-6938"
+  - "Paired setup for RDMA testing"
