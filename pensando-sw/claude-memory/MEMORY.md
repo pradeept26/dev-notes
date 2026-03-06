@@ -168,12 +168,38 @@ Located in: `~/dev-notes/pensando-sw/hardware/salina/`
 - Dell-Xeon-1-2 - Paired setup (10.11.x network)
 - Dell-Xeon-3-4 - Paired setup (10.30.x network)
 - Dell-Genoa-3-4 - Paired setup (Plan-B images)
+- Purico-Bytedance-01-02, 03-04 - ByteDance testbed (Rack J7), back-to-back within same server
+- Purico-Meta-07-08, 09-10 - Meta RoCE testbed (Rack J7)
 - Full inventory: `~/setups/Pollara_rdma_tb.csv`
 
 ## Common Issues
 - If cards don't come up after firmware update: Run recovery via SuC console reboot + host reboot
 - See `~/dev-notes/pensando-sw/scripts/recovery-after-fw-update.sh`
 
+## Automation Scripts
+Located in: `~/dev-notes/pensando-sw/scripts/`
+- `console-mgr.py` - Manage 96 console connections (Vulcano+SuC) across all setups
+  - Usage: `./console-mgr.py --setup smc1 --console vulcano --all version`
+  - Usage: `./console-mgr.py --setup smc1 --console suc --all reboot`
+- `update-firmware.sh <setup> <tar>` - Automated firmware update
+- `recovery-after-fw-update.sh <setup>` - Full recovery when cards don't come up
+- `run-ib-test.sh` - IB/RDMA test wrapper
+- `parallel-firmware-update.sh` - Update multiple setups simultaneously
+- `sync-claude-memory.sh` - Sync MEMORY.md to dev-notes git repo
+
+## SMC Hardware IPs (Vulcano)
+- SMC1: 10.30.75.198 (ubuntu/amd123) - 8 Vulcano NICs
+- SMC2: 10.30.75.204 (ubuntu/amd123) - 8 Vulcano NICs
+- GT1: 10.30.69.101 (root) - 8 Vulcano NICs
+- GT4: 10.30.69.98 - 8 Vulcano NICs
+- Waco5: 10.30.64.25 - 8 Vulcano NICs
+- Waco6: 10.30.64.26 - 8 Vulcano NICs
+
+## Current Branch (as of 2026-03-05)
+- Working branch: `forward_port_to_master_20260301`
+- Main branch: `master`
+
 ## Related Documentation
 - [context.md](file:///home/pradeept/dev-notes/pensando-sw/context.md) - Full development context
 - Hardware setups: `~/dev-notes/pensando-sw/hardware/`
+- IB testing guide: `~/dev-notes/pensando-sw/ib-testing-guide.md`
