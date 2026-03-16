@@ -229,13 +229,26 @@ Located in: `~/dev-notes/pensando-sw/scripts/`
 - `parallel-firmware-update.sh` - Update multiple setups simultaneously
 - `sync-claude-memory.sh` - Sync MEMORY.md to dev-notes git repo
 
-## SMC Hardware IPs (Vulcano)
-- SMC1: 10.30.75.198 (ubuntu/amd123) - 8 Vulcano NICs
-- SMC2: 10.30.75.204 (ubuntu/amd123) - 8 Vulcano NICs
-- GT1: 10.30.69.101 (root) - 8 Vulcano NICs
-- GT4: 10.30.69.98 - 8 Vulcano NICs
-- Waco5: 10.30.64.25 - 8 Vulcano NICs
-- Waco6: 10.30.64.26 - 8 Vulcano NICs
+## Vulcano Hardware Setups
+
+### SMC Setups (Development/Testing)
+- **SMC1:** 10.30.75.198 (ubuntu/amd123) - 8 NICs, Micas switch
+- **SMC2:** 10.30.75.204 (ubuntu/amd123) - 8 NICs, Micas switch
+
+### Waco Cluster (Arista Leaf-Spine Topology)
+- **Waco5:** 10.30.64.25 (ubuntu/amd123) - 8 NICs, Leaf1 eth1/1-8/1
+- **Waco6:** 10.30.64.26 (ubuntu/amd123) - 8 NICs, Leaf1 eth9/1-16/1
+- **Waco7:** 10.30.64.27 (ubuntu/amd123) - 8 NICs, Leaf2 eth1/1-8/1
+- **Waco8:** 10.30.64.28 (ubuntu/amd123) - 8 NICs, Leaf2 eth9/1-16/1
+
+**Arista Switches:**
+- Spine: 10.30.64.202 (admin/Gr33nTr33s)
+- Leaf1: 10.30.64.201 (Waco5-6)
+- Leaf2: 10.30.64.203 (Waco7-8)
+
+### GT Setups (800G Leaf-Spine)
+- **GT1:** 10.30.69.101 (root) - 8 Vulcano NICs
+- **GT4:** 10.30.69.98 - 8 Vulcano NICs
 
 ## Current Branch (as of 2026-03-05)
 - Working branch: `forward_port_to_master_20260301`
