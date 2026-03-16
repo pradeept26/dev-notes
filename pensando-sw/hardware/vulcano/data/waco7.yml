@@ -1,0 +1,168 @@
+---
+# Waco7 Vulcano Setup Configuration
+# Auto-generated from: Vulcano_Setup_Details_Waco.csv
+# Last updated: 2026-03-16
+
+setup:
+  name: Waco7
+  status: active
+  location: lab
+  asic: vulcano
+  use_case: arista_leaf_spine_topology
+
+host:
+  hostname: waco7
+  mgmt_ip: 10.30.64.27
+  os: ubuntu
+  credentials:
+    ssh_user: ubuntu
+    ssh_password: amd123
+
+bmc:
+  ip: 10.30.64.17
+  credentials:
+    user: admin
+    password: "PenInfra$"
+
+network:
+  topology: arista_leaf_spine
+  nfs_mount: /mnt/clusterfs
+  switches:
+    - name: Arista Spine
+      console_host: 10.30.64.120
+      console_port: 2011
+      mgmt_ip: 10.30.64.202
+      credentials:
+        user: admin
+        password: "Gr33nTr33s"
+    - name: Arista Leaf2
+      console_host: 10.30.64.120
+      console_port: 2013
+      mgmt_ip: 10.30.64.203
+      credentials:
+        user: admin
+        password: "Gr33nTr33s"
+      connected_to: "waco7-8"
+  port_mapping:
+    - "waco7 ai0-ai7 -> leaf2 eth1/1-eth8/1"
+    - "waco8 ai0-ai7 -> leaf2 eth9/1-eth16/1"
+  interconnects:
+    - "leaf2 port 33-40 -> spine port 33-40"
+
+nics:
+  - id: ai0
+    serial_number: FPR25480004
+    consoles:
+      vulcano:
+        host: 10.30.64.120
+        port: 2038
+      suc:
+        host: 10.30.64.120
+        port: 2039
+    switch:
+      name: leaf2
+      port: eth1/1
+
+  - id: ai1
+    serial_number: FPR2552005B
+    consoles:
+      vulcano:
+        host: 10.30.64.120
+        port: 2040
+      suc:
+        host: 10.30.64.120
+        port: 2041
+    switch:
+      name: leaf2
+      port: eth2/1
+
+  - id: ai2
+    serial_number: FPR25510006
+    consoles:
+      vulcano:
+        host: 10.30.64.120
+        port: 2036
+      suc:
+        host: 10.30.64.120
+        port: 2037
+    switch:
+      name: leaf2
+      port: eth3/1
+
+  - id: ai3
+    serial_number: FPR25510018
+    consoles:
+      vulcano:
+        host: 10.30.64.120
+        port: 2034
+      suc:
+        host: 10.30.64.120
+        port: 2035
+    switch:
+      name: leaf2
+      port: eth4/1
+
+  - id: ai4
+    serial_number: FPR25520019
+    consoles:
+      vulcano:
+        host: 10.30.64.120
+        port: 2016
+      suc:
+        host: 10.30.64.120
+        port: 2021
+    switch:
+      name: leaf2
+      port: eth5/1
+
+  - id: ai5
+    serial_number: FPR25520011
+    consoles:
+      vulcano:
+        host: 10.30.64.120
+        port: 2030
+      suc:
+        host: 10.30.64.120
+        port: 2031
+    switch:
+      name: leaf2
+      port: eth6/1
+
+  - id: ai6
+    serial_number: FPR25520080
+    consoles:
+      vulcano:
+        host: 10.30.64.120
+        port: 2017
+      suc:
+        host: 10.30.64.120
+        port: 2019
+    switch:
+      name: leaf2
+      port: eth7/1
+
+  - id: ai7
+    serial_number: FPR25510008
+    consoles:
+      vulcano:
+        host: 10.30.64.120
+        port: 2032
+      suc:
+        host: 10.30.64.120
+        port: 2033
+    switch:
+      name: leaf2
+      port: eth8/1
+
+console_servers:
+  - host: 10.30.64.120
+    ports: "2016-2041"
+    nics_served:
+      - ai0
+      - ai1
+      - ai2
+      - ai3
+      - ai4
+      - ai5
+      - ai6
+      - ai7
