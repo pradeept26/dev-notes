@@ -159,7 +159,8 @@ PIPELINE=rudra ASIC=vulcano P4_PROGRAM=hydra PCIEMGR_IF=1 DMA_MODE=uxdma PROFILE
 
 ### Vulcano ASIC Setups
 Located in: `~/dev-notes/pensando-sw/hardware/vulcano/`
-- SMC1, SMC2 - Development/testing
+- **SMC1** (10.30.75.198) - Primary dev/test, 8x Vulcano NICs (ai0-ai7), Micas switch
+- **SMC2** (10.30.75.204) - Secondary dev/test, 8x Vulcano NICs (ai0-ai7), Micas switch
 - GT1, GT4 - 800G Leaf-Spine topology
 - Waco5, Waco6 - Arista Leaf-Spine setups
 
@@ -172,9 +173,50 @@ Located in: `~/dev-notes/pensando-sw/hardware/salina/`
 - Purico-Meta-07-08, 09-10 - Meta RoCE testbed (Rack J7)
 - Full inventory: `~/setups/Pollara_rdma_tb.csv`
 
-## Common Issues
+### SMC1 Quick Reference (Most Used)
+- Host: ubuntu@10.30.75.198 (password: amd123)
+- 8 NICs: ai0-ai7 (benic1p1-benic8p1)
+- Micas Switch: 10.30.75.77 (admin/Micas123)
+- **Init script after FW update/reboot:** `/mnt/clusterfs/bringup/vulcano_hydra_rccl_bringup.sh`
+
+## IB/RDMA Testing
+Scripts located in: `~/dev-notes/pensando-sw/scripts/`
+
+### Quick Test Commands
+```bash
+# Basic SMC1→SMC2 test (4 QPs)
+~/dev-notes/pensando-sw/scripts/run-ib-test.sh smc1-smc2 --qp 4
+
+# MSN context stress test (validates 128-entry window)
+~/dev-notes/pensando-sw/scripts/run-ib-test.sh smc1-smc2 --qp 1 --max-msg-size 4M --direction bi --iter 2000
+
+# Comprehensive scaling test with Excel output
+~/dev-notes/pensando-sw/scripts/run-ib-test.sh smc1-smc2 --max-qp 16 --direction both --write-mode both --xlsx
+```
+
+**IMPORTANT:** Always run IB tests inside tmux session (tests take 45-60+ minutes)
+
+## Console Access
+```bash
+# Console manager script (for Vulcano/SuC consoles)
+~/dev-notes/pensando-sw/scripts/console-mgr.py --setup smc1 --console vulcano --all version
+
+# Recovery after firmware update
+~/dev-notes/pensando-sw/scripts/recovery-after-fw-update.sh smc1
+```
+
+## Known Issues
+
+### Modify QP Path CC Issue (Fixed in 1.125.1+)
+- **Affects:** Firmware 1.125.0-a-133 and earlier (SMC1, SMC2)
+- **Symptom:** Path congestion control parameters not updated during Modify QP
+- **Root cause:** `qp_set_tp_params()` called before path allocation
+- **Working versions:** Firmware 1.125.1-pi-8+ (Waco5, Waco6)
+- **Details:** See `~/dev-notes/pensando-sw/MODIFY-QP-PATH-CC-ISSUE.md`
+
+### Firmware Update Recovery
 - If cards don't come up after firmware update: Run recovery via SuC console reboot + host reboot
-- See `~/dev-notes/pensando-sw/scripts/recovery-after-fw-update.sh`
+- Script: `~/dev-notes/pensando-sw/scripts/recovery-after-fw-update.sh`
 
 ## Automation Scripts
 Located in: `~/dev-notes/pensando-sw/scripts/`
@@ -201,5 +243,6 @@ Located in: `~/dev-notes/pensando-sw/scripts/`
 
 ## Related Documentation
 - [context.md](file:///home/pradeept/dev-notes/pensando-sw/context.md) - Full development context
+- [ib-testing-guide.md](file:///home/pradeept/dev-notes/pensando-sw/ib-testing-guide.md) - IB/RDMA testing guide
 - Hardware setups: `~/dev-notes/pensando-sw/hardware/`
 - IB testing guide: `~/dev-notes/pensando-sw/ib-testing-guide.md`
