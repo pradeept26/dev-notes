@@ -44,6 +44,9 @@ nics:
   - id: card1
     serial_number: FPR2551000B
     consoles:
+      vulcano:
+        host: 10.30.64.101
+        port: 2010
       suc:
         host: 10.30.64.101
         port: 2011
@@ -51,6 +54,9 @@ nics:
   - id: card2
     serial_number: FPR25520007
     consoles:
+      vulcano:
+        host: 10.30.64.101
+        port: 2004
       suc:
         host: 10.30.64.101
         port: 2005
@@ -58,6 +64,9 @@ nics:
   - id: card3
     serial_number: FPR2551000C
     consoles:
+      vulcano:
+        host: 10.30.64.101
+        port: 2006
       suc:
         host: 10.30.64.101
         port: 2007
@@ -65,6 +74,9 @@ nics:
   - id: card4
     serial_number: FPR25510013
     consoles:
+      vulcano:
+        host: 10.30.64.101
+        port: 2040
       suc:
         host: 10.30.64.101
         port: 2041
@@ -72,6 +84,9 @@ nics:
   - id: card5
     serial_number: FPR25520066
     consoles:
+      vulcano:
+        host: 10.30.64.101
+        port: 2045
       suc:
         host: 10.30.64.120
         port: 2015
@@ -79,6 +94,9 @@ nics:
   - id: card6
     serial_number: FPR25520006
     consoles:
+      vulcano:
+        host: 10.30.64.120
+        port: 2022
       suc:
         host: 10.30.64.120
         port: 2023
@@ -86,6 +104,9 @@ nics:
   - id: card7_unreachable
     serial_number: unknown
     consoles:
+      vulcano:
+        host: 10.30.64.101
+        port: 2037
       suc:
         host: 10.30.64.101
         port: 2038
