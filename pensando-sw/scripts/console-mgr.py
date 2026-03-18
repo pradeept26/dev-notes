@@ -112,7 +112,10 @@ def interactive_console(setup_name: str, nic_id: str, console_type: str, clear_l
             print()
 
     print(f"Connecting to telnet {host} {port}...")
-    print(f"To exit: Ctrl+] then type 'quit' (or close terminal)")
+    print()
+    print(f"IMPORTANT: Once connected, press ENTER to get the console prompt!")
+    print()
+    print(f"To exit: Ctrl+] then type 'quit'")
     print()
     time.sleep(1)
 
