@@ -1,0 +1,123 @@
+---
+# Waco2 Vulcano Setup Configuration
+# Source: Vulcano_Setup_Details_Waco.csv
+# Last updated: 2026-03-17
+
+setup:
+  name: Waco2
+  status: active
+  location: lab
+  asic: vulcano
+  use_case: standard_testing
+
+host:
+  hostname: waco2
+  mgmt_ip: 10.30.64.22
+  os: ubuntu
+  credentials:
+    ssh_user: ubuntu
+    ssh_password: amd123
+
+bmc:
+  ip: 10.30.64.12
+  credentials:
+    user: admin
+    password: "PenInfra$"
+
+network:
+  topology: standard
+  nfs_mount: /mnt/clusterfs
+
+nics:
+  - id: ai0
+    serial_number: p0-185
+    consoles:
+      vulcano:
+        host: 10.30.64.101
+        port: 2012
+      suc:
+        host: 10.30.64.101
+        port: 2013
+
+  - id: ai1
+    serial_number: p0-183
+    consoles:
+      vulcano:
+        host: 10.30.64.101
+        port: 2014
+      suc:
+        host: 10.30.64.101
+        port: 2015
+
+  - id: ai2
+    serial_number: p0-224
+    consoles:
+      vulcano:
+        host: 10.30.64.101
+        port: 2016
+      suc:
+        host: 10.30.64.101
+        port: 2017
+
+  - id: ai3
+    serial_number: p0-175
+    consoles:
+      vulcano:
+        host: 10.30.64.101
+        port: 2018
+      suc:
+        host: 10.30.64.101
+        port: 2019
+
+  - id: ai4
+    serial_number: p0-184
+    consoles:
+      vulcano:
+        host: 10.30.64.101
+        port: 2020
+      suc:
+        host: 10.30.64.101
+        port: 2021
+
+  - id: ai5
+    serial_number: p0-177
+    consoles:
+      vulcano:
+        host: 10.30.64.101
+        port: 2022
+      suc:
+        host: 10.30.64.101
+        port: 2023
+
+  - id: ai6
+    serial_number: p0-174
+    consoles:
+      vulcano:
+        host: 10.30.64.101
+        port: 2024
+      suc:
+        host: 10.30.64.101
+        port: 2025
+
+  - id: ai7
+    serial_number: p0-180
+    consoles:
+      vulcano:
+        host: 10.30.64.101
+        port: 2026
+      suc:
+        host: 10.30.64.101
+        port: 2027
+
+console_servers:
+  - host: 10.30.64.101
+    ports: "2012-2027"
+    nics_served:
+      - ai0
+      - ai1
+      - ai2
+      - ai3
+      - ai4
+      - ai5
+      - ai6
+      - ai7
