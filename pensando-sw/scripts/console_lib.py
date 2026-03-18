@@ -81,7 +81,7 @@ class ConsoleSession:
                 # Close management connection
                 tn_mgmt.close()
 
-                print(f"  ✓ Line {line_number} cleared successfully")
+                print(f"  Line {line_number} cleared successfully")
                 time.sleep(1)  # Wait before reconnecting
                 return True
 
@@ -248,7 +248,7 @@ class ConsoleManager:
         Args:
             setup_name: Name of setup
             nic_id: NIC ID (e.g., 'ai0', 'ai1')
-            console_type: 'vulcano' or 'suc'
+            console_type: 'vulcano', 'suc', or 'a35'
 
         Returns:
             Tuple of (host, port) or None
@@ -257,8 +257,36 @@ class ConsoleManager:
         if not setup:
             return None
 
+        # Handle both old and new formats
+        # Old format (Vulcano): nics[].consoles.vulcano/suc
+        # New format (Salina): nics[].a35_console, nics[].suc_console
+        # Also support server1/server2 structure for paired setups
+
+        # Check if this is a paired setup (has server1/server2)
+        for server_key in ['server1', 'server2']:
+            server = setup.get(server_key)
+            if server:
+                for nic in server.get('nics', []):
+                    if nic['id'] == nic_id:
+                        # Try new format first (a35_console, suc_console)
+                        console_key = f"{console_type}_console"
+                        console = nic.get(console_key)
+                        if console:
+                            return (console['host'], console['port'])
+                        # Try old format (consoles.a35, consoles.suc)
+                        console = nic.get('consoles', {}).get(console_type)
+                        if console:
+                            return (console['host'], console['port'])
+
+        # Check regular nics array
         for nic in setup.get('nics', []):
             if nic['id'] == nic_id:
+                # Try new format first (a35_console, suc_console)
+                console_key = f"{console_type}_console"
+                console = nic.get(console_key)
+                if console:
+                    return (console['host'], console['port'])
+                # Try old format (consoles.vulcano, consoles.suc)
                 console = nic.get('consoles', {}).get(console_type)
                 if console:
                     return (console['host'], console['port'])
@@ -272,7 +300,7 @@ class ConsoleManager:
 
         Args:
             setup_name: Name of setup
-            console_type: 'vulcano' or 'suc'
+            console_type: 'vulcano', 'suc', or 'a35'
 
         Returns:
             List of tuples (nic_id, host, port)
@@ -282,11 +310,37 @@ class ConsoleManager:
             return []
 
         consoles = []
+
+        # Handle paired setups (server1/server2)
+        for server_key in ['server1', 'server2']:
+            server = setup.get(server_key)
+            if server:
+                for nic in server.get('nics', []):
+                    nic_id = nic['id']
+                    # Try new format (a35_console, suc_console)
+                    console_key = f"{console_type}_console"
+                    console = nic.get(console_key)
+                    if console:
+                        consoles.append((nic_id, console['host'], console['port']))
+                    else:
+                        # Try old format (consoles.vulcano, consoles.suc)
+                        console = nic.get('consoles', {}).get(console_type)
+                        if console:
+                            consoles.append((nic_id, console['host'], console['port']))
+
+        # Handle regular nics array
         for nic in setup.get('nics', []):
             nic_id = nic['id']
-            console = nic.get('consoles', {}).get(console_type)
+            # Try new format
+            console_key = f"{console_type}_console"
+            console = nic.get(console_key)
             if console:
                 consoles.append((nic_id, console['host'], console['port']))
+            else:
+                # Try old format
+                console = nic.get('consoles', {}).get(console_type)
+                if console:
+                    consoles.append((nic_id, console['host'], console['port']))
 
         return consoles
 
