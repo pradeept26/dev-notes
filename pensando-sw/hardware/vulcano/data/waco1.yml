@@ -1,17 +1,10 @@
----
-# Waco1 Vulcano Setup Configuration
-# Source: Vulcano_Setup_Details_Waco.csv
-# Last updated: 2026-03-17
-# NOTE: Modified setup - Uses Gelso cards instead of standard Vulcano
-
 setup:
   name: Waco1
   status: active
   location: lab
-  asic: gelso  # Special - uses Gelso not Vulcano
+  asic: gelso
   use_case: modified_gelso_testing
-  notes: "Replaced all Saraceno cards with 4 Gelso cards (Feb 2020)"
-
+  notes: Replaced all Saraceno cards with 4 Gelso cards (Feb 2020)
 host:
   hostname: waco1
   mgmt_ip: 10.30.64.21
@@ -19,111 +12,134 @@ host:
   credentials:
     ssh_user: ubuntu
     ssh_password: amd123
-
 bmc:
   ip: 10.30.64.11
   credentials:
     user: admin
-    password: "PenInfra$"
-
+    password: PenInfra$
 network:
-  topology: gelso_test
-  nfs_mount: /mnt/clusterfs
-
+  leaf_switch: 10.30.64.200
+  leaf_loopback: 192.168.0.3
+  speed: 400G
+  topology: leaf-spine
 nics:
-  - id: card0
-    serial_number: FPR2552006D
-    consoles:
-      vulcano:
-        host: 10.30.64.101
-        port: 2008
-      suc:
-        host: 10.30.64.101
-        port: 2009
-
-  - id: card1
-    serial_number: FPR2551000B
-    consoles:
-      vulcano:
-        host: 10.30.64.101
-        port: 2010
-      suc:
-        host: 10.30.64.101
-        port: 2011
-
-  - id: card2
-    serial_number: FPR25520007
-    consoles:
-      vulcano:
-        host: 10.30.64.101
-        port: 2004
-      suc:
-        host: 10.30.64.101
-        port: 2005
-
-  - id: card3
-    serial_number: FPR2551000C
-    consoles:
-      vulcano:
-        host: 10.30.64.101
-        port: 2006
-      suc:
-        host: 10.30.64.101
-        port: 2007
-
-  - id: card4
-    serial_number: FPR25510013
-    consoles:
-      vulcano:
-        host: 10.30.64.101
-        port: 2040
-      suc:
-        host: 10.30.64.101
-        port: 2041
-
-  - id: card5
-    serial_number: FPR25520066
-    consoles:
-      vulcano:
-        host: 10.30.64.101
-        port: 2045
-      suc:
-        host: 10.30.64.120
-        port: 2015
-
-  - id: card6
-    serial_number: FPR25520006
-    consoles:
-      vulcano:
-        host: 10.30.64.120
-        port: 2022
-      suc:
-        host: 10.30.64.120
-        port: 2023
-
-  - id: card7_unreachable
-    serial_number: unknown
-    consoles:
-      vulcano:
-        host: 10.30.64.101
-        port: 2037
-      suc:
-        host: 10.30.64.101
-        port: 2038
-    status: unreachable
-
+- id: card0
+  serial_number: FPR2552006D
+  consoles:
+    vulcano:
+      host: 10.30.64.101
+      port: 2008
+    suc:
+      host: 10.30.64.101
+      port: 2009
+  network:
+    switch_port: Et1/1
+    subnet: 30.1.0.0/31
+    link_status: connected
+- id: card1
+  serial_number: FPR2551000B
+  consoles:
+    vulcano:
+      host: 10.30.64.101
+      port: 2010
+    suc:
+      host: 10.30.64.101
+      port: 2011
+  network:
+    switch_port: Et2/1
+    subnet: 30.1.1.0/31
+    link_status: connected
+- id: card2
+  serial_number: FPR25520007
+  consoles:
+    vulcano:
+      host: 10.30.64.101
+      port: 2004
+    suc:
+      host: 10.30.64.101
+      port: 2005
+  network:
+    switch_port: Et3/1
+    subnet: 30.1.2.0/31
+    link_status: connected
+- id: card3
+  serial_number: FPR2551000C
+  consoles:
+    vulcano:
+      host: 10.30.64.101
+      port: 2006
+    suc:
+      host: 10.30.64.101
+      port: 2007
+  network:
+    switch_port: Et4/1
+    subnet: 30.1.3.0/31
+    link_status: connected
+- id: card4
+  serial_number: FPR25510013
+  consoles:
+    vulcano:
+      host: 10.30.64.101
+      port: 2040
+    suc:
+      host: 10.30.64.101
+      port: 2041
+  network:
+    switch_port: Et5/1
+    subnet: 30.1.4.0/31
+    link_status: connected
+- id: card5
+  serial_number: FPR25520066
+  consoles:
+    vulcano:
+      host: 10.30.64.101
+      port: 2045
+    suc:
+      host: 10.30.64.120
+      port: 2015
+  network:
+    switch_port: Et6/1
+    subnet: 30.1.5.0/31
+    link_status: connected
+- id: card6
+  serial_number: FPR25520006
+  consoles:
+    vulcano:
+      host: 10.30.64.120
+      port: 2022
+    suc:
+      host: 10.30.64.120
+      port: 2023
+  network:
+    switch_port: Et7/1
+    subnet: 30.1.6.0/31
+    link_status: connected
+- id: card7_unreachable
+  serial_number: unknown
+  consoles:
+    vulcano:
+      host: 10.30.64.101
+      port: 2037
+    suc:
+      host: 10.30.64.101
+      port: 2038
+  status: unreachable
+  network:
+    switch_port: Et8/1
+    subnet: 30.1.7.0/31
+    link_status: connected
 console_servers:
-  - host: 10.30.64.101
-    ports: "2005, 2007-2009, 2011, 2038, 2041"
-    cards_served:
-      - card0
-      - card1
-      - card2
-      - card3
-      - card4
-      - card7_unreachable
-  - host: 10.30.64.120
-    ports: "2015, 2023"
-    cards_served:
-      - card5
-      - card6
+- host: 10.30.64.101
+  ports: 2005, 2007-2009, 2011, 2038, 2041
+  cards_served:
+  - card0
+  - card1
+  - card2
+  - card3
+  - card4
+  - card7_unreachable
+- host: 10.30.64.120
+  ports: 2015, 2023
+  cards_served:
+  - card5
+  - card6
