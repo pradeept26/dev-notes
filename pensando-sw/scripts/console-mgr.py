@@ -86,14 +86,30 @@ def interactive_console(setup_name: str, nic_id: str, console_type: str, clear_l
     # Try to clear line if requested
     if clear_line:
         from console_lib import ConsoleSession
-        session = ConsoleSession(host, port, auto_clear=True)
-        if not session.connect():
-            print("Warning: Could not clear console line, trying anyway...")
+
+        # Try to clear and connect with retries
+        max_retries = 3
+        for attempt in range(max_retries):
+            if attempt > 0:
+                print(f"\nRetry {attempt}/{max_retries-1}...")
+
+            session = ConsoleSession(host, port, auto_clear=True)
+            if session.connect():
+                session.disconnect()
+                print("Console line cleared and ready")
+                print()
+                # Wait longer after successful clear
+                print("Waiting 3 seconds for line to fully release...")
+                time.sleep(3)
+                break
+            else:
+                if attempt < max_retries - 1:
+                    print(f"Waiting 2 seconds before retry...")
+                    time.sleep(2)
         else:
-            session.disconnect()
-            print("Console line cleared successfully")
+            print("\nWarning: Could not clear console line after retries")
+            print("The line may be stuck - trying direct connection anyway...")
             print()
-            time.sleep(1)
 
     print(f"Connecting to telnet {host} {port}...")
     print(f"To exit: Ctrl+] then type 'quit' (or close terminal)")
