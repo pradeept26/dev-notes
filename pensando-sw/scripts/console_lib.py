@@ -83,32 +83,32 @@ class ConsoleSession:
                 # Send clear line command
                 clear_cmd = f"clear line {line_number}\n"
                 tn_mgmt.write(clear_cmd.encode('ascii'))
-                time.sleep(1.5)
 
-                # Read the response to see if there's a confirmation prompt
-                response = tn_mgmt.read_very_eager().decode('ascii', errors='ignore')
+                # Wait for confirmation prompt - it should show [confirm]
+                try:
+                    response = tn_mgmt.read_until(b"[confirm]", timeout=3).decode('ascii', errors='ignore')
+                    print(f"  Got confirmation prompt")
+                except Exception:
+                    # Might not always get [confirm], just proceed
+                    print(f"  No confirmation prompt, sending Enter anyway")
 
-                # Debug: print what we got
-                print(f"  Console server response: {response[:100]}")
+                # Send Enter to confirm
+                tn_mgmt.write(b"\n")
 
-                # Send confirmation (both 'y' and Enter to cover all cases)
-                if 'confirm' in response.lower() or '[y/n]' in response.lower() or '[' in response:
-                    print(f"  Sending 'y' for confirmation")
-                    tn_mgmt.write(b"y\n")
-                else:
-                    print(f"  Sending Enter")
-                    tn_mgmt.write(b"\n")
-                time.sleep(1.5)
-
-                # Read final response to confirm clearing
-                final_response = tn_mgmt.read_very_eager().decode('ascii', errors='ignore')
-                print(f"  Final response: {final_response[:100]}")
+                # Wait for OK response
+                try:
+                    final_response = tn_mgmt.read_until(b"[OK]", timeout=3).decode('ascii', errors='ignore')
+                    print(f"  Line cleared: [OK]")
+                except Exception:
+                    # Try to read what we got
+                    final_response = tn_mgmt.read_very_eager().decode('ascii', errors='ignore')
+                    print(f"  Clear command sent (response: {final_response[:50]})")
 
                 # Close management connection
                 tn_mgmt.close()
 
                 print(f"  Line {line_number} cleared successfully")
-                time.sleep(3)  # Wait 3 seconds for line to fully release
+                time.sleep(5)  # Wait 5 seconds for line to fully release
                 return True
 
             except Exception as e:
@@ -146,7 +146,8 @@ class ConsoleSession:
                 print(f"Connection refused to {self.host}:{self.port} (line busy)")
                 if self.clear_console_line(line_number):
                     # Wait progressively longer between retries
-                    wait_time = 2 + retry_count
+                    # Console servers need time to fully release the line
+                    wait_time = 3 + (retry_count * 2)  # 3s, 5s, 7s
                     print(f"Waiting {wait_time} seconds before retry...")
                     time.sleep(wait_time)
 
