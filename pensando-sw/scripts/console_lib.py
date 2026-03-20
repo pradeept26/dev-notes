@@ -63,22 +63,43 @@ class ConsoleSession:
                 # Send password
                 tn_mgmt.write(password.encode('ascii') + b"\n")
 
-                # Wait for prompt after password - use read_until to wait for '#'
-                try:
-                    prompt_response = tn_mgmt.read_until(b"#", timeout=5).decode('ascii', errors='ignore')
+                # Wait for prompt after password
+                # Console server should respond with either:
+                # - Prompt (e.g., "waco-ts-3#") if password correct
+                # - "Password:" again if password wrong
+                # - Connection close if too many failures
+                time.sleep(2)
+                response = tn_mgmt.read_very_eager().decode('ascii', errors='ignore')
 
-                    # Check for password failure
-                    if any(word in prompt_response.lower() for word in ['incorrect', 'failed', 'bad password', '% bad']):
-                        print(f"  Password {password} failed")
-                        continue
-
-                    # Success - we got the '#' prompt
-                    print(f"  Authenticated successfully with {password}")
-
-                except Exception:
-                    # Timeout waiting for prompt - password probably failed
-                    print(f"  No prompt with {password}, trying next...")
+                # Check if we got another password prompt (password was wrong)
+                if 'Password:' in response and response.count('Password:') > 0:
+                    print(f"  Password {password} rejected (got password prompt again)")
+                    try:
+                        tn_mgmt.close()
+                    except:
+                        pass
                     continue
+
+                # Check for explicit failure messages
+                if any(word in response.lower() for word in ['incorrect', 'failed', 'bad password', '% bad']):
+                    print(f"  Password {password} failed: {response[:50]}")
+                    try:
+                        tn_mgmt.close()
+                    except:
+                        pass
+                    continue
+
+                # Check if we got a prompt (should have '#' and hostname)
+                if '#' not in response or len(response.strip()) < 5:
+                    print(f"  No valid prompt with {password}, trying next...")
+                    try:
+                        tn_mgmt.close()
+                    except:
+                        pass
+                    continue
+
+                # Success - we got a proper prompt
+                print(f"  Authenticated successfully with {password}")
 
                 # Send clear line command
                 clear_cmd = f"clear line {line_number}\n"
