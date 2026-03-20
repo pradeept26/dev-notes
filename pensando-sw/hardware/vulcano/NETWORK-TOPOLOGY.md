@@ -211,3 +211,41 @@ Traffic routes through leaf switches and spine.
 **Source**: Switch port status as of 2026-03-18
 **Location**: Arista Leaf-Spine network
 **Access**: Leaf switches at 10.30.64.200, 201, 203
+
+---
+
+## Spine Switches
+
+### Spine Switch (10.30.64.202)
+**Credentials**: admin / Gr33nTr33s  
+**Role**: Aggregates traffic from all 3 leaf switches
+
+**Uplink Connections**:
+- Leaf 1 (10.30.64.200): Et33-40/1 → Spine uplinks (800G)
+- Leaf 2 (10.30.64.201): Et33-40/1 → Spine uplinks (800G)
+- Leaf 3 (10.30.64.203): Et33-40/1 → Spine uplinks (800G)
+
+**Total Uplink Capacity**: 3 x 800G = 2.4 Tbps
+
+**QoS**: TO_SPINE marking on all leaf uplinks
+
+---
+
+## Network Summary
+
+**Topology**: 3-tier Leaf-Spine
+- **Leaf tier**: 3 Arista switches (10.30.64.200/201/203)
+- **Spine tier**: 1+ Arista switches (10.30.64.202 confirmed)
+- **Access**: 64 host NICs at 400G each
+- **Uplinks**: 800G leaf-to-spine links
+- **Data network**: 30.0.0.0/8 (RoCE/RDMA)
+- **Management**: 10.30.64.0/22
+
+**Access Details**:
+- **Leaf switches**: admin credentials
+- **Spine switch**: admin / Gr33nTr33s
+- **Console servers**: 
+  - 10.30.64.101: Pen1nfra$ or N0isystem$
+  - 10.30.64.120: Pen1nfra$ or N0isystem$
+  - 10.30.64.199: N0isystem$
+
