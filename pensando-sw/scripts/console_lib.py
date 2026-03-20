@@ -129,7 +129,7 @@ class ConsoleSession:
                 tn_mgmt.close()
 
                 print(f"  Line {line_number} cleared successfully")
-                time.sleep(5)  # Wait 5 seconds for line to fully release
+                time.sleep(1.5)  # Console server releases line quickly after [OK]
                 return True
 
             except Exception as e:
@@ -166,9 +166,9 @@ class ConsoleSession:
 
                 print(f"Connection refused to {self.host}:{self.port} (line busy)")
                 if self.clear_console_line(line_number):
-                    # Wait progressively longer between retries
-                    # Console servers need time to fully release the line
-                    wait_time = 3 + (retry_count * 2)  # 3s, 5s, 7s
+                    # With correct password, line releases quickly
+                    # Only need short waits between retries
+                    wait_time = 1 + retry_count  # 1s, 2s, 3s
                     print(f"Waiting {wait_time} seconds before retry...")
                     time.sleep(wait_time)
 

@@ -94,8 +94,8 @@ def interactive_console(setup_name: str, nic_id: str, console_type: str, clear_l
 
         print("Attempting to clear console line via management interface...")
         if session.clear_console_line(line_number):
-            print("Line cleared, waiting 8 seconds for full release...")
-            time.sleep(8)
+            print("Line cleared, waiting 2 seconds for full release...")
+            time.sleep(2)
         else:
             print("Warning: Could not clear line, trying direct connection anyway...")
             print()
