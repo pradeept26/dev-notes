@@ -62,27 +62,53 @@ class ConsoleSession:
 
                 # Send password
                 tn_mgmt.write(password.encode('ascii') + b"\n")
-                time.sleep(1)
 
-                # Check if login successful by looking for prompt
-                output = tn_mgmt.read_very_eager().decode('ascii', errors='ignore')
-                if 'incorrect' in output.lower() or 'failed' in output.lower():
-                    continue  # Try next password
+                # Wait for prompt after password - use read_until to wait for '#'
+                try:
+                    prompt_response = tn_mgmt.read_until(b"#", timeout=5).decode('ascii', errors='ignore')
+
+                    # Check for password failure
+                    if any(word in prompt_response.lower() for word in ['incorrect', 'failed', 'bad password', '% bad']):
+                        print(f"  Password {password} failed")
+                        continue
+
+                    # Success - we got the '#' prompt
+                    print(f"  Authenticated successfully with {password}")
+
+                except Exception:
+                    # Timeout waiting for prompt - password probably failed
+                    print(f"  No prompt with {password}, trying next...")
+                    continue
 
                 # Send clear line command
                 clear_cmd = f"clear line {line_number}\n"
                 tn_mgmt.write(clear_cmd.encode('ascii'))
-                time.sleep(0.5)
+                time.sleep(1.5)
 
-                # Confirm (send Enter or 'y' if prompted)
-                tn_mgmt.write(b"\n")
-                time.sleep(0.5)
+                # Read the response to see if there's a confirmation prompt
+                response = tn_mgmt.read_very_eager().decode('ascii', errors='ignore')
+
+                # Debug: print what we got
+                print(f"  Console server response: {response[:100]}")
+
+                # Send confirmation (both 'y' and Enter to cover all cases)
+                if 'confirm' in response.lower() or '[y/n]' in response.lower() or '[' in response:
+                    print(f"  Sending 'y' for confirmation")
+                    tn_mgmt.write(b"y\n")
+                else:
+                    print(f"  Sending Enter")
+                    tn_mgmt.write(b"\n")
+                time.sleep(1.5)
+
+                # Read final response to confirm clearing
+                final_response = tn_mgmt.read_very_eager().decode('ascii', errors='ignore')
+                print(f"  Final response: {final_response[:100]}")
 
                 # Close management connection
                 tn_mgmt.close()
 
                 print(f"  Line {line_number} cleared successfully")
-                time.sleep(1)  # Wait before reconnecting
+                time.sleep(3)  # Wait 3 seconds for line to fully release
                 return True
 
             except Exception as e:
@@ -92,23 +118,26 @@ class ConsoleSession:
         print(f"  Failed to clear line {line_number}")
         return False
 
-    def connect(self, retry_with_clear: bool = True) -> bool:
+    def connect(self, retry_with_clear: bool = True, retry_count: int = 0) -> bool:
         """
         Establish telnet connection to console.
 
         Args:
             retry_with_clear: Retry after clearing line if connection refused
+            retry_count: Number of retries attempted so far
 
         Returns:
             True if successful, False otherwise
         """
+        max_retries = 3
+
         try:
             self.tn = telnetlib.Telnet(self.host, self.port, timeout=self.timeout)
             self.connected = True
             time.sleep(0.5)  # Give console time to respond
             return True
         except ConnectionRefusedError as e:
-            if self.auto_clear and retry_with_clear:
+            if self.auto_clear and retry_with_clear and retry_count < max_retries:
                 # Connection refused - line is busy, try to clear it
                 # Line number is typically port - 2000
                 # e.g., port 2002 = line 2, port 2003 = line 3
@@ -116,8 +145,14 @@ class ConsoleSession:
 
                 print(f"Connection refused to {self.host}:{self.port} (line busy)")
                 if self.clear_console_line(line_number):
+                    # Wait progressively longer between retries
+                    wait_time = 2 + retry_count
+                    print(f"Waiting {wait_time} seconds before retry...")
+                    time.sleep(wait_time)
+
+                    print(f"\nRetry {retry_count + 1}/{max_retries}...")
                     # Retry connection after clearing
-                    return self.connect(retry_with_clear=False)
+                    return self.connect(retry_with_clear=True, retry_count=retry_count + 1)
 
             print(f"Connection failed to {self.host}:{self.port}: {e}")
             return False
