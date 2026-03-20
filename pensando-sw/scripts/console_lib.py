@@ -62,21 +62,29 @@ class ConsoleSession:
 
                 # Send password
                 tn_mgmt.write(password.encode('ascii') + b"\n")
-                time.sleep(1)
 
-                # Check if login successful by looking for prompt
-                output = tn_mgmt.read_very_eager().decode('ascii', errors='ignore')
-                if 'incorrect' in output.lower() or 'failed' in output.lower():
+                # Wait for either a CLI prompt (success) or re-prompt/error (failure)
+                # Cisco IOS shows '% Bad passwords' on failure, or '#'/'>' on success
+                output_raw = tn_mgmt.read_until(b"#", timeout=3)
+                output = output_raw.decode('ascii', errors='ignore')
+                if any(s in output.lower() for s in ('bad passwords', 'incorrect', 'failed', 'password:')):
+                    print(f"  Auth failed with {password}: {output.strip()}")
+                    tn_mgmt.close()
                     continue  # Try next password
+
+                print(f"  Authenticated successfully with {password}")
 
                 # Send clear line command
                 clear_cmd = f"clear line {line_number}\n"
                 tn_mgmt.write(clear_cmd.encode('ascii'))
                 time.sleep(0.5)
 
-                # Confirm (send Enter or 'y' if prompted)
-                tn_mgmt.write(b"\n")
-                time.sleep(0.5)
+                # Confirm (send Enter if prompted with [confirm])
+                response_raw = tn_mgmt.read_until(b"#", timeout=3)
+                response = response_raw.decode('ascii', errors='ignore')
+                if '[confirm]' in response.lower() or 'confirm' in response.lower():
+                    tn_mgmt.write(b"\n")
+                    tn_mgmt.read_until(b"#", timeout=3)
 
                 # Close management connection
                 tn_mgmt.close()
