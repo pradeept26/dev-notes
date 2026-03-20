@@ -1,251 +1,337 @@
 # Waco Cluster Network Topology
-**Updated**: 2026-03-18
-
-## Overview
-
-3 Arista Leaf Switches connecting Waco1-8 servers in Leaf-Spine topology.
-All NICs connected at 400G, uplinks at 800G.
+**Updated**: 2026-03-20
+**Architecture**: 2-Spine / 2-Leaf Arista Topology
 
 ---
 
-## Leaf Switch 1 (10.30.64.200)
+## Switch Overview
 
-**Connected Hosts**: waco1-4
-**Loopback0**: 192.168.0.3
-**Total Ports**: 32/32 connected ✅
+### Console Access (All via 10.30.64.120)
 
-### Waco1 Connections (8 NICs)
-
-| Port | NIC | Switch IP | Speed | Status |
-|------|-----|-----------|-------|--------|
-| Et1/1 | ai0 | 30.1.0.0/31 | 400G | connected |
-| Et2/1 | ai1 | 30.1.1.0/31 | 400G | connected |
-| Et3/1 | ai2 | 30.1.2.0/31 | 400G | connected |
-| Et4/1 | ai3 | 30.1.3.0/31 | 400G | connected |
-| Et5/1 | ai4 | 30.1.4.0/31 | 400G | connected |
-| Et6/1 | ai5 | 30.1.5.0/31 | 400G | connected |
-| Et7/1 | ai6 | 30.1.6.0/31 | 400G | connected |
-| Et8/1 | ai7 | 30.1.7.0/31 | 400G | connected |
-
-### Waco2 Connections (8 NICs)
-
-| Port | NIC | Switch IP | Speed | Status |
-|------|-----|-----------|-------|--------|
-| Et9/1 | ai0 | 30.2.0.0/31 | 400G | connected |
-| Et10/1 | ai1 | 30.2.1.0/31 | 400G | connected |
-| Et11/1 | ai2 | 30.2.2.0/31 | 400G | connected |
-| Et12/1 | ai3 | 30.2.3.0/31 | 400G | connected |
-| Et13/1 | ai4 | 30.2.4.0/31 | 400G | connected |
-| Et14/1 | ai5 | 30.2.5.0/31 | 400G | connected |
-| Et15/1 | ai6 | 30.2.6.0/31 | 400G | connected |
-| Et16/1 | ai7 | 30.2.7.0/31 | 400G | connected |
-
-### Waco3 Connections (8 NICs)
-
-| Port | NIC | Switch IP | Speed | Status |
-|------|-----|-----------|-------|--------|
-| Et17/1 | ai0 | 30.3.0.0/31 | 400G | connected |
-| Et18/1 | ai1 | 30.3.1.0/31 | 400G | connected |
-| Et19/1 | ai2 | 30.3.2.0/31 | 400G | connected |
-| Et20/1 | ai3 | 30.3.3.0/31 | 400G | connected |
-| Et21/1 | ai4 | 30.3.4.0/31 | 400G | connected |
-| Et22/1 | ai5 | 30.3.5.0/31 | 400G | connected |
-| Et23/1 | ai6 | 30.3.6.0/31 | 400G | connected |
-| Et24/1 | ai7 | 30.3.7.0/31 | 400G | connected |
-
-### Waco4 Connections (8 NICs)
-
-| Port | NIC | Switch IP | Speed | Status |
-|------|-----|-----------|-------|--------|
-| Et25/1 | ai0 | 30.4.0.0/31 | 400G | connected |
-| Et26/1 | ai1 | 30.4.1.0/31 | 400G | connected |
-| Et27/1 | ai2 | 30.4.2.0/31 | 400G | connected |
-| Et28/1 | ai3 | 30.4.3.0/31 | 400G | connected |
-| Et29/1 | ai4 | 30.4.4.0/31 | 400G | connected |
-| Et30/1 | ai5 | 30.4.5.0/31 | 400G | connected |
-| Et31/1 | ai6 | 30.4.6.0/31 | 400G | connected |
-| Et32/1 | ai7 | 30.4.7.0/31 | 400G | connected |
-
-**Uplinks**: Et33-40/1 (800G, TO_SPINE QoS)
+| Switch | Console | Credentials |
+|--------|---------|-------------|
+| **LEAF1** | telnet 10.30.64.120 2025 | admin / Gr33nTr33s |
+| **LEAF2** | telnet 10.30.64.120 2013 | admin / Gr33nTr33s |
+| **SPINE1** | telnet 10.30.64.120 2011 | admin / Gr33nTr33s |
+| **SPINE2** | telnet 10.30.64.120 2014 | admin / Gr33nTr33s |
 
 ---
 
-## Leaf Switch 2 (10.30.64.201)
+## LEAF1 Connections
 
-**Connected Hosts**: waco5-6
-**Loopback0**: 192.168.0.1
-**Total Ports**: 16/16 connected ✅
+**Hosts**: Waco1, 2, 3, 4 (32 NICs total)
 
-### Waco5 Connections (8 NICs)
+### Waco1 → LEAF1
 
-| Port | NIC | Switch IP | Speed | Status |
-|------|-----|-----------|-------|--------|
-| Et1/1 | ai0 | 30.5.0.0/31 | 400G | connected |
-| Et2/1 | ai1 | 30.5.1.0/31 | 400G | connected |
-| Et3/1 | ai2 | 30.5.2.0/31 | 400G | connected |
-| Et4/1 | ai3 | 30.5.3.0/31 | 400G | connected |
-| Et5/1 | ai4 | 30.5.4.0/31 | 400G | connected |
-| Et6/1 | ai5 | 30.5.5.0/31 | 400G | connected |
-| Et7/1 | ai6 | 30.5.6.0/31 | 400G | connected |
-| Et8/1 | ai7 | 30.5.7.0/31 | 400G | connected |
+| Slot | NIC | Leaf Port | Notes |
+|------|-----|-----------|-------|
+| 1 | ai0 | 5 | |
+| 2 | ai1 | 6 | |
+| 3 | ai2 | 7 | |
+| 4 | ai3 | 8 | |
+| 5 | ai4 | 4 | |
+| 6 | ai5 | 3 | |
+| 7 | ai6 | 1 | |
+| 8 | ai7 | 2 | |
 
-### Waco6 Connections (8 NICs)
+### Waco2 → LEAF1
 
-| Port | NIC | Switch IP | Speed | Status |
-|------|-----|-----------|-------|--------|
-| Et9/1 | ai0 | 30.6.0.0/31 | 400G | connected |
-| Et10/1 | ai1 | 30.6.1.0/31 | 400G | connected |
-| Et11/1 | ai2 | 30.6.2.0/31 | 400G | connected |
-| Et12/1 | ai3 | 30.6.3.0/31 | 400G | connected |
-| Et13/1 | ai4 | 30.6.4.0/31 | 400G | connected |
-| Et14/1 | ai5 | 30.6.5.0/31 | 400G | connected |
-| Et15/1 | ai6 | 30.6.6.0/31 | 400G | connected |
-| Et16/1 | ai7 | 30.6.7.0/31 | 400G | connected |
+| Slot | NIC | Leaf Port | Notes |
+|------|-----|-----------|-------|
+| 1 | ai0 | 13 | |
+| 2 | ai1 | 14 | |
+| 3 | ai2 | 15 | |
+| 4 | ai3 | 16 | |
+| 5 | ai4 | 12 | |
+| 6 | ai5 | 11 | |
+| 7 | ai6 | 9 | |
+| 8 | ai7 | 10 | |
 
-**Uplinks**: Et33-40/1 (800G, TO_SPINE QoS)
+### Waco3 → LEAF1
 
----
+| Slot | NIC | Leaf Port | Notes |
+|------|-----|-----------|-------|
+| 1 | ai0 | 21 | |
+| 2 | ai1 | 22 | |
+| 3 | ai2 | 23 | |
+| 4 | ai3 | 24 | |
+| 5 | ai4 | 20 | |
+| 6 | ai5 | 19 | |
+| 7 | ai6 | 17 | |
+| 8 | ai7 | 18 | |
 
-## Leaf Switch 3 (10.30.64.203)
+### Waco4 → LEAF1
 
-**Connected Hosts**: waco7-8
-**Loopback0**: 192.168.0.2
-**Total Ports**: 8/16 connected ⚠️
+| Slot | NIC | Leaf Port | Notes |
+|------|-----|-----------|-------|
+| 1 | ai0 | 29 | |
+| 2 | ai1 | 30 | |
+| 3 | ai2 | 31 | |
+| 4 | ai3 | 32 | |
+| 5 | ai4 | 28 | |
+| 6 | ai5 | 27 | |
+| 7 | ai6 | 25 | |
+| 8 | ai7 | 26 | |
 
-### Waco7 Connections (8 NICs) - ❌ ALL DOWN
-
-| Port | NIC | Switch IP | Speed | Status |
-|------|-----|-----------|-------|--------|
-| Et1/1 | ai0 | 30.7.0.0/31 | 400G | **notconnect** |
-| Et2/1 | ai1 | 30.7.1.0/31 | 400G | **notconnect** |
-| Et3/1 | ai2 | 30.7.2.0/31 | 400G | **notconnect** |
-| Et4/1 | ai3 | 30.7.3.0/31 | 400G | **notconnect** |
-| Et5/1 | ai4 | 30.7.4.0/31 | 400G | **notconnect** |
-| Et6/1 | ai5 | 30.7.5.0/31 | 400G | **notconnect** |
-| Et7/1 | ai6 | 30.7.6.0/31 | 400G | **notconnect** |
-| Et8/1 | ai7 | 30.7.7.0/31 | 400G | **notconnect** |
-
-**Issue**: Only 4/8 NICs detected on host, all switch ports down
-
-### Waco8 Connections (8 NICs)
-
-| Port | NIC | Switch IP | Speed | Status |
-|------|-----|-----------|-------|--------|
-| Et9/1 | ai0 | 30.8.0.0/31 | 400G | connected |
-| Et10/1 | ai1 | 30.8.1.0/31 | 400G | connected |
-| Et11/1 | ai2 | 30.8.2.0/31 | 400G | connected |
-| Et12/1 | ai3 | 30.8.3.0/31 | 400G | connected |
-| Et13/1 | ai4 | 30.8.4.0/31 | 400G | connected |
-| Et14/1 | ai5 | 30.8.5.0/31 | 400G | connected |
-| Et15/1 | ai6 | 30.8.6.0/31 | 400G | connected |
-| Et16/1 | ai7 | 30.8.7.0/31 | 400G | connected |
-
-**Uplinks**: Et33-40/1 (800G, TO_SPINE QoS)
+**LEAF1 Uplinks to Spine**:
+- Ports 49-56 → SPINE1 ports 49-56
+- Ports 57-64 → SPINE2 ports 49-56
 
 ---
 
-## Network Summary
+## LEAF2 Connections
 
-### Switch IP Ranges
+**Hosts**: Waco5, 6, 7, 8 (32 NICs total)
 
-| Host | NIC Subnet | Range |
-|------|------------|-------|
-| Waco1 | 30.1.0.0/24 | 30.1.0.0 - 30.1.7.1 |
-| Waco2 | 30.2.0.0/24 | 30.2.0.0 - 30.2.7.1 |
-| Waco3 | 30.3.0.0/24 | 30.3.0.0 - 30.3.7.1 |
-| Waco4 | 30.4.0.0/24 | 30.4.0.0 - 30.4.7.1 |
-| Waco5 | 30.5.0.0/24 | 30.5.0.0 - 30.5.7.1 |
-| Waco6 | 30.6.0.0/24 | 30.6.0.0 - 30.6.7.1 |
-| Waco7 | 30.7.0.0/24 | 30.7.0.0 - 30.7.7.1 |
-| Waco8 | 30.8.0.0/24 | 30.8.0.0 - 30.8.7.1 |
+### Waco5 → LEAF2
 
-### Connectivity Status
+| Slot | NIC | Leaf Port | Notes |
+|------|-----|-----------|-------|
+| 1 | ai0 | 5 | |
+| 2 | ai1 | 6 | |
+| 3 | ai2 | 7 | |
+| 4 | ai3 | 8 | |
+| 5 | ai4 | 4 | |
+| 6 | ai5 | 3 | |
+| 7 | ai6 | 1 | |
+| 8 | ai7 | 2 | |
 
-**Fully Connected** (all 8 NICs):
-- ✅ Waco1 (8/8 ports up)
-- ✅ Waco2 (8/8 ports up)
-- ✅ Waco3 (8/8 ports up)
-- ✅ Waco4 (8/8 ports up)
-- ✅ Waco5 (8/8 ports up)
-- ✅ Waco6 (8/8 ports up)
-- ✅ Waco8 (8/8 ports up)
+### Waco6 → LEAF2
 
-**Issues**:
-- ❌ Waco7: 0/8 switch ports connected (all "notconnect")
-  - Host has 4/8 NICs detected
-  - Network links not established
+| Slot | NIC | Leaf Port | Notes |
+|------|-----|-----------|-------|
+| 1 | ai0 | 13 | |
+| 2 | ai1 | 14 | |
+| 3 | ai2 | 15 | |
+| 4 | ai3 | 16 | |
+| 5 | ai4 | 12 | |
+| 6 | ai5 | 11 | |
+| 7 | ai6 | 9 | |
+| 8 | ai7 | 10 | |
 
-**Total**: 56/64 switch ports connected (87.5%)
+### Waco7 → LEAF2
 
----
+| Slot | NIC | Leaf Port | Notes |
+|------|-----|-----------|-------|
+| 1 | ai0 | 21 | |
+| 2 | ai1 | 22 | |
+| 3 | ai2 | 23 | |
+| 4 | ai3 | 24 | |
+| 5 | ai4 | 20 | |
+| 6 | ai5 | 19 | |
+| 7 | ai6 | 17 | |
+| 8 | ai7 | 18 | |
 
-## Topology Notes
+### Waco8 → LEAF2
 
-- **3 Leaf Switches** in Leaf-Spine topology
-- **Each NIC** gets dedicated /31 subnet (point-to-point)
-- **400G links** per NIC
-- **800G uplinks** to spine switches
-- **QoS configured** on uplinks (TO_SPINE)
+| Slot | NIC | Leaf Port | Notes |
+|------|-----|-----------|-------|
+| 1 | ai0 | 29 | |
+| 2 | ai1 | 30 | |
+| 3 | ai2 | 31 | |
+| 4 | ai3 | 32 | |
+| 5 | ai4 | 28 | |
+| 6 | ai5 | 27 | |
+| 7 | ai6 | 25 | |
+| 8 | ai7 | 26 | |
 
-### Leaf to Host Mapping:
-- **Leaf 1 (10.30.64.200)**: Waco1, 2, 3, 4
-- **Leaf 2 (10.30.64.201)**: Waco5, 6
-- **Leaf 3 (10.30.64.203)**: Waco7, 8
-
----
-
-## For RDMA/RoCE Testing
-
-Each NIC has a switch-side IP on the 30.X.Y.Z network.
-These are the IPs used for RoCE traffic between nodes.
-
-Example: Waco3 ai0 ↔ Waco4 ai0
-- Waco3 ai0: 30.3.0.1 (host side)
-- Switch: 30.3.0.0 / 30.4.0.0
-- Waco4 ai0: 30.4.0.1 (host side)
-
-Traffic routes through leaf switches and spine.
+**LEAF2 Uplinks to Spine**:
+- Ports 49-56 → SPINE1 ports 57-64
+- Ports 57-64 → SPINE2 ports 57-64
 
 ---
 
-**Source**: Switch port status as of 2026-03-18
-**Location**: Arista Leaf-Spine network
-**Access**: Leaf switches at 10.30.64.200, 201, 203
+## Port Mapping Pattern
+
+**Slot to Leaf Port Mapping** (consistent across all Wacos):
+
+| Slot | Waco1/5 | Waco2/6 | Waco3/7 | Waco4/8 |
+|------|---------|---------|---------|---------|
+| 1 (ai0) | 5 | 13 | 21 | 29 |
+| 2 (ai1) | 6 | 14 | 22 | 30 |
+| 3 (ai2) | 7 | 15 | 23 | 31 |
+| 4 (ai3) | 8 | 16 | 24 | 32 |
+| 5 (ai4) | 4 | 12 | 20 | 28 |
+| 6 (ai5) | 3 | 11 | 19 | 27 |
+| 7 (ai6) | 1 | 9 | 17 | 25 |
+| 8 (ai7) | 2 | 10 | 18 | 26 |
+
+**Note**: Slot numbering is **non-sequential** on switch ports
+- Slots 1-4 → Ports 5-8, 13-16, 21-24, 29-32
+- Slots 5-8 → Ports 4,3,1,2, 12,11,9,10, 20,19,17,18, 28,27,25,26
 
 ---
 
-## Spine Switches
+## Network Architecture
 
-### Spine Switch (10.30.64.202)
-**Credentials**: admin / Gr33nTr33s  
-**Role**: Aggregates traffic from all 3 leaf switches
+```
+                    ┌─────────────────┐
+                    │   SPINE1        │
+                    │  (120:2011)     │
+                    └────────┬────────┘
+                    49-56 ↓  ↓ 57-64
+                 ┌─────────────────────┐
+          ┌──────┤                     ├──────┐
+          ↓      │                     │      ↓
+    ┌─────────┐  │   ┌─────────────┐  │  ┌─────────┐
+    │  LEAF1  │  │   │   SPINE2    │  │  │  LEAF2  │
+    │(120:2025)│  │   │  (120:2014) │  │  │(120:2013)│
+    └────┬────┘  │   └──────┬──────┘  │  └────┬────┘
+         │       │          │         │       │
+   Waco1-4    49-56 ←──────┴────→ 57-64   Waco5-8
+   (32 NICs)      57-64 ←──────────────→
+```
 
-**Uplink Connections**:
-- Leaf 1 (10.30.64.200): Et33-40/1 → Spine uplinks (800G)
-- Leaf 2 (10.30.64.201): Et33-40/1 → Spine uplinks (800G)
-- Leaf 3 (10.30.64.203): Et33-40/1 → Spine uplinks (800G)
-
-**Total Uplink Capacity**: 3 x 800G = 2.4 Tbps
-
-**QoS**: TO_SPINE marking on all leaf uplinks
+**Topology Type**: Full Mesh 2-Spine / 2-Leaf
+- **Redundancy**: Each leaf connects to BOTH spines
+- **Load Balancing**: ECMP across spine uplinks
+- **Total Capacity**: 64 NICs × 400G = 25.6 Tbps host bandwidth
 
 ---
 
-## Network Summary
+## Spine Interconnect Details
 
-**Topology**: 3-tier Leaf-Spine
-- **Leaf tier**: 3 Arista switches (10.30.64.200/201/203)
-- **Spine tier**: 1+ Arista switches (10.30.64.202 confirmed)
-- **Access**: 64 host NICs at 400G each
-- **Uplinks**: 800G leaf-to-spine links
-- **Data network**: 30.0.0.0/8 (RoCE/RDMA)
-- **Management**: 10.30.64.0/22
+### LEAF1 Uplinks
+- **To SPINE1**: Ports 49-56 → SPINE1 ports 49-56
+- **To SPINE2**: Ports 57-64 → SPINE2 ports 49-56
 
-**Access Details**:
-- **Leaf switches**: admin credentials
-- **Spine switch**: admin / Gr33nTr33s
-- **Console servers**: 
-  - 10.30.64.101: Pen1nfra$ or N0isystem$
-  - 10.30.64.120: Pen1nfra$ or N0isystem$
-  - 10.30.64.199: N0isystem$
+### LEAF2 Uplinks
+- **To SPINE1**: Ports 49-56 → SPINE1 ports 57-64
+- **To SPINE2**: Ports 57-64 → SPINE2 ports 57-64
 
+**Uplink Speed**: 800G per uplink group (8 ports × 100G)
+
+---
+
+## Network Subnets
+
+**Data Network**: 30.0.0.0/8 (RoCE/RDMA traffic)
+**Management Network**: 10.30.64.0/22 (SSH, BMC, console servers)
+
+### Per-Server Allocation
+
+| Server | Data Network | Management IP | BMC IP |
+|--------|--------------|---------------|--------|
+| Waco1 | 30.1.0.0/24 | 10.30.64.21 | 10.30.64.11 |
+| Waco2 | 30.2.0.0/24 | 10.30.64.22 | 10.30.64.12 |
+| Waco3 | 30.3.0.0/24 | 10.30.64.23 | 10.30.64.13 |
+| Waco4 | 30.4.0.0/24 | 10.30.64.24 | 10.30.64.14 |
+| Waco5 | 30.5.0.0/24 | 10.30.64.25 | 10.30.64.15 |
+| Waco6 | 30.6.0.0/24 | 10.30.64.26 | 10.30.64.16 |
+| Waco7 | 30.7.0.0/24 | 10.30.64.27 | 10.30.64.17 |
+| Waco8 | 30.8.0.0/24 | 10.30.64.28 | 10.30.64.18 |
+
+---
+
+## Access Credentials Summary
+
+### Switches
+- **All switches** (LEAF1, LEAF2, SPINE1, SPINE2): admin / Gr33nTr33s
+
+### Console Servers
+- **10.30.64.101**: Pen1nfra$ (primary) or N0isystem$ (alternate)
+- **10.30.64.120**: Pen1nfra$ or N0isystem$
+- **10.30.64.199**: N0isystem$ (primary for this server)
+
+### Servers
+- **All Waco hosts**: ubuntu / amd123
+- **All BMCs**: admin / PenInfra$ or root / Pen1nfra$
+
+---
+
+## Common Switch Commands (Arista EOS)
+
+### Show Commands
+```bash
+# Interface status
+show interfaces status
+
+# Port counters
+show interfaces counters
+
+# BGP status
+show ip bgp summary
+
+# LLDP neighbors
+show lldp neighbors
+
+# Running config
+show running-config
+
+# Specific interface
+show interfaces Ethernet1/1
+
+# Transceivers
+show interfaces transceiver
+```
+
+### Configuration
+```bash
+# Enter config mode
+configure
+
+# Interface configuration
+interface Ethernet1/1
+  description Waco1-ai0
+  speed 400g
+  no shutdown
+```
+
+---
+
+## Traffic Flow Example
+
+**East-West**: Waco1 ai0 (LEAF1) ↔ Waco5 ai0 (LEAF2)
+
+```
+Waco1 ai0 (slot1, LEAF1 port 5)
+    ↓
+LEAF1 port 5
+    ↓
+LEAF1 uplink (port 49-56 or 57-64)
+    ↓
+SPINE1 or SPINE2 (ECMP)
+    ↓
+LEAF2 uplink
+    ↓
+LEAF2 port 5
+    ↓
+Waco5 ai0 (slot1, LEAF2 port 5)
+```
+
+**Hops**: 3 (Leaf → Spine → Leaf)
+**Redundancy**: 2 spine paths available
+
+---
+
+## Network Statistics
+
+**Total Host Ports**: 64 (8 servers × 8 NICs)
+**Total Leaf Ports**: 2 × 32 = 64 ports used for hosts
+**Total Spine Uplinks**: 32 ports (4 uplink groups × 8 ports)
+**Aggregate Bandwidth**: 25.6 Tbps (host) + spine oversubscription
+
+**Link Speeds**:
+- Host NICs: 400G per NIC
+- Leaf-Spine Uplinks: 800G per uplink group (8×100G)
+
+---
+
+## Notes
+
+- **Slot-to-port mapping is non-sequential** (see mapping table)
+- Slot 7 (ai6) → Port 1, Slot 8 (ai7) → Port 2
+- Slot 6 (ai5) → Port 3, Slot 5 (ai4) → Port 4
+- Then Slot 1-4 (ai0-3) → Port 5-8
+- Pattern repeats for each Waco (+8 port offset)
+
+- **All switches accessible via same console server** (10.30.64.120)
+- **Full spine redundancy**: Each leaf has dual uplinks to both spines
+- **ECMP load balancing** across spine paths
+
+---
+
+**Last Updated**: March 20, 2026
+**Source**: User-provided topology mapping
+**Console Server**: 10.30.64.120 (all switches)
+**Credentials**: admin / Gr33nTr33s (all switches)
