@@ -1,0 +1,247 @@
+diff --git a/nic/rudra/src/hydra/nicmgr/plugin/rdma/admincmd_handler.c b/nic/rudra/src/hydra/nicmgr/plugin/rdma/admincmd_handler.c
+index 8931c24a400..a3d711f0596 100644
+--- a/nic/rudra/src/hydra/nicmgr/plugin/rdma/admincmd_handler.c
++++ b/nic/rudra/src/hydra/nicmgr/plugin/rdma/admincmd_handler.c
+@@ -1346,6 +1346,12 @@ eth_rdma_impl_aq_ah_create_hdlr(const eth_rdma_impl_aqcmd_hdlr_params_t *params)
+     bool loopback, is_ipv6;
+     int cos = -1, ack_cos = -1;
+ 
++    // DEBUG: Log before write
++    NICMGR_TRACE_DEBUG("%s: [NicMgr] Creating AH %d at 0x%" PRIx64 " (AT_ENTRY_SIZE=%d)",
++                       eth_lif_name(lif), ah_handle, ah_pa, AT_ENTRY_SIZE_BYTES);
++    NICMGR_TRACE_DEBUG("%s: [NicMgr] Writing %d bytes to offset +0 via hdr_template_write",
++                       eth_lif_name(lif), ah_len);
++
+     sdk_ret_t ret = hdr_template_write(lif, false, wqe->cmd.create_ah.dma_addr,
+                                        ah_pa, ah_len, csum_profile,
+                                        QOS_DSCP_PURPOSE_NONE, &loopback, &is_ipv6,
+@@ -1356,6 +1362,28 @@ eth_rdma_impl_aq_ah_create_hdlr(const eth_rdma_impl_aqcmd_hdlr_params_t *params)
+         return IONIC_V1_ASTS_BAD_ATTR;
+     }
+ 
++    // DEBUG: Read back and verify what was written
++    uint8_t buf_0[16];
++    uint8_t buf_128[16];
++    pal_mem_rd(ah_pa, buf_0, 16, 0);
++    pal_mem_rd(ah_pa + 128, buf_128, 16, 0);
++
++    NICMGR_TRACE_DEBUG("%s: [NicMgr] Offset +0   [0-15]: "
++                       "%02x%02x%02x%02x %02x%02x%02x%02x %02x%02x%02x%02x %02x%02x%02x%02x",
++                       eth_lif_name(lif),
++                       buf_0[0], buf_0[1], buf_0[2], buf_0[3],
++                       buf_0[4], buf_0[5], buf_0[6], buf_0[7],
++                       buf_0[8], buf_0[9], buf_0[10], buf_0[11],
++                       buf_0[12], buf_0[13], buf_0[14], buf_0[15]);
++
++    NICMGR_TRACE_DEBUG("%s: [NicMgr] Offset +128 [0-15]: "
++                       "%02x%02x%02x%02x %02x%02x%02x%02x %02x%02x%02x%02x %02x%02x%02x%02x",
++                       eth_lif_name(lif),
++                       buf_128[0], buf_128[1], buf_128[2], buf_128[3],
++                       buf_128[4], buf_128[5], buf_128[6], buf_128[7],
++                       buf_128[8], buf_128[9], buf_128[10], buf_128[11],
++                       buf_128[12], buf_128[13], buf_128[14], buf_128[15]);
++
+     NICMGR_TRACE_DEBUG("%s: RDMA AQ: Create AH(handle=%d, dma_addr=0x%lx, len=%d, "
+                        "csum=%d, loop=%d, is_ipv6=%d, dscp_offset=%d, ah_pa=0x%" PRIx64 ")", eth_lif_name(lif),
+                        ah_handle, (long unsigned int)wqe->cmd.create_ah.dma_addr, ah_len, csum_profile, loopback,
+@@ -2669,6 +2697,12 @@ eth_rdma_impl_qp_modify(eth_lif_t *lif, const struct ionic_v1_admin_wqe *wqe,
+                 ah_tbl_slot_pa += AT_ENTRY_SIZE_BYTES;
+             }
+         } else {
++            // DEBUG: Log before write
++            NICMGR_TRACE_DEBUG("%s: [NicMgr MODIFY_QP] Writing AH %d at 0x%lx (AT_ENTRY_SIZE=%d)",
++                               eth_lif_name(lif), ah_handle, (long unsigned int)ah_pa, AT_ENTRY_SIZE_BYTES);
++            NICMGR_TRACE_DEBUG("%s: [NicMgr MODIFY_QP] Writing %d bytes to offset +0 via hdr_template_write",
++                               eth_lif_name(lif), ah_len);
++
+             ret = hdr_template_write(lif, false, wqe->cmd.mod_qp.dma_addr,
+                                      ah_pa, ah_len, csum_profile,
+                                      qp_dscp_purpose, &loopback,
+@@ -2680,6 +2714,28 @@ eth_rdma_impl_qp_modify(eth_lif_t *lif, const struct ionic_v1_admin_wqe *wqe,
+                                  eth_lif_name(lif), ret);
+                 return IONIC_V1_ASTS_BAD_ATTR;
+             }
++
++            // DEBUG: Read back and verify what was written
++            uint8_t buf_0[16];
++            uint8_t buf_128[16];
++            pal_mem_rd(ah_pa, buf_0, 16, 0);
++            pal_mem_rd(ah_pa + 128, buf_128, 16, 0);
++
++            NICMGR_TRACE_DEBUG("%s: [NicMgr MODIFY_QP] Offset +0   [0-15]: "
++                               "%02x%02x%02x%02x %02x%02x%02x%02x %02x%02x%02x%02x %02x%02x%02x%02x",
++                               eth_lif_name(lif),
++                               buf_0[0], buf_0[1], buf_0[2], buf_0[3],
++                               buf_0[4], buf_0[5], buf_0[6], buf_0[7],
++                               buf_0[8], buf_0[9], buf_0[10], buf_0[11],
++                               buf_0[12], buf_0[13], buf_0[14], buf_0[15]);
++
++            NICMGR_TRACE_DEBUG("%s: [NicMgr MODIFY_QP] Offset +128 [0-15]: "
++                               "%02x%02x%02x%02x %02x%02x%02x%02x %02x%02x%02x%02x %02x%02x%02x%02x",
++                               eth_lif_name(lif),
++                               buf_128[0], buf_128[1], buf_128[2], buf_128[3],
++                               buf_128[4], buf_128[5], buf_128[6], buf_128[7],
++                               buf_128[8], buf_128[9], buf_128[10], buf_128[11],
++                               buf_128[12], buf_128[13], buf_128[14], buf_128[15]);
+         }
+         ipv6_addr_to_str(&dest_addr, dest_addr_str, INET6_ADDRSTRLEN);
+         NICMGR_TRACE_DEBUG("%s: RDMA AQ: Modify QP AH(handle=%d, dma_addr=0x%lx, "
+diff --git a/nic/rudra/src/hydra/nicmgr/plugin/rdma/salina/eth_lif_rdma.cc b/nic/rudra/src/hydra/nicmgr/plugin/rdma/salina/eth_lif_rdma.cc
+index b24d991133f..3a32cc8a224 100644
+--- a/nic/rudra/src/hydra/nicmgr/plugin/rdma/salina/eth_lif_rdma.cc
++++ b/nic/rudra/src/hydra/nicmgr/plugin/rdma/salina/eth_lif_rdma.cc
+@@ -502,6 +502,14 @@ rdma_handle_create_ah(uint32_t lif_id, uint64_t ah_base_addr,
+     uint32_t ah_len = wqe->cmd.create_ah.length;
+     uint32_t csum_profile = wqe->cmd.create_ah.csum_profile;
+ 
++    // DEBUG: Log write operations
++    NIC_LOG_DEBUG("lif-{}: [NicMgr] Creating AH {} at 0x{:x} (AT_ENTRY_SIZE={})",
++                  lif_id, wqe->cmd.create_ah.id_ver, ah_pa, AT_ENTRY_SIZE_BYTES);
++    NIC_LOG_DEBUG("lif-{}: [NicMgr] EDMA: host 0x{:x} -> HBM 0x{:x}, {} bytes to offset +0",
++                  lif_id, wqe->cmd.create_ah.dma_addr, ah_pa, ah_len);
++    NIC_LOG_DEBUG("lif-{}: [NicMgr] Writing metadata at offset +{}: ah_len={}, csum_profile={}",
++                  lif_id, HDR_TEMPLATE_T_SIZE_BYTES, ah_len, csum_profile);
++
+     // Copy the AH template into ah pa
+     edma_cb(user_data, wqe->cmd.create_ah.dma_addr, lif_id, ah_pa,
+             false, ah_len);
+@@ -509,6 +517,31 @@ rdma_handle_create_ah(uint32_t lif_id, uint64_t ah_base_addr,
+     WRITE_MEM(size_pa, (uint8_t *)&ah_len, sizeof(ah_len), 0);
+     WRITE_MEM(size_pa + sizeof(ah_len), (uint8_t *)&csum_profile,
+               sizeof(csum_profile), 0);
++
++    // DEBUG: Read back and verify what was written
++    uint8_t buf_0[16];
++    uint8_t buf_128[16];
++    READ_MEM(ah_pa, buf_0, 16, 0);
++    READ_MEM(ah_pa + 128, buf_128, 16, 0);
++
++    NIC_LOG_DEBUG("lif-{}: [NicMgr] Offset +0   [0-15]: "
++                  "{:02x}{:02x}{:02x}{:02x} {:02x}{:02x}{:02x}{:02x} "
++                  "{:02x}{:02x}{:02x}{:02x} {:02x}{:02x}{:02x}{:02x}",
++                  lif_id,
++                  buf_0[0], buf_0[1], buf_0[2], buf_0[3],
++                  buf_0[4], buf_0[5], buf_0[6], buf_0[7],
++                  buf_0[8], buf_0[9], buf_0[10], buf_0[11],
++                  buf_0[12], buf_0[13], buf_0[14], buf_0[15]);
++
++    NIC_LOG_DEBUG("lif-{}: [NicMgr] Offset +128 [0-15]: "
++                  "{:02x}{:02x}{:02x}{:02x} {:02x}{:02x}{:02x}{:02x} "
++                  "{:02x}{:02x}{:02x}{:02x} {:02x}{:02x}{:02x}{:02x}",
++                  lif_id,
++                  buf_128[0], buf_128[1], buf_128[2], buf_128[3],
++                  buf_128[4], buf_128[5], buf_128[6], buf_128[7],
++                  buf_128[8], buf_128[9], buf_128[10], buf_128[11],
++                  buf_128[12], buf_128[13], buf_128[14], buf_128[15]);
++
+     return IONIC_V1_ASTS_OK;
+ }
+ 
+diff --git a/nic/rudra/test/hydra/gtest/aq/main.cc b/nic/rudra/test/hydra/gtest/aq/main.cc
+index 3d270b45d8a..cf0ad7a84ae 100644
+--- a/nic/rudra/test/hydra/gtest/aq/main.cc
++++ b/nic/rudra/test/hydra/gtest/aq/main.cc
+@@ -45,6 +45,7 @@ uint32_t g_rx_key_id1;
+ 
+ uint32_t g_r_key1 = 0x1234;
+ uint64_t g_r_va1 = 0x12345678;
++uint64_t g_ah_base_addr = 0;  // Will be set after init_lif
+ 
+ extern utils::Mem *g_host_mem;
+ 
+@@ -108,6 +109,11 @@ main (int argc, char **argv)
+     g_tx_hdr_tmpl1.udp.len = htons(META_ROCE_TOT_LEN_METH_RETH + PAYLOAD_SIZE64 - 20);
+     g_ah_id1 = g_rdma_driver.create_ht(g_lif_id1, (uint8_t *)&g_tx_hdr_tmpl1, sizeof(g_tx_hdr_tmpl1));
+ 
++    // DEBUG: Get AH base address from memory region
++    // For AQ mode, the address is set during init_lif
++    // We'll dump it after create_qp when we know the address is valid
++    // (skipping dump here to avoid compilation issues)
++
+     // create reverse header template
+     memcpy(g_rx_hdr_tmpl1.eth.h_dest, g_smac1, sizeof(g_rx_hdr_tmpl1.eth.h_dest));
+     memcpy(g_rx_hdr_tmpl1.eth.h_source, g_dmac1, sizeof(g_rx_hdr_tmpl1.eth.h_source));
+@@ -146,6 +152,9 @@ main (int argc, char **argv)
+     g_qp2.rx_hdr_tmpl = &g_rx_hdr_tmpl1;
+     g_rdma_driver.create_qp(&g_qp2);
+ 
++    // DEBUG: Skip dump for now - will rely on NicMgr debug logs
++    printf("\n>>> AT Entry Debug: Check NicMgr logs below for offset +0 and +128 contents <<<\n");
++
+     // create mask packet
+     // mask verification of ip checksum
+     struct meta_roce_meth_reth_pkt_t *mask;
+diff --git a/nic/rudra/test/hydra/hydra_gtest_base.cc b/nic/rudra/test/hydra/hydra_gtest_base.cc
+index fcbec391b77..3369eb3caf7 100644
+--- a/nic/rudra/test/hydra/hydra_gtest_base.cc
++++ b/nic/rudra/test/hydra/hydra_gtest_base.cc
+@@ -36,6 +36,56 @@ hexdump (uint64_t addr, uint8_t *src, uint32_t size)
+         printf("\n");
+ }
+ 
++void
++dump_at_entry(const char *label, uint64_t ah_base_addr, uint32_t ah_id,
++              uint32_t entry_size) {
++    printf("\n========================================\n");
++    printf("=== %s: AT Entry %d ===\n", label, ah_id);
++    printf("Address: 0x%lx, Entry Size: %d bytes\n",
++           ah_base_addr + ah_id * entry_size, entry_size);
++    printf("========================================\n");
++
++    uint8_t buf_0[128];
++    uint8_t buf_128[128];
++    uint64_t at_addr = ah_base_addr + ah_id * entry_size;
++
++    // Read offset +0 (data template) using model_sim API
++    read_mem(at_addr, buf_0, 128);
++    printf("\nOffset +0 (Data Path Header Template - 128 bytes):\n");
++    hexdump(0, buf_0, 128);
++
++    // Read offset +128 (ACK template or metadata?) using model_sim API
++    read_mem(at_addr + 128, buf_128, 128);
++    printf("\nOffset +128 (ACK Path or Metadata? - 128 bytes):\n");
++    hexdump(128, buf_128, 128);
++
++    // Compare first 64 bytes of both sections
++    int diff_count = 0;
++    for (int i = 0; i < 64; i++) {
++        if (buf_0[i] != buf_128[i]) diff_count++;
++    }
++
++    printf("\n--- Analysis ---\n");
++    printf("Bytes differing between +0 and +128 (first 64 bytes): %d/%d\n",
++           diff_count, 64);
++
++    // Check if offset +128 looks like duplicate header template
++    bool ack_has_mac = (buf_128[0] != 0 || buf_128[1] != 0 ||
++                        buf_128[2] != 0 || buf_128[3] != 0);
++    bool same_as_data = (memcmp(buf_0, buf_128, 64) == 0);
++
++    if (same_as_data) {
++        printf("Result: DUPLICATE - Offset +128 is identical copy of +0\n");
++    } else if (ack_has_mac) {
++        printf("Result: DIFFERENT TEMPLATE - Offset +128 has different content\n");
++    } else {
++        printf("Result: METADATA/ZEROS - Offset +128 appears uninitialized\n");
++        printf("  First 4 bytes: 0x%02x 0x%02x 0x%02x 0x%02x\n",
++               buf_128[0], buf_128[1], buf_128[2], buf_128[3]);
++    }
++    printf("========================================\n\n");
++}
++
+ // get buffer completions
+ int
+ hydra_test_base::getCompletions(uint16_t lif_id, enum queue_type qtype,
+diff --git a/nic/rudra/test/hydra/hydra_gtest_base.hpp b/nic/rudra/test/hydra/hydra_gtest_base.hpp
+index 69631c175ca..41de997dcbf 100644
+--- a/nic/rudra/test/hydra/hydra_gtest_base.hpp
++++ b/nic/rudra/test/hydra/hydra_gtest_base.hpp
+@@ -125,4 +125,8 @@ protected:
+                      bool brnr=false, uint32_t brnr_bitmap = 0);
+ };
+ 
++// Debug utility for AT entry verification
++void dump_at_entry(const char *label, uint64_t ah_base_addr,
++                   uint32_t ah_id, uint32_t entry_size);
++
+ #endif
