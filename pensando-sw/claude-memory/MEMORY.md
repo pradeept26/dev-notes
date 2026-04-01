@@ -5,8 +5,7 @@
 - Complete documentation: hardware setups, automation scripts, workflows
 - 6 Vulcano setups (48 NICs, 96 consoles), multiple Salina setups
 - YAML-driven automation for console mgr, firmware updates, IB testing
-- See [dev-notes-reference.md](dev-notes-reference.md) for full details
-- See [automation-scripts.md](automation-scripts.md) for script reference
+- See [dev-notes-complete.md](dev-notes-complete.md) for complete reference
 
 ## Memory Sync Protocol
 **IMPORTANT: After updating this memory file, ALWAYS run:**
