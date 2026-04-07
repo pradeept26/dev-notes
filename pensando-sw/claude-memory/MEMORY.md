@@ -163,9 +163,15 @@ DMA_MODE=uxdma ASIC=vulcano P4_PROGRAM=hydra \
 ```
 
 ### DOL Tests (Integration)
+**See:** [project_hydra_vulcano_dol_setup.md](project_hydra_vulcano_dol_setup.md) for complete reference
+
+Build target (NOT x86-dol — that doesn't exist for vulcano):
 ```bash
-# Requires both x86 and sim builds
-PIPELINE=rudra ASIC=vulcano P4_PROGRAM=hydra PCIEMGR_IF=1 DMA_MODE=uxdma PROFILE=zephyr \
+make -f Makefile.build build-rudra-vulcano-hydra-sw-emu
+```
+Run (from /sw/nic, no tarball extraction needed in same container):
+```bash
+PIPELINE=rudra ASIC=vulcano P4_PROGRAM=hydra PCIEMGR_IF=1 DMA_MODE=uxdma PROFILE=qemu \
   rudra/test/tools/dol/rundol.sh --pipeline rudra --topo rdma_hydra --feature rdma_hydra --sub rdma_write --nohntap
 ```
 
