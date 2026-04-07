@@ -2,6 +2,16 @@
 
 Automation scripts for managing Vulcano NICs and their consoles.
 
+## Build Automation Architecture
+
+All build scripts (`build-hydra-*.sh`) share common functionality via `build-common.sh`:
+- ✅ **DRY principle**: ~300 lines of shared code extracted to library
+- ✅ **Consistent flags**: All scripts support --clean, --skip-submod, --skip-assets, --clean-docker
+- ✅ **Uniform behavior**: tmux management, Docker detection, progress monitoring
+- ✅ **Easy to extend**: New build types just define build command and output verification
+
+**Common library:** `build-common.sh` (sourced by all build scripts)
+
 ## Available Scripts
 
 ### 1. build-hydra-gtest.sh - Automated Hydra GTest Build (NEW!)
