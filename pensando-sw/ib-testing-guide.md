@@ -27,6 +27,12 @@ It calls the full-featured `~/run_ib_bench.py` with proper arguments for Excel g
 
 # Test both write modes
 ~/dev-notes/pensando-sw/scripts/run-ib-test.sh smc1-smc2 --qp 4 --write-mode both
+
+# Custom QP count with TX/RX depth
+~/dev-notes/pensando-sw/scripts/run-ib-test.sh smc1-smc2 --qp 4094 --tx-depth 16 --rx-depth 16 --iter 10
+
+# Test specific interface (e.g., benic8p1)
+~/dev-notes/pensando-sw/scripts/run-ib-test.sh smc1-smc2 --interface benic8p1 --qp 4094 --tx-depth 16 --rx-depth 16 --iter 10
 ```
 
 ### MSN Context Validation Tests (128-entry window)
@@ -80,18 +86,22 @@ python3 ~/run_ib_bench.py \
 **Connection:**
 - `--server_ip`: Server IP address
 - `--client_ip`: Client IP address
+- `--server_intf`: Server interface name (e.g., benic1p1, benic8p1)
+- `--client_intf`: Client interface name (e.g., benic1p1, benic8p1)
 - `--username`: SSH username (default: root)
 - `--password`: SSH password (default: docker)
 - `--local_mode`: Run on same host (loopback)
 
 **Test Configuration:**
-- `--qp_num <N>`: Single QP count
+- `--qp_num <N>`: Single QP count (supports any value, e.g., 1, 4, 4094)
 - `--max_qp_num <N>`: Test powers of 2 up to N (e.g., 16 → tests 1,2,4,8,16)
 - `--num_iter <N>`: Iterations per test (default: 1000)
 - `--direction <uni|bi|both>`: Unidirectional, bidirectional, or both
 - `--write_mode <write|write_with_imm|both>`: RDMA write variants
+- `--tx_depth <N>`: TX depth (-t flag for ib_write_bw)
+- `--rx_depth <N>`: RX depth (-r flag for ib_write_bw)
 - `--repeat <N>`: Number of repetitions
-- `--timeout <sec>`: Client idle timeout (default: 20)
+- `--timeout <sec>`: Client idle timeout in seconds (default: 600)
 
 **Hydra-Specific:**
 - `--mode <hydra|mrc|rocev2>`: Platform mode (default: hydra)
@@ -212,6 +222,16 @@ Add these shortcuts to your workflow:
 **"run ib full"** or **"test ib comprehensive"**
 ```bash
 ~/dev-notes/pensando-sw/scripts/run-ib-test.sh smc1-smc2 --max-qp 16 --direction both --write-mode both --xlsx
+```
+
+**"test high qp count"** - Test with custom TX/RX depth
+```bash
+~/dev-notes/pensando-sw/scripts/run-ib-test.sh smc1-smc2 --qp 4094 --tx-depth 16 --rx-depth 16 --iter 10
+```
+
+**"test specific interface"** - Test using benic8p1 interface
+```bash
+~/dev-notes/pensando-sw/scripts/run-ib-test.sh smc1-smc2 --interface benic8p1 --qp 4094 --tx-depth 16 --rx-depth 16 --iter 10
 ```
 
 ---

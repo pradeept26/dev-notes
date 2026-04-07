@@ -35,20 +35,27 @@ ${YELLOW}Presets:${NC}
   custom         Custom server/client IPs (use --server and --client)
 
 ${YELLOW}Common Options:${NC}
-  --qp <num>           Single QP count (e.g., 1, 2, 4, 8)
+  --qp <num>           Single QP count (e.g., 1, 2, 4, 8, 4094)
   --max-qp <num>       Test powers of 2 up to this (e.g., 16 tests 1,2,4,8,16)
   --iter <num>         Number of iterations (default: 1000)
+  --interface <name>   Network interface to use (e.g., benic1p1, benic8p1)
   --direction <uni|bi|both>  Traffic direction (default: uni)
   --write-mode <write|write_with_imm|both>  Write mode (default: write)
   --rcn <enable|disable|both>  RCN mode (default: none)
   --round-robin <1-15>  Round-robin burst value
   --max-msg-size <size>  Max message size (e.g., 8M, 1G)
+  --tx-depth <num>     TX depth (-t flag, default: auto)
+  --rx-depth <num>     RX depth (-r flag, default: auto)
+  --timeout <sec>      Client idle timeout in seconds (default: 600)
   --xlsx               Generate Excel output
   --repeat <num>       Number of test repetitions (default: 1)
 
 ${YELLOW}Examples:${NC}
   # Basic test: SMC1→SMC2 with 4 QPs
   $0 smc1-smc2 --qp 4
+
+  # Test specific interface with custom QP and TX/RX depth
+  $0 smc1-smc2 --interface benic8p1 --qp 4094 --tx-depth 16 --rx-depth 16 --iter 10
 
   # Comprehensive: All QPs up to 16, both directions, with Excel
   $0 smc1-smc2 --max-qp 16 --direction both --xlsx
@@ -119,11 +126,15 @@ esac
 # Parse additional options
 QP_ARG=""
 ITER_ARG="--num_iter $DEFAULT_ITER"
+INTERFACE_ARG=""
 DIRECTION_ARG=""
 WRITE_MODE_ARG=""
 RCN_ARG=""
 RR_BURST_ARG=""
 MAX_MSG_SIZE_ARG=""
+TX_DEPTH_ARG=""
+RX_DEPTH_ARG=""
+TIMEOUT_ARG=""
 XLSX_ARG=""
 REPEAT_ARG=""
 MODE_ARG="--mode $DEFAULT_MODE"
@@ -140,6 +151,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --iter)
             ITER_ARG="--num_iter $2"
+            shift 2
+            ;;
+        --interface)
+            INTERFACE_ARG="--server_intf $2 --client_intf $2"
             shift 2
             ;;
         --direction)
@@ -160,6 +175,18 @@ while [[ $# -gt 0 ]]; do
             ;;
         --max-msg-size)
             MAX_MSG_SIZE_ARG="--max_msg_size $2"
+            shift 2
+            ;;
+        --tx-depth)
+            TX_DEPTH_ARG="--tx_depth $2"
+            shift 2
+            ;;
+        --rx-depth)
+            RX_DEPTH_ARG="--rx_depth $2"
+            shift 2
+            ;;
+        --timeout)
+            TIMEOUT_ARG="--timeout $2"
             shift 2
             ;;
         --xlsx)
@@ -215,12 +242,16 @@ CMD="$CMD --username $DEFAULT_USER"
 CMD="$CMD --password $DEFAULT_PASS"
 CMD="$CMD $MODE_ARG"
 CMD="$CMD $ITER_ARG"
+[[ -n "$INTERFACE_ARG" ]] && CMD="$CMD $INTERFACE_ARG"
 [[ -n "$QP_ARG" ]] && CMD="$CMD $QP_ARG"
 [[ -n "$DIRECTION_ARG" ]] && CMD="$CMD $DIRECTION_ARG"
 [[ -n "$WRITE_MODE_ARG" ]] && CMD="$CMD $WRITE_MODE_ARG"
 [[ -n "$RCN_ARG" ]] && CMD="$CMD $RCN_ARG"
 [[ -n "$RR_BURST_ARG" ]] && CMD="$CMD $RR_BURST_ARG"
 [[ -n "$MAX_MSG_SIZE_ARG" ]] && CMD="$CMD $MAX_MSG_SIZE_ARG"
+[[ -n "$TX_DEPTH_ARG" ]] && CMD="$CMD $TX_DEPTH_ARG"
+[[ -n "$RX_DEPTH_ARG" ]] && CMD="$CMD $RX_DEPTH_ARG"
+[[ -n "$TIMEOUT_ARG" ]] && CMD="$CMD $TIMEOUT_ARG"
 [[ -n "$XLSX_ARG" ]] && CMD="$CMD $XLSX_ARG"
 [[ -n "$REPEAT_ARG" ]] && CMD="$CMD $REPEAT_ARG"
 [[ -n "$OUTPUT_DIR_ARG" ]] && CMD="$CMD $OUTPUT_DIR_ARG"

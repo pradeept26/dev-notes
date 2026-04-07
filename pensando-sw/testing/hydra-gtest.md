@@ -4,7 +4,32 @@ Automated testing for hydra RDMA implementation using Google Test framework.
 
 ## Quick Start
 
-Use the helper script for easy gtest operations:
+### Fully Automated Build (Recommended)
+
+**One-command build from scratch:**
+```bash
+# Complete automation: tmux, submodules, docker, assets, build
+~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh
+
+# With options
+~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh --clean          # Clean before build
+~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh --skip-submod    # Skip submodule update
+~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh --skip-assets    # Skip pull-assets
+```
+
+**What it does:**
+1. ✓ Checks/creates tmux session `pensando-sw`
+2. ✓ Updates git submodules (outside Docker)
+3. ✓ Cleans up old Docker containers
+4. ✓ Launches Docker container
+5. ✓ Pulls assets (inside Docker)
+6. ✓ Optionally runs make clean (with `--clean`)
+7. ✓ Builds hydra gtest (15-30 minutes)
+8. ✓ Reports completion with next steps
+
+### Manual Build (Inside Docker)
+
+If you're already in Docker and just want to build:
 
 ```bash
 # Build gtests
