@@ -8,7 +8,28 @@ type: reference
 
 **Quick Reference:** Complete documentation at `~/dev-notes/pensando-sw/testing/hydra-gtest.md`
 
-### Helper Script (Recommended)
+### Fully Automated Build (BEST - Use This!)
+
+**One command to handle everything:**
+```bash
+# Complete automation: tmux, submodules, docker, assets, build
+~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh
+
+# With options
+~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh --clean       # Clean before build
+~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh --skip-submod # Skip submodule update
+~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh --skip-assets # Skip pull-assets
+```
+
+**What `build-hydra-gtest.sh` does:**
+1. Checks/creates tmux session
+2. Updates submodules (outside Docker)
+3. Cleans up old Docker containers
+4. Launches Docker
+5. Pulls assets
+6. Builds gtest (15-30 min)
+
+### Manual Helper Scripts (Inside Docker)
 
 **Location:** `~/dev-notes/pensando-sw/scripts/run-hydra-gtest.sh`
 
@@ -24,9 +45,6 @@ type: reference
 
 # Check status
 ~/dev-notes/pensando-sw/scripts/run-hydra-gtest.sh status
-
-# Clean build artifacts
-~/dev-notes/pensando-sw/scripts/run-hydra-gtest.sh clean
 ```
 
 ### Manual Commands (if needed)

@@ -5,7 +5,8 @@
 - Complete documentation: hardware setups, automation scripts, workflows, testing guides
 - 6 Vulcano setups (48 NICs, 96 consoles), multiple Salina setups
 - YAML-driven automation for console mgr, firmware updates, IB testing
-- **GTest automation**: `~/dev-notes/pensando-sw/scripts/run-hydra-gtest.sh`
+- **GTest full automation**: `~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh` (tmux, submod, docker, build)
+- **GTest manual helpers**: `~/dev-notes/pensando-sw/scripts/run-hydra-gtest.sh` (build, test, status)
 - See [dev-notes-complete.md](dev-notes-complete.md) for complete reference
 - See [testing-gtest.md](testing-gtest.md) for gtest workflow
 
@@ -134,16 +135,22 @@ make -f Makefile.build build-rudra-salina-hydra-ainic-bundle-base
 ### GTest (Unit Tests)
 **See:** [testing-gtest.md](testing-gtest.md) for complete reference
 
-**Helper script (recommended):**
+**Fully automated (BEST - one command does everything):**
 ```bash
-# Build (inside Docker)
+# Complete automation: tmux, submodules, docker, assets, build
+~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh
+
+# With options
+~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh --clean
+```
+
+**Manual helpers (if already in Docker):**
+```bash
+# Build
 ~/dev-notes/pensando-sw/scripts/run-hydra-gtest.sh build
 
-# Run specific test
+# Run test
 ~/dev-notes/pensando-sw/scripts/run-hydra-gtest.sh test resp_rx.invalid_path_id_nak
-
-# Run all tests
-~/dev-notes/pensando-sw/scripts/run-hydra-gtest.sh all
 ```
 
 **Manual (if needed):**
