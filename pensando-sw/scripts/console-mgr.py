@@ -20,6 +20,8 @@ Examples:
 
 import argparse
 import sys
+import os
+import time
 from pathlib import Path
 from typing import Optional
 
@@ -29,40 +31,132 @@ sys.path.insert(0, str(Path(__file__).parent))
 from console_lib import ConsoleManager, format_results
 
 
+def interactive_console(setup_name: str, nic_id: str, console_type: str, clear_line: bool = True) -> int:
+    """
+    Open an interactive telnet console session.
+
+    Args:
+        setup_name: Setup name (e.g., 'waco2')
+        nic_id: NIC ID (e.g., 'ai0')
+        console_type: Console type ('vulcano', 'suc', or 'a35')
+        clear_line: Whether to clear the console line before connecting
+
+    Returns:
+        Exit code
+    """
+    # Initialize console manager
+    try:
+        mgr = None
+        for dir_path in [Path(__file__).parent.parent / 'hardware' / 'vulcano' / 'data',
+                         Path(__file__).parent.parent / 'hardware' / 'salina' / 'data']:
+            if dir_path.exists():
+                try:
+                    temp_mgr = ConsoleManager(str(dir_path))
+                    if temp_mgr.get_setup(setup_name):
+                        mgr = temp_mgr
+                        break
+                except:
+                    pass
+
+        if not mgr:
+            mgr = ConsoleManager(str(Path(__file__).parent.parent / 'hardware' / 'vulcano' / 'data'))
+    except Exception as e:
+        print(f"ERROR: Failed to initialize console manager: {e}")
+        return 1
+
+    # Get console info
+    console_info = mgr.get_console_info(setup_name, nic_id, console_type)
+    if not console_info:
+        print(f"ERROR: Console not found for {setup_name}/{nic_id}/{console_type}")
+        print(f"Available setups: {', '.join(mgr.list_setups())}")
+        return 1
+
+    host, port = console_info
+
+    print(f"========================================")
+    print(f"Interactive Console Session")
+    print(f"========================================")
+    print(f"Setup:   {setup_name}")
+    print(f"NIC:     {nic_id}")
+    print(f"Console: {console_type}")
+    print(f"Server:  {host}:{port}")
+    print(f"========================================")
+    print()
+
+    # Try to clear line if requested
+    if clear_line:
+        from console_lib import ConsoleSession
+
+        # Simply try to clear the line via console server management
+        # without holding the connection
+        session = ConsoleSession(host, port, auto_clear=False)
+        line_number = port - 2000
+
+        print("Attempting to clear console line via management interface...")
+        if session.clear_console_line(line_number):
+            print("Line cleared, waiting 2 seconds for full release...")
+            time.sleep(2)
+        else:
+            print("Warning: Could not clear line, trying direct connection anyway...")
+            print()
+
+    print(f"Connecting to telnet {host} {port}...")
+    print()
+    print(f"TIP: Once connected, type a command (e.g., 'show version') to get the prompt")
+    print(f"     or just press Enter a few times")
+    print()
+    print(f"To exit: Ctrl+] then type 'quit'")
+    print()
+    time.sleep(1)
+
+    # Execute telnet directly - pass control to user
+    os.execvp('telnet', ['telnet', host, str(port)])
+
+    return 0
+
+
 # Predefined commands
-# Note: Vulcano and SuC consoles have different command syntax
+# Note: Vulcano, SuC, and a35 (Salina) consoles have different command syntax
 COMMANDS = {
     'version': {
         'vulcano': ['show version'],  # Vulcano-specific command
-        'suc': ['version']             # SuC-specific command
+        'suc': ['version'],            # SuC-specific command
+        'a35': ['show version']        # Salina a35 console (similar to Vulcano)
     },
     'reboot': {
         'vulcano': None,  # DO NOT reboot Vulcano directly - use SuC instead!
-        'suc': ['kernel reboot']  # Reboots the Vulcano kernel from SuC
+        'suc': ['kernel reboot'],  # Reboots the Vulcano kernel from SuC
+        'a35': ['reboot']  # Salina reboot (no SuC on Salina)
     },
     'uptime': {
         'vulcano': ['uptime'],
-        'suc': ['uptime']
+        'suc': ['uptime'],
+        'a35': ['uptime']
     },
     'status': {
         'vulcano': ['show status', 'show device'],
-        'suc': ['status']
+        'suc': ['status'],
+        'a35': ['show status', 'show device']
     },
     'device': {
         'vulcano': ['show device'],
-        'suc': ['show device']
+        'suc': ['show device'],
+        'a35': ['show device']
     },
     'dmesg': {
         'vulcano': ['dmesg | tail -30'],
-        'suc': ['dmesg | tail -30']
+        'suc': ['dmesg | tail -30'],
+        'a35': ['dmesg | tail -30']
     },
     'ip': {
         'vulcano': ['ip addr show', 'ip route show'],
-        'suc': ['ip addr show', 'ip route show']
+        'suc': ['ip addr show', 'ip route show'],
+        'a35': ['ip addr show', 'ip route show']
     },
     'help': {
         'vulcano': ['help'],
-        'suc': ['help']
+        'suc': ['help'],
+        'a35': ['help']
     }
 }
 
@@ -91,8 +185,8 @@ def main():
     # Required arguments
     parser.add_argument('--setup', required=True,
                        help='Setup name (smc1, smc2, gt1, gt4, waco5, waco6)')
-    parser.add_argument('--console', required=True, choices=['vulcano', 'suc'],
-                       help='Console type: vulcano or suc')
+    parser.add_argument('--console', required=True, choices=['vulcano', 'suc', 'a35'],
+                       help='Console type: vulcano, suc, or a35 (for Salina)')
 
     # Target selection (mutually exclusive)
     target_group = parser.add_mutually_exclusive_group(required=True)
@@ -107,6 +201,8 @@ def main():
                        help='Predefined command to execute')
     parser.add_argument('--cmd',
                        help='Custom command to execute')
+    parser.add_argument('--interactive', action='store_true',
+                       help='Interactive console session (opens telnet directly)')
     parser.add_argument('--no-clear', action='store_true',
                        help='Do not clear console line before execution')
     parser.add_argument('--serial', action='store_true',
@@ -114,10 +210,19 @@ def main():
 
     # Configuration
     parser.add_argument('--yaml-dir',
-                       default=str(Path(__file__).parent.parent / 'hardware' / 'vulcano' / 'data'),
-                       help='Directory containing YAML setup files')
+                       help='Directory containing YAML setup files (auto-detected if not specified)')
 
     args = parser.parse_args()
+
+    # Handle interactive mode
+    if args.interactive:
+        if args.all:
+            parser.error('Interactive mode requires --nic (cannot use --all)')
+        if args.command or args.cmd:
+            parser.error('Interactive mode does not use commands')
+
+        # Interactive mode - open telnet connection directly
+        return interactive_console(args.setup, args.nic, args.console, not args.no_clear)
 
     # Validate command
     if not args.command and not args.cmd:
@@ -126,9 +231,40 @@ def main():
     if args.command and args.cmd:
         parser.error('Cannot specify both predefined command and --cmd')
 
+    # Auto-detect YAML directory if not specified
+    if not args.yaml_dir:
+        # Try Vulcano first, then Salina
+        base_path = Path(__file__).parent.parent / 'hardware'
+        vulcano_dir = base_path / 'vulcano' / 'data'
+        salina_dir = base_path / 'salina' / 'data'
+
+        # Try both directories and merge
+        yaml_dir = None
+        if vulcano_dir.exists():
+            yaml_dir = str(vulcano_dir)
+        if salina_dir.exists():
+            yaml_dir = str(salina_dir) if not yaml_dir else yaml_dir
+    else:
+        yaml_dir = args.yaml_dir
+
     # Initialize console manager
     try:
-        mgr = ConsoleManager(args.yaml_dir)
+        # Try to load from both Vulcano and Salina directories
+        mgr = None
+        for dir_path in [Path(__file__).parent.parent / 'hardware' / 'vulcano' / 'data',
+                         Path(__file__).parent.parent / 'hardware' / 'salina' / 'data']:
+            if dir_path.exists():
+                try:
+                    temp_mgr = ConsoleManager(str(dir_path))
+                    if temp_mgr.get_setup(args.setup):
+                        mgr = temp_mgr
+                        break
+                except:
+                    pass
+
+        if not mgr:
+            # Fall back to specified or default directory
+            mgr = ConsoleManager(yaml_dir if yaml_dir else str(Path(__file__).parent.parent / 'hardware' / 'vulcano' / 'data'))
     except Exception as e:
         print(f"ERROR: Failed to initialize console manager: {e}")
         return 1

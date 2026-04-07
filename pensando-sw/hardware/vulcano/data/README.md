@@ -4,8 +4,25 @@ Structured YAML data files for automation and scripting.
 
 ## Files
 
+### SMC Setups
 - **`smc1.yml`** - SMC1 setup configuration (10.30.75.198)
 - **`smc2.yml`** - SMC2 setup configuration (10.30.75.204)
+
+### Waco Cluster (Arista Leaf-Spine)
+- **`waco5.yml`** - Waco5 setup configuration (10.30.64.25) - Leaf1
+- **`waco6.yml`** - Waco6 setup configuration (10.30.64.26) - Leaf1
+- **`waco7.yml`** - Waco7 setup configuration (10.30.64.27) - Leaf2
+- **`waco8.yml`** - Waco8 setup configuration (10.30.64.28) - Leaf2
+
+### GT Setups
+- **`gt1.yml`** - GT1 setup configuration (10.30.69.101)
+- **`gt2.yml`** - GT2 setup configuration
+- **`gt4.yml`** - GT4 setup configuration (10.30.69.98)
+
+### Other Setups
+- **`waco3.yml`** - Waco3 setup configuration (10.30.64.23)
+- **`waco4.yml`** - Waco4 setup configuration (10.30.64.24)
+- **`kenya-*.yml`** - Kenya performance test setups
 
 ## Structure
 

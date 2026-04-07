@@ -1,5 +1,14 @@
 # Pensando SW Development - Auto Memory
 
+## Dev-Notes Context Repository
+**Location:** `~/dev-notes/pensando-sw/`
+- Complete documentation: hardware setups, automation scripts, workflows, testing guides
+- 6 Vulcano setups (48 NICs, 96 consoles), multiple Salina setups
+- YAML-driven automation for console mgr, firmware updates, IB testing
+- **GTest automation**: `~/dev-notes/pensando-sw/scripts/run-hydra-gtest.sh`
+- See [dev-notes-complete.md](dev-notes-complete.md) for complete reference
+- See [testing-gtest.md](testing-gtest.md) for gtest workflow
+
 ## Memory Sync Protocol
 **IMPORTANT: After updating this memory file, ALWAYS run:**
 ```bash
@@ -121,13 +130,41 @@ make -f Makefile.build build-rudra-salina-hydra-ainic-bundle-base
 - `nic/conf/` - Configuration files
 
 ## Testing
-```bash
-# GTest (after x86 DOL build)
-tar -zxf /sw/build_rudra_vulcano_hydra_x86_dol.tar.gz -C /
-cd /sw/nic
-DMA_MODE=uxdma ASIC=vulcano ./rudra/test/tools/run_gtests.sh --p4_program hydra --bin hydra_gtest --gtest_filter=-*scale*
 
-# DOL Tests (requires both x86 and sim builds)
+### GTest (Unit Tests)
+**See:** [testing-gtest.md](testing-gtest.md) for complete reference
+
+**Helper script (recommended):**
+```bash
+# Build (inside Docker)
+~/dev-notes/pensando-sw/scripts/run-hydra-gtest.sh build
+
+# Run specific test
+~/dev-notes/pensando-sw/scripts/run-hydra-gtest.sh test resp_rx.invalid_path_id_nak
+
+# Run all tests
+~/dev-notes/pensando-sw/scripts/run-hydra-gtest.sh all
+```
+
+**Manual (if needed):**
+```bash
+# Build
+cd /sw
+make -f Makefile.build build-rudra-vulcano-hydra-gtest
+
+# Run
+cd /sw/nic
+DMA_MODE=uxdma ASIC=vulcano P4_PROGRAM=hydra \
+  GTEST_BINARY=/sw/nic/rudra/build/hydra/x86_64/sim/rudra/vulcano/bin/hydra_gtest \
+  GTEST_FILTER='-*scale*' \
+  PROFILE=qemu \
+  LOG_FILE=hydra_gtest.log \
+  rudra/test/tools/run_ionic_gtest.sh
+```
+
+### DOL Tests (Integration)
+```bash
+# Requires both x86 and sim builds
 PIPELINE=rudra ASIC=vulcano P4_PROGRAM=hydra PCIEMGR_IF=1 DMA_MODE=uxdma PROFILE=zephyr \
   rudra/test/tools/dol/rundol.sh --pipeline rudra --topo rdma_hydra --feature rdma_hydra --sub rdma_write --nohntap
 ```
@@ -159,7 +196,8 @@ PIPELINE=rudra ASIC=vulcano P4_PROGRAM=hydra PCIEMGR_IF=1 DMA_MODE=uxdma PROFILE
 
 ### Vulcano ASIC Setups
 Located in: `~/dev-notes/pensando-sw/hardware/vulcano/`
-- SMC1, SMC2 - Development/testing
+- **SMC1** (10.30.75.198) - Primary dev/test, 8x Vulcano NICs (ai0-ai7), Micas switch
+- **SMC2** (10.30.75.204) - Secondary dev/test, 8x Vulcano NICs (ai0-ai7), Micas switch
 - GT1, GT4 - 800G Leaf-Spine topology
 - Waco5, Waco6 - Arista Leaf-Spine setups
 
@@ -172,9 +210,50 @@ Located in: `~/dev-notes/pensando-sw/hardware/salina/`
 - Purico-Meta-07-08, 09-10 - Meta RoCE testbed (Rack J7)
 - Full inventory: `~/setups/Pollara_rdma_tb.csv`
 
-## Common Issues
+### SMC1 Quick Reference (Most Used)
+- Host: ubuntu@10.30.75.198 (password: amd123)
+- 8 NICs: ai0-ai7 (benic1p1-benic8p1)
+- Micas Switch: 10.30.75.77 (admin/Micas123)
+- **Init script after FW update/reboot:** `/mnt/clusterfs/bringup/vulcano_hydra_rccl_bringup.sh`
+
+## IB/RDMA Testing
+Scripts located in: `~/dev-notes/pensando-sw/scripts/`
+
+### Quick Test Commands
+```bash
+# Basic SMC1→SMC2 test (4 QPs)
+~/dev-notes/pensando-sw/scripts/run-ib-test.sh smc1-smc2 --qp 4
+
+# MSN context stress test (validates 128-entry window)
+~/dev-notes/pensando-sw/scripts/run-ib-test.sh smc1-smc2 --qp 1 --max-msg-size 4M --direction bi --iter 2000
+
+# Comprehensive scaling test with Excel output
+~/dev-notes/pensando-sw/scripts/run-ib-test.sh smc1-smc2 --max-qp 16 --direction both --write-mode both --xlsx
+```
+
+**IMPORTANT:** Always run IB tests inside tmux session (tests take 45-60+ minutes)
+
+## Console Access
+```bash
+# Console manager script (for Vulcano/SuC consoles)
+~/dev-notes/pensando-sw/scripts/console-mgr.py --setup smc1 --console vulcano --all version
+
+# Recovery after firmware update
+~/dev-notes/pensando-sw/scripts/recovery-after-fw-update.sh smc1
+```
+
+## Known Issues
+
+### Modify QP Path CC Issue (Fixed in 1.125.1+)
+- **Affects:** Firmware 1.125.0-a-133 and earlier (SMC1, SMC2)
+- **Symptom:** Path congestion control parameters not updated during Modify QP
+- **Root cause:** `qp_set_tp_params()` called before path allocation
+- **Working versions:** Firmware 1.125.1-pi-8+ (Waco5, Waco6)
+- **Details:** See `~/dev-notes/pensando-sw/MODIFY-QP-PATH-CC-ISSUE.md`
+
+### Firmware Update Recovery
 - If cards don't come up after firmware update: Run recovery via SuC console reboot + host reboot
-- See `~/dev-notes/pensando-sw/scripts/recovery-after-fw-update.sh`
+- Script: `~/dev-notes/pensando-sw/scripts/recovery-after-fw-update.sh`
 
 ## Automation Scripts
 Located in: `~/dev-notes/pensando-sw/scripts/`
@@ -187,13 +266,26 @@ Located in: `~/dev-notes/pensando-sw/scripts/`
 - `parallel-firmware-update.sh` - Update multiple setups simultaneously
 - `sync-claude-memory.sh` - Sync MEMORY.md to dev-notes git repo
 
-## SMC Hardware IPs (Vulcano)
-- SMC1: 10.30.75.198 (ubuntu/amd123) - 8 Vulcano NICs
-- SMC2: 10.30.75.204 (ubuntu/amd123) - 8 Vulcano NICs
-- GT1: 10.30.69.101 (root) - 8 Vulcano NICs
-- GT4: 10.30.69.98 - 8 Vulcano NICs
-- Waco5: 10.30.64.25 - 8 Vulcano NICs
-- Waco6: 10.30.64.26 - 8 Vulcano NICs
+## Vulcano Hardware Setups
+
+### SMC Setups (Development/Testing)
+- **SMC1:** 10.30.75.198 (ubuntu/amd123) - 8 NICs, Micas switch
+- **SMC2:** 10.30.75.204 (ubuntu/amd123) - 8 NICs, Micas switch
+
+### Waco Cluster (Arista Leaf-Spine Topology)
+- **Waco5:** 10.30.64.25 (ubuntu/amd123) - 8 NICs, Leaf1 eth1/1-8/1
+- **Waco6:** 10.30.64.26 (ubuntu/amd123) - 8 NICs, Leaf1 eth9/1-16/1
+- **Waco7:** 10.30.64.27 (ubuntu/amd123) - 8 NICs, Leaf2 eth1/1-8/1
+- **Waco8:** 10.30.64.28 (ubuntu/amd123) - 8 NICs, Leaf2 eth9/1-16/1
+
+**Arista Switches:**
+- Spine: 10.30.64.202 (admin/Gr33nTr33s)
+- Leaf1: 10.30.64.201 (Waco5-6)
+- Leaf2: 10.30.64.203 (Waco7-8)
+
+### GT Setups (800G Leaf-Spine)
+- **GT1:** 10.30.69.101 (root) - 8 Vulcano NICs
+- **GT4:** 10.30.69.98 - 8 Vulcano NICs
 
 ## Current Branch (as of 2026-03-05)
 - Working branch: `forward_port_to_master_20260301`
@@ -201,5 +293,6 @@ Located in: `~/dev-notes/pensando-sw/scripts/`
 
 ## Related Documentation
 - [context.md](file:///home/pradeept/dev-notes/pensando-sw/context.md) - Full development context
+- [ib-testing-guide.md](file:///home/pradeept/dev-notes/pensando-sw/ib-testing-guide.md) - IB/RDMA testing guide
 - Hardware setups: `~/dev-notes/pensando-sw/hardware/`
 - IB testing guide: `~/dev-notes/pensando-sw/ib-testing-guide.md`

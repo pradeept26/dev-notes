@@ -63,34 +63,74 @@ class ConsoleSession:
                 # Send password
                 tn_mgmt.write(password.encode('ascii') + b"\n")
 
-                # Wait for either a CLI prompt (success) or re-prompt/error (failure)
-                # Cisco IOS shows '% Bad passwords' on failure, or '#'/'>' on success
-                output_raw = tn_mgmt.read_until(b"#", timeout=3)
-                output = output_raw.decode('ascii', errors='ignore')
-                if any(s in output.lower() for s in ('bad passwords', 'incorrect', 'failed', 'password:')):
-                    print(f"  Auth failed with {password}: {output.strip()}")
-                    tn_mgmt.close()
-                    continue  # Try next password
+                # Wait for prompt after password
+                # Console server should respond with either:
+                # - Prompt (e.g., "waco-ts-3#") if password correct
+                # - "Password:" again if password wrong
+                # - Connection close if too many failures
+                time.sleep(2)
+                response = tn_mgmt.read_very_eager().decode('ascii', errors='ignore')
 
+                # Check if we got another password prompt (password was wrong)
+                if 'Password:' in response and response.count('Password:') > 0:
+                    print(f"  Password {password} rejected (got password prompt again)")
+                    try:
+                        tn_mgmt.close()
+                    except:
+                        pass
+                    continue
+
+                # Check for explicit failure messages
+                if any(word in response.lower() for word in ['incorrect', 'failed', 'bad password', '% bad']):
+                    print(f"  Password {password} failed: {response[:50]}")
+                    try:
+                        tn_mgmt.close()
+                    except:
+                        pass
+                    continue
+
+                # Check if we got a prompt (should have '#' and hostname)
+                if '#' not in response or len(response.strip()) < 5:
+                    print(f"  No valid prompt with {password}, trying next...")
+                    try:
+                        tn_mgmt.close()
+                    except:
+                        pass
+                    continue
+
+                # Success - we got a proper prompt
+                print(f"  Authenticated successfully with {password}")
                 print(f"  Authenticated successfully with {password}")
 
                 # Send clear line command
                 clear_cmd = f"clear line {line_number}\n"
                 tn_mgmt.write(clear_cmd.encode('ascii'))
-                time.sleep(0.5)
 
-                # Confirm (send Enter if prompted with [confirm])
-                response_raw = tn_mgmt.read_until(b"#", timeout=3)
-                response = response_raw.decode('ascii', errors='ignore')
-                if '[confirm]' in response.lower() or 'confirm' in response.lower():
-                    tn_mgmt.write(b"\n")
-                    tn_mgmt.read_until(b"#", timeout=3)
+                # Wait for confirmation prompt - it should show [confirm]
+                try:
+                    response = tn_mgmt.read_until(b"[confirm]", timeout=3).decode('ascii', errors='ignore')
+                    print(f"  Got confirmation prompt")
+                except Exception:
+                    # Might not always get [confirm], just proceed
+                    print(f"  No confirmation prompt, sending Enter anyway")
+
+                # Send Enter to confirm
+                tn_mgmt.write(b"\n")
+
+                # Wait for OK response
+                try:
+                    final_response = tn_mgmt.read_until(b"[OK]", timeout=3).decode('ascii', errors='ignore')
+                    print(f"  Line cleared: [OK]")
+                except Exception:
+                    # Try to read what we got
+                    final_response = tn_mgmt.read_very_eager().decode('ascii', errors='ignore')
+                    print(f"  Clear command sent (response: {final_response[:50]})")
 
                 # Close management connection
                 tn_mgmt.close()
 
-                print(f"  ✓ Line {line_number} cleared successfully")
-                time.sleep(1)  # Wait before reconnecting
+                print(f"  Line {line_number} cleared successfully")
+                time.sleep(1.5)  # Console server releases line quickly after [OK]
                 return True
 
             except Exception as e:
@@ -100,23 +140,26 @@ class ConsoleSession:
         print(f"  Failed to clear line {line_number}")
         return False
 
-    def connect(self, retry_with_clear: bool = True) -> bool:
+    def connect(self, retry_with_clear: bool = True, retry_count: int = 0) -> bool:
         """
         Establish telnet connection to console.
 
         Args:
             retry_with_clear: Retry after clearing line if connection refused
+            retry_count: Number of retries attempted so far
 
         Returns:
             True if successful, False otherwise
         """
+        max_retries = 3
+
         try:
             self.tn = telnetlib.Telnet(self.host, self.port, timeout=self.timeout)
             self.connected = True
             time.sleep(0.5)  # Give console time to respond
             return True
         except ConnectionRefusedError as e:
-            if self.auto_clear and retry_with_clear:
+            if self.auto_clear and retry_with_clear and retry_count < max_retries:
                 # Connection refused - line is busy, try to clear it
                 # Line number is typically port - 2000
                 # e.g., port 2002 = line 2, port 2003 = line 3
@@ -124,8 +167,15 @@ class ConsoleSession:
 
                 print(f"Connection refused to {self.host}:{self.port} (line busy)")
                 if self.clear_console_line(line_number):
+                    # With correct password, line releases quickly
+                    # Only need short waits between retries
+                    wait_time = 1 + retry_count  # 1s, 2s, 3s
+                    print(f"Waiting {wait_time} seconds before retry...")
+                    time.sleep(wait_time)
+
+                    print(f"\nRetry {retry_count + 1}/{max_retries}...")
                     # Retry connection after clearing
-                    return self.connect(retry_with_clear=False)
+                    return self.connect(retry_with_clear=True, retry_count=retry_count + 1)
 
             print(f"Connection failed to {self.host}:{self.port}: {e}")
             return False
@@ -256,7 +306,7 @@ class ConsoleManager:
         Args:
             setup_name: Name of setup
             nic_id: NIC ID (e.g., 'ai0', 'ai1')
-            console_type: 'vulcano' or 'suc'
+            console_type: 'vulcano', 'suc', or 'a35'
 
         Returns:
             Tuple of (host, port) or None
@@ -265,8 +315,36 @@ class ConsoleManager:
         if not setup:
             return None
 
+        # Handle both old and new formats
+        # Old format (Vulcano): nics[].consoles.vulcano/suc
+        # New format (Salina): nics[].a35_console, nics[].suc_console
+        # Also support server1/server2 structure for paired setups
+
+        # Check if this is a paired setup (has server1/server2)
+        for server_key in ['server1', 'server2']:
+            server = setup.get(server_key)
+            if server:
+                for nic in server.get('nics', []):
+                    if nic['id'] == nic_id:
+                        # Try new format first (a35_console, suc_console)
+                        console_key = f"{console_type}_console"
+                        console = nic.get(console_key)
+                        if console:
+                            return (console['host'], console['port'])
+                        # Try old format (consoles.a35, consoles.suc)
+                        console = nic.get('consoles', {}).get(console_type)
+                        if console:
+                            return (console['host'], console['port'])
+
+        # Check regular nics array
         for nic in setup.get('nics', []):
             if nic['id'] == nic_id:
+                # Try new format first (a35_console, suc_console)
+                console_key = f"{console_type}_console"
+                console = nic.get(console_key)
+                if console:
+                    return (console['host'], console['port'])
+                # Try old format (consoles.vulcano, consoles.suc)
                 console = nic.get('consoles', {}).get(console_type)
                 if console:
                     return (console['host'], console['port'])
@@ -280,7 +358,7 @@ class ConsoleManager:
 
         Args:
             setup_name: Name of setup
-            console_type: 'vulcano' or 'suc'
+            console_type: 'vulcano', 'suc', or 'a35'
 
         Returns:
             List of tuples (nic_id, host, port)
@@ -290,11 +368,37 @@ class ConsoleManager:
             return []
 
         consoles = []
+
+        # Handle paired setups (server1/server2)
+        for server_key in ['server1', 'server2']:
+            server = setup.get(server_key)
+            if server:
+                for nic in server.get('nics', []):
+                    nic_id = nic['id']
+                    # Try new format (a35_console, suc_console)
+                    console_key = f"{console_type}_console"
+                    console = nic.get(console_key)
+                    if console:
+                        consoles.append((nic_id, console['host'], console['port']))
+                    else:
+                        # Try old format (consoles.vulcano, consoles.suc)
+                        console = nic.get('consoles', {}).get(console_type)
+                        if console:
+                            consoles.append((nic_id, console['host'], console['port']))
+
+        # Handle regular nics array
         for nic in setup.get('nics', []):
             nic_id = nic['id']
-            console = nic.get('consoles', {}).get(console_type)
+            # Try new format
+            console_key = f"{console_type}_console"
+            console = nic.get(console_key)
             if console:
                 consoles.append((nic_id, console['host'], console['port']))
+            else:
+                # Try old format
+                console = nic.get('consoles', {}).get(console_type)
+                if console:
+                    consoles.append((nic_id, console['host'], console['port']))
 
         return consoles
 

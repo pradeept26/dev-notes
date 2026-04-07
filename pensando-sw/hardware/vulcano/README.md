@@ -4,8 +4,16 @@ Vulcano ASIC based hardware configurations for Hydra (and other P4 programs) dev
 
 ## Available Setups
 
-- **[SMC1](./smc1.md)** - Primary development setup
-- **[SMC2](./smc2.md)** - Secondary/testing setup
+### SMC Setups (Development/Testing)
+- **[SMC1](./smc1.md)** - Primary development setup (10.30.75.198)
+- **[SMC2](./smc2.md)** - Secondary/testing setup (10.30.75.204)
+
+### Waco Cluster (Arista Leaf-Spine Topology)
+- **[Waco5-8 Cluster Overview](./waco5-8-overview.md)** - Complete leaf-spine topology
+- **[Waco5](./waco5.md)** - Leaf1 connected (10.30.64.25)
+- **[Waco6](./waco6.md)** - Leaf1 connected (10.30.64.26)
+- **[Waco7](./waco7.md)** - Leaf2 connected (10.30.64.27)
+- **[Waco8](./waco8.md)** - Leaf2 connected (10.30.64.28)
 
 ## Vulcano Overview
 
@@ -95,5 +103,16 @@ nicctl reset
 journalctl -xe | grep -i pensando
 ```
 
+## Setup Quick Reference
+
+| Setup | Management IP | Type | NICs | Network |
+|-------|--------------|------|------|---------|
+| SMC1 | 10.30.75.198 | Dev/Test | 8 | Micas switch |
+| SMC2 | 10.30.75.204 | Dev/Test | 8 | Micas switch |
+| Waco5 | 10.30.64.25 | Leaf-Spine | 8 | Arista Leaf1 |
+| Waco6 | 10.30.64.26 | Leaf-Spine | 8 | Arista Leaf1 |
+| Waco7 | 10.30.64.27 | Leaf-Spine | 8 | Arista Leaf2 |
+| Waco8 | 10.30.64.28 | Leaf-Spine | 8 | Arista Leaf2 |
+
 ---
-Last updated: 2026-02-25
+Last updated: 2026-03-16
