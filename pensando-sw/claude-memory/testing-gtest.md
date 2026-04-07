@@ -47,16 +47,24 @@ type: reference
 ~/dev-notes/pensando-sw/scripts/run-hydra-gtest.sh status
 ```
 
-### Manual Commands (if needed)
+### Manual Commands (Inside Docker)
+
+**IMPORTANT:** `~/dev-notes/` scripts NOT accessible inside Docker. Use direct commands.
 
 **Build (inside Docker at /sw):**
 ```bash
+# Two-step build (CORRECT approach)
+cd /sw
+make -f Makefile.ainic rudra-vulcano-hydra-sw-emu   # Step 1: Build sw-emu
+make -f Makefile.ainic rudra-vulcano-hydra-gtest    # Step 2: Build gtest
+
+# Alternative single command (calls both above)
 make -f Makefile.build build-rudra-vulcano-hydra-gtest
-# Output: /sw/build_vulcano_hydra_gtest.tar.gz
 ```
 
 **Run (inside Docker at /sw/nic):**
 ```bash
+cd /sw/nic
 DMA_MODE=uxdma ASIC=vulcano P4_PROGRAM=hydra \
   GTEST_BINARY=/sw/nic/rudra/build/hydra/x86_64/sim/rudra/vulcano/bin/hydra_gtest \
   GTEST_FILTER='resp_rx.invalid_path_id_nak' \
