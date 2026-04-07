@@ -4,7 +4,47 @@ Automation scripts for managing Vulcano NICs and their consoles.
 
 ## Available Scripts
 
-### 1. console-mgr.py - Console Manager
+### 1. build-hydra-gtest.sh - Automated Hydra GTest Build (NEW!)
+**Purpose:** Fully automated build from scratch - handles tmux, submodules, docker, assets, build
+
+**One command to do everything:**
+```bash
+~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh
+
+# With options
+~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh --clean       # Clean before build
+~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh --skip-submod # Skip submodule update
+~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh --skip-assets # Skip pull-assets
+```
+
+**What it automates:**
+1. Checks/creates tmux session
+2. Updates git submodules
+3. Cleans up old Docker containers
+4. Launches Docker
+5. Pulls assets
+6. Builds hydra gtest (15-30 min)
+
+**See:** `~/dev-notes/pensando-sw/testing/hydra-gtest.md` for complete documentation
+
+### 2. run-hydra-gtest.sh - Hydra GTest Test Runner (NEW!)
+**Purpose:** Run gtests inside Docker
+
+```bash
+# Build (if already in Docker)
+~/dev-notes/pensando-sw/scripts/run-hydra-gtest.sh build
+
+# Run specific test
+~/dev-notes/pensando-sw/scripts/run-hydra-gtest.sh test resp_rx.invalid_path_id_nak
+
+# Run all tests
+~/dev-notes/pensando-sw/scripts/run-hydra-gtest.sh all
+
+# Check status
+~/dev-notes/pensando-sw/scripts/run-hydra-gtest.sh status
+```
+
+### 3. console-mgr.py - Console Manager
 **Purpose:** Interact with Vulcano and SuC consoles across all hardware setups
 
 **Features:**
@@ -16,7 +56,7 @@ Automation scripts for managing Vulcano NICs and their consoles.
 - ✅ Predefined commands (version, reboot, status, etc.)
 - ✅ Custom command support
 
-### 2. update-firmware.sh - Firmware Updater
+### 4. update-firmware.sh - Firmware Updater
 **Purpose:** Automated firmware update workflow
 
 **Features:**
