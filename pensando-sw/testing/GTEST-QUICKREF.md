@@ -7,10 +7,8 @@
 ```bash
 cd /sw
 
-# Step 1: Build sw-emu
-make -f Makefile.ainic rudra-vulcano-hydra-sw-emu
-
-# Step 2: Build gtest
+# Single command - make handles all dependencies
+# Builds: sw-emu → libpdsproto_rudra.lib → libe2e_driver.lib → gtest
 make -f Makefile.ainic rudra-vulcano-hydra-gtest
 
 # Check binary exists

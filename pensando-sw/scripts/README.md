@@ -40,12 +40,34 @@ Automation scripts for managing Vulcano NICs and their consoles.
 
 # Run all tests
 ~/dev-notes/pensando-sw/scripts/run-hydra-gtest.sh all
-
-# Check status
-~/dev-notes/pensando-sw/scripts/run-hydra-gtest.sh status
 ```
 
-### 3. console-mgr.py - Console Manager
+### 3. build-hydra-firmware.sh - Hydra Firmware Build (NEW!)
+**Purpose:** Automate firmware builds for hardware deployment
+
+```bash
+~/dev-notes/pensando-sw/scripts/build-hydra-firmware.sh
+
+# With options
+~/dev-notes/pensando-sw/scripts/build-hydra-firmware.sh --clean
+~/dev-notes/pensando-sw/scripts/build-hydra-firmware.sh --variant m5
+```
+
+**See:** `~/dev-notes/pensando-sw/testing/hydra-firmware-build.md`
+
+### 4. build-hydra-dol.sh - Hydra DOL Build (NEW!)
+**Purpose:** Automate x86 package builds for DOL testing
+
+```bash
+~/dev-notes/pensando-sw/scripts/build-hydra-dol.sh
+
+# With options
+~/dev-notes/pensando-sw/scripts/build-hydra-dol.sh --clean
+```
+
+**See:** `~/dev-notes/pensando-sw/testing/hydra-dol-testing.md`
+
+### 5. console-mgr.py - Console Manager
 **Purpose:** Interact with Vulcano and SuC consoles across all hardware setups
 
 **Features:**
@@ -57,7 +79,7 @@ Automation scripts for managing Vulcano NICs and their consoles.
 - ✅ Predefined commands (version, reboot, status, etc.)
 - ✅ Custom command support
 
-### 4. update-firmware.sh - Firmware Updater
+### 6. update-firmware.sh - Firmware Updater
 **Purpose:** Automated firmware update workflow
 
 **Features:**
