@@ -15,15 +15,16 @@ Automated testing for hydra RDMA implementation using Google Test framework.
 ~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh --clean          # Clean before build
 ~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh --skip-submod    # Skip submodule update
 ~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh --skip-assets    # Skip pull-assets
+~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh --clean-docker   # Clean up old Docker containers
 ```
 
 **What it does:**
 1. ✓ Checks/creates tmux session `pensando-sw`
-2. ✓ Updates git submodules (outside Docker)
-3. ✓ Cleans up old Docker containers
+2. ✓ Updates git submodules (outside Docker) - skip with `--skip-submod`
+3. ✓ Optionally cleans up old Docker containers (use `--clean-docker`)
 4. ✓ Launches Docker container
-5. ✓ Pulls assets (inside Docker)
-6. ✓ Optionally runs make clean (with `--clean`)
+5. ✓ Pulls assets (inside Docker) - skip with `--skip-assets`
+6. ✓ Optionally runs make clean (use `--clean`)
 7. ✓ Builds hydra gtest (15-30 minutes)
 8. ✓ Reports completion with next steps
 
@@ -65,22 +66,18 @@ ls -lh /sw/nic/rudra/build/hydra/x86_64/sim/rudra/vulcano/bin/hydra_gtest
 
 **Inside Docker at /sw:**
 ```bash
-# Step 1: Build sw-emu (software emulator)
-make -f Makefile.ainic rudra-vulcano-hydra-sw-emu
-
-# Step 2: Build gtest (depends on sw-emu)
+# Single command - make handles all dependencies
 make -f Makefile.ainic rudra-vulcano-hydra-gtest
 ```
 
-**Alternative (single command that calls both):**
-```bash
-make -f Makefile.build build-rudra-vulcano-hydra-gtest
-```
+**What it builds (in order):**
+1. `rudra-vulcano-hydra-sw-emu` - Software emulator (RTOS firmware for simulation)
+2. `libpdsproto_rudra.lib` - Protocol library (P4 generated files)
+3. `libe2e_driver.lib` - End-to-end driver library
+4. Gtest binaries: `hydra_gtest`, `hydra_gtest_aq`
 
-**What it builds:**
-1. Vulcano hydra sw-emu (software emulator) - RTOS firmware for simulation
-2. Required libraries (libpdsproto_rudra.lib, libe2e_driver.lib)
-3. Gtest binaries: `hydra_gtest`, `hydra_gtest_aq`
+**Why single command?**
+The Makefile.ainic target has dependencies, so make automatically builds them in the correct order. Building dependencies separately can cause missing header file errors.
 
 **Output locations:**
 - Gtest binaries: `/sw/nic/rudra/build/hydra/x86_64/sim/rudra/vulcano/bin/`

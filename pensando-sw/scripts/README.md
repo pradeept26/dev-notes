@@ -12,17 +12,18 @@ Automation scripts for managing Vulcano NICs and their consoles.
 ~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh
 
 # With options
-~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh --clean       # Clean before build
-~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh --skip-submod # Skip submodule update
-~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh --skip-assets # Skip pull-assets
+~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh --clean        # Clean before build
+~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh --skip-submod  # Skip submodule update
+~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh --skip-assets  # Skip pull-assets
+~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh --clean-docker # Clean up Docker containers
 ```
 
 **What it automates:**
 1. Checks/creates tmux session
-2. Updates git submodules
-3. Cleans up old Docker containers
+2. Updates git submodules (skip with `--skip-submod`)
+3. Optionally cleans up old Docker containers (use `--clean-docker`)
 4. Launches Docker
-5. Pulls assets
+5. Pulls assets (skip with `--skip-assets`)
 6. Builds hydra gtest (15-30 min)
 
 **See:** `~/dev-notes/pensando-sw/testing/hydra-gtest.md` for complete documentation
