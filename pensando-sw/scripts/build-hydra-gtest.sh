@@ -193,27 +193,55 @@ EOFBUILD
 
 chmod +x "$BUILD_SCRIPT"
 
-# Step 5: Launch Docker and run build
-log_step "Step 5: Launching Docker and building..."
-log_info "This will take 15-30 minutes for a full build..."
+# Step 5: Launch Docker (if needed) and run build
+log_step "Step 5: Checking Docker status and building..."
 
-cd "$REPO_DIR/nic"
-
-# Execute in tmux session
-tmux send-keys -t "$TMUX_SESSION" "cd $REPO_DIR/nic" C-m
-tmux send-keys -t "$TMUX_SESSION" "make docker/shell" C-m
-sleep 3  # Give Docker time to start
-
-# Copy build script into Docker and execute
-log_info "Executing build inside Docker..."
-
-# Create a marker file to track build completion (in repo dir, accessible in Docker)
+# Create marker file to track build completion (in repo dir, accessible in Docker)
 MARKER_FILE="$REPO_DIR/hydra_gtest_build_complete_$$"
 rm -f "$MARKER_FILE"
 
 # Build script will be at /sw/hydra_gtest_build_$$.sh inside Docker
 DOCKER_BUILD_SCRIPT="/sw/$(basename $BUILD_SCRIPT)"
 DOCKER_MARKER_FILE="/sw/$(basename $MARKER_FILE)"
+
+# Check if Docker is already running in tmux session
+# We do this by checking if the current directory is /sw (inside Docker) or /ws/... (outside)
+log_info "Checking if Docker is already running in tmux session..."
+
+# Send a command to check current directory
+tmux send-keys -t "$TMUX_SESSION" "pwd > /tmp/check_docker_pwd_$$.txt" C-m
+sleep 1
+
+if [ -f /tmp/check_docker_pwd_$$.txt ]; then
+    CURRENT_DIR=$(cat /tmp/check_docker_pwd_$$.txt)
+    rm -f /tmp/check_docker_pwd_$$.txt
+
+    if [[ "$CURRENT_DIR" == "/sw"* ]] || [[ "$CURRENT_DIR" == "/usr/src/github.com/pensando/sw"* ]]; then
+        log_success "Docker already running, reusing existing container"
+        ALREADY_IN_DOCKER=true
+    else
+        log_info "Not in Docker, launching container..."
+        ALREADY_IN_DOCKER=false
+    fi
+else
+    # Fallback: assume we need to launch Docker
+    log_info "Cannot determine status, launching Docker..."
+    ALREADY_IN_DOCKER=false
+fi
+
+# Launch Docker if needed
+if [ "$ALREADY_IN_DOCKER" = false ]; then
+    tmux send-keys -t "$TMUX_SESSION" "cd $REPO_DIR/nic" C-m
+    tmux send-keys -t "$TMUX_SESSION" "make docker/shell" C-m
+    sleep 3  # Give Docker time to start
+    log_info "Docker container launched"
+else
+    log_info "Skipping Docker launch, already in container"
+fi
+
+# Execute build script
+log_info "Executing build inside Docker..."
+log_info "This will take 15-30 minutes for a full build..."
 
 # Run build in Docker via tmux
 tmux send-keys -t "$TMUX_SESSION" "bash $DOCKER_BUILD_SCRIPT $SKIP_ASSETS $DO_CLEAN && touch $DOCKER_MARKER_FILE" C-m
