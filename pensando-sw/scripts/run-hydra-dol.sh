@@ -26,7 +26,8 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_DIR="${REPO_DIR:-/ws/pradeept/ws/usr/src/github.com/pensando/sw}"
+# Auto-detect repo root from caller's CWD (works across machines/workspaces)
+REPO_DIR="${REPO_DIR:-$(git -C "$PWD" rev-parse --show-toplevel 2>/dev/null || echo '/ws/pradeept/ws/usr/src/github.com/pensando/sw')}"
 TMUX_SESSION="pensando-sw"
 
 # DOL run defaults
