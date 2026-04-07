@@ -60,10 +60,10 @@ make -f Makefile.ainic rudra-vulcano-hydra-gtest
 # This builds in order: sw-emu → libpdsproto → libe2e_driver → gtest
 ```
 
-**Run (inside Docker at /sw/nic):**
+**Run (inside Docker at /sw/nic) - MUST use sudo:**
 ```bash
 cd /sw/nic
-DMA_MODE=uxdma ASIC=vulcano P4_PROGRAM=hydra \
+sudo DMA_MODE=uxdma ASIC=vulcano P4_PROGRAM=hydra \
   GTEST_BINARY=/sw/nic/rudra/build/hydra/x86_64/sim/rudra/vulcano/bin/hydra_gtest \
   GTEST_FILTER='resp_rx.invalid_path_id_nak' \
   PROFILE=qemu \
