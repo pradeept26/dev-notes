@@ -155,24 +155,27 @@ echo -e "\033[1;33mℹ This may take 15-30 minutes...\033[0m"
 cd /sw
 
 START_TIME=$(date +%s)
-make -f Makefile.build build-rudra-vulcano-hydra-gtest
+
+# Step 1: Build sw-emu
+echo -e "\033[0;34m▶ Step 1: Building sw-emu...\033[0m"
+make -f Makefile.ainic rudra-vulcano-hydra-sw-emu
+
+# Step 2: Build gtest
+echo -e "\033[0;34m▶ Step 2: Building gtest...\033[0m"
+make -f Makefile.ainic rudra-vulcano-hydra-gtest
 
 END_TIME=$(date +%s)
 DURATION=$((END_TIME - START_TIME))
 MINUTES=$((DURATION / 60))
 SECONDS=$((DURATION % 60))
 
-if [ -f /sw/build_vulcano_hydra_gtest.tar.gz ]; then
+# Check for gtest binary (don't rely on tarball)
+if [ -f /sw/nic/rudra/build/hydra/x86_64/sim/rudra/vulcano/bin/hydra_gtest ]; then
     echo -e "\033[0;32m✓ Build successful in ${MINUTES}m ${SECONDS}s\033[0m"
-    ls -lh /sw/build_vulcano_hydra_gtest.tar.gz
-
-    # Check for gtest binary
-    if [ -f /sw/nic/rudra/build/hydra/x86_64/sim/rudra/vulcano/bin/hydra_gtest ]; then
-        echo -e "\033[0;32m✓ Gtest binary created\033[0m"
-        ls -lh /sw/nic/rudra/build/hydra/x86_64/sim/rudra/vulcano/bin/hydra_gtest*
-    fi
+    echo -e "\033[0;32m✓ Gtest binary created\033[0m"
+    ls -lh /sw/nic/rudra/build/hydra/x86_64/sim/rudra/vulcano/bin/hydra_gtest*
 else
-    echo -e "\033[0;31m✗ Build failed\033[0m"
+    echo -e "\033[0;31m✗ Build failed - gtest binary not found\033[0m"
     exit 1
 fi
 EOFBUILD

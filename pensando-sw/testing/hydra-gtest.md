@@ -27,40 +27,64 @@ Automated testing for hydra RDMA implementation using Google Test framework.
 7. ✓ Builds hydra gtest (15-30 minutes)
 8. ✓ Reports completion with next steps
 
-### Manual Build (Inside Docker)
+### Manual Commands (Inside Docker)
 
-If you're already in Docker and just want to build:
+**IMPORTANT:** Scripts in `~/dev-notes/` are NOT accessible inside Docker.
+Use direct commands inside Docker at `/sw` or `/sw/nic`:
 
 ```bash
-# Build gtests
-~/dev-notes/pensando-sw/scripts/run-hydra-gtest.sh build
+# Build (at /sw)
+cd /sw
+make -f Makefile.ainic rudra-vulcano-hydra-sw-emu
+make -f Makefile.ainic rudra-vulcano-hydra-gtest
 
-# Run specific test
-~/dev-notes/pensando-sw/scripts/run-hydra-gtest.sh test resp_rx.invalid_path_id_nak
+# Run specific test (at /sw/nic)
+cd /sw/nic
+DMA_MODE=uxdma ASIC=vulcano P4_PROGRAM=hydra \
+  GTEST_BINARY=/sw/nic/rudra/build/hydra/x86_64/sim/rudra/vulcano/bin/hydra_gtest \
+  GTEST_FILTER='resp_rx.invalid_path_id_nak' \
+  PROFILE=qemu \
+  LOG_FILE=hydra_gtest.log \
+  rudra/test/tools/run_ionic_gtest.sh
 
-# Run all tests
-~/dev-notes/pensando-sw/scripts/run-hydra-gtest.sh all
+# Run all tests (excluding scale)
+DMA_MODE=uxdma ASIC=vulcano P4_PROGRAM=hydra \
+  GTEST_BINARY=/sw/nic/rudra/build/hydra/x86_64/sim/rudra/vulcano/bin/hydra_gtest \
+  GTEST_FILTER='-*scale*' \
+  PROFILE=qemu \
+  LOG_FILE=hydra_gtest_all.log \
+  rudra/test/tools/run_ionic_gtest.sh
 
-# Check status
-~/dev-notes/pensando-sw/scripts/run-hydra-gtest.sh status
+# Check if binary exists
+ls -lh /sw/nic/rudra/build/hydra/x86_64/sim/rudra/vulcano/bin/hydra_gtest
 ```
 
 ## Manual Build & Run (if needed)
 
-### Build Command
+### Build Commands
 
 **Inside Docker at /sw:**
+```bash
+# Step 1: Build sw-emu (software emulator)
+make -f Makefile.ainic rudra-vulcano-hydra-sw-emu
+
+# Step 2: Build gtest (depends on sw-emu)
+make -f Makefile.ainic rudra-vulcano-hydra-gtest
+```
+
+**Alternative (single command that calls both):**
 ```bash
 make -f Makefile.build build-rudra-vulcano-hydra-gtest
 ```
 
-**Output:** `/sw/build_vulcano_hydra_gtest.tar.gz`
-
 **What it builds:**
-1. Vulcano hydra sw-emu (software emulator)
+1. Vulcano hydra sw-emu (software emulator) - RTOS firmware for simulation
 2. Required libraries (libpdsproto_rudra.lib, libe2e_driver.lib)
 3. Gtest binaries: `hydra_gtest`, `hydra_gtest_aq`
-4. Packages everything into tarball
+
+**Output locations:**
+- Gtest binaries: `/sw/nic/rudra/build/hydra/x86_64/sim/rudra/vulcano/bin/`
+- Libraries: `/sw/nic/build/x86_64/sim/rudra/vulcano/lib/`
 
 ### Run Commands
 
