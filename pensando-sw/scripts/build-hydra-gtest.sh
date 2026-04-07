@@ -119,7 +119,8 @@ fi
 # Step 4: Create build script for Docker
 log_step "Step 4: Preparing Docker build commands..."
 
-BUILD_SCRIPT="/tmp/hydra_gtest_build_$$.sh"
+# Create script in repo dir (mounted as /sw in Docker)
+BUILD_SCRIPT="$REPO_DIR/hydra_gtest_build_$$.sh"
 cat > "$BUILD_SCRIPT" << 'EOFBUILD'
 #!/bin/bash
 set -e
@@ -196,12 +197,16 @@ sleep 3  # Give Docker time to start
 # Copy build script into Docker and execute
 log_info "Executing build inside Docker..."
 
-# Create a marker file to track build completion
-MARKER_FILE="/tmp/hydra_gtest_build_complete_$$"
+# Create a marker file to track build completion (in repo dir, accessible in Docker)
+MARKER_FILE="$REPO_DIR/hydra_gtest_build_complete_$$"
 rm -f "$MARKER_FILE"
 
+# Build script will be at /sw/hydra_gtest_build_$$.sh inside Docker
+DOCKER_BUILD_SCRIPT="/sw/$(basename $BUILD_SCRIPT)"
+DOCKER_MARKER_FILE="/sw/$(basename $MARKER_FILE)"
+
 # Run build in Docker via tmux
-tmux send-keys -t "$TMUX_SESSION" "bash $BUILD_SCRIPT $SKIP_ASSETS $DO_CLEAN && touch $MARKER_FILE" C-m
+tmux send-keys -t "$TMUX_SESSION" "bash $DOCKER_BUILD_SCRIPT $SKIP_ASSETS $DO_CLEAN && touch $DOCKER_MARKER_FILE" C-m
 
 # Monitor build progress
 log_info "Build running in tmux session '$TMUX_SESSION'"
@@ -225,6 +230,7 @@ done
 
 if [ -f "$MARKER_FILE" ]; then
     log_success "Build completed!"
+    # Clean up temp files
     rm -f "$MARKER_FILE"
     rm -f "$BUILD_SCRIPT"
 
