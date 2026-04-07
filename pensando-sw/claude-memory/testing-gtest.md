@@ -53,13 +53,11 @@ type: reference
 
 **Build (inside Docker at /sw):**
 ```bash
-# Two-step build (CORRECT approach)
+# Single command - make handles dependencies automatically
 cd /sw
-make -f Makefile.ainic rudra-vulcano-hydra-sw-emu   # Step 1: Build sw-emu
-make -f Makefile.ainic rudra-vulcano-hydra-gtest    # Step 2: Build gtest
+make -f Makefile.ainic rudra-vulcano-hydra-gtest
 
-# Alternative single command (calls both above)
-make -f Makefile.build build-rudra-vulcano-hydra-gtest
+# This builds in order: sw-emu → libpdsproto → libe2e_driver → gtest
 ```
 
 **Run (inside Docker at /sw/nic):**
