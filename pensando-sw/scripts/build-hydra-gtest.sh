@@ -4,12 +4,13 @@
 # Handles complete setup: tmux, submodules, docker, assets, build
 #
 # Usage:
-#   ./build-hydra-gtest.sh [--clean] [--skip-submod] [--skip-assets]
+#   ./build-hydra-gtest.sh [--clean] [--skip-submod] [--skip-assets] [--clean-docker]
 #
 # Options:
 #   --clean         Run make clean before build
 #   --skip-submod   Skip submodule update (if already updated)
 #   --skip-assets   Skip pull-assets (if already pulled)
+#   --clean-docker  Clean up old Docker containers before starting
 #
 
 set -e
@@ -30,6 +31,7 @@ NC='\033[0m'
 DO_CLEAN=false
 SKIP_SUBMOD=false
 SKIP_ASSETS=false
+CLEAN_DOCKER=false
 
 for arg in "$@"; do
     case $arg in
@@ -42,13 +44,17 @@ for arg in "$@"; do
         --skip-assets)
             SKIP_ASSETS=true
             ;;
+        --clean-docker)
+            CLEAN_DOCKER=true
+            ;;
         -h|--help)
-            echo "Usage: $0 [--clean] [--skip-submod] [--skip-assets]"
+            echo "Usage: $0 [--clean] [--skip-submod] [--skip-assets] [--clean-docker]"
             echo ""
             echo "Options:"
             echo "  --clean         Run make clean before build"
             echo "  --skip-submod   Skip submodule update"
             echo "  --skip-assets   Skip pull-assets"
+            echo "  --clean-docker  Clean up old Docker containers (default: skip)"
             exit 0
             ;;
         *)
@@ -104,16 +110,20 @@ else
     log_info "Step 2: Skipping submodule update (--skip-submod)"
 fi
 
-# Step 3: Clean up old Docker containers
-log_step "Step 3: Cleaning up old Docker containers..."
-OLD_CONTAINERS=$(docker ps -a | grep "$(whoami)_" | awk '{print $1}' || true)
-if [ -n "$OLD_CONTAINERS" ]; then
-    log_info "Removing old containers..."
-    echo "$OLD_CONTAINERS" | xargs -r docker stop >/dev/null 2>&1 || true
-    echo "$OLD_CONTAINERS" | xargs -r docker rm >/dev/null 2>&1 || true
-    log_success "Old containers cleaned up"
+# Step 3: Clean up old Docker containers (optional)
+if [ "$CLEAN_DOCKER" = true ]; then
+    log_step "Step 3: Cleaning up old Docker containers..."
+    OLD_CONTAINERS=$(docker ps -a | grep "$(whoami)_" | awk '{print $1}' || true)
+    if [ -n "$OLD_CONTAINERS" ]; then
+        log_info "Removing old containers..."
+        echo "$OLD_CONTAINERS" | xargs -r docker stop >/dev/null 2>&1 || true
+        echo "$OLD_CONTAINERS" | xargs -r docker rm >/dev/null 2>&1 || true
+        log_success "Old containers cleaned up"
+    else
+        log_success "No old containers to clean"
+    fi
 else
-    log_success "No old containers to clean"
+    log_info "Step 3: Skipping Docker container cleanup (use --clean-docker to enable)"
 fi
 
 # Step 4: Create build script for Docker
