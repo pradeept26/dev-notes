@@ -153,16 +153,16 @@ fi
 # Build hydra gtest
 echo -e "\033[0;34m▶ Building hydra gtest for Vulcano...\033[0m"
 echo -e "\033[1;33mℹ This may take 15-30 minutes...\033[0m"
+echo -e "\033[1;33mℹ This will build: sw-emu, libraries, and gtest\033[0m"
 cd /sw
 
 START_TIME=$(date +%s)
 
-# Step 1: Build sw-emu
-echo -e "\033[0;34m▶ Step 1: Building sw-emu...\033[0m"
-make -f Makefile.ainic rudra-vulcano-hydra-sw-emu
-
-# Step 2: Build gtest
-echo -e "\033[0;34m▶ Step 2: Building gtest...\033[0m"
+# Build gtest target - make will automatically build dependencies:
+# 1. rudra-vulcano-hydra-sw-emu
+# 2. libpdsproto_rudra.lib
+# 3. libe2e_driver.lib
+# 4. hydra_gtest binary
 make -f Makefile.ainic rudra-vulcano-hydra-gtest
 
 END_TIME=$(date +%s)
