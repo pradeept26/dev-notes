@@ -8,14 +8,14 @@ Build RTOS firmware for hardware deployment on Vulcano NICs.
 
 ```bash
 # Complete automation: tmux, submodules, docker, assets, firmware build
-~/dev-notes/pensando-sw/scripts/build-hydra-firmware.sh
+~/dev-notes/pensando-sw/scripts/build-hydra-vulcano-firmware.sh
 
 # With options
-~/dev-notes/pensando-sw/scripts/build-hydra-firmware.sh --clean          # Clean before build
-~/dev-notes/pensando-sw/scripts/build-hydra-firmware.sh --skip-submod    # Skip submodule update
-~/dev-notes/pensando-sw/scripts/build-hydra-firmware.sh --skip-assets    # Skip pull-assets
-~/dev-notes/pensando-sw/scripts/build-hydra-firmware.sh --clean-docker   # Clean Docker containers
-~/dev-notes/pensando-sw/scripts/build-hydra-firmware.sh --variant m5     # Build specific variant
+~/dev-notes/pensando-sw/scripts/build-hydra-vulcano-firmware.sh --clean          # Clean before build
+~/dev-notes/pensando-sw/scripts/build-hydra-vulcano-firmware.sh --skip-submod    # Skip submodule update
+~/dev-notes/pensando-sw/scripts/build-hydra-vulcano-firmware.sh --skip-assets    # Skip pull-assets
+~/dev-notes/pensando-sw/scripts/build-hydra-vulcano-firmware.sh --clean-docker   # Clean Docker containers
+~/dev-notes/pensando-sw/scripts/build-hydra-vulcano-firmware.sh --variant m5     # Build specific variant
 ```
 
 **What it does:**

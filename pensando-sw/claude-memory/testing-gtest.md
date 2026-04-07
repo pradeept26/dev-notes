@@ -13,15 +13,15 @@ type: reference
 **One command to handle everything:**
 ```bash
 # Complete automation: tmux, submodules, docker, assets, build
-~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh
+~/dev-notes/pensando-sw/scripts/build-hydra-vulcano-gtest.sh
 
 # With options
-~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh --clean       # Clean before build
-~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh --skip-submod # Skip submodule update
-~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh --skip-assets # Skip pull-assets
+~/dev-notes/pensando-sw/scripts/build-hydra-vulcano-gtest.sh --clean       # Clean before build
+~/dev-notes/pensando-sw/scripts/build-hydra-vulcano-gtest.sh --skip-submod # Skip submodule update
+~/dev-notes/pensando-sw/scripts/build-hydra-vulcano-gtest.sh --skip-assets # Skip pull-assets
 ```
 
-**What `build-hydra-gtest.sh` does:**
+**What `build-hydra-vulcano-gtest.sh` does:**
 1. Checks/creates tmux session
 2. Updates submodules (outside Docker)
 3. Cleans up old Docker containers

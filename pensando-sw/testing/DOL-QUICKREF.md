@@ -71,7 +71,7 @@ cat /obfl/nicmgr.log
 
 ```bash
 # Build automation
-~/dev-notes/pensando-sw/scripts/build-hydra-dol.sh
+~/dev-notes/pensando-sw/scripts/build-hydra-vulcano-dol.sh
 
 # Tests must be run inside Docker manually
 ```

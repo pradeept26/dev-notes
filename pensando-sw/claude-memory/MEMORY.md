@@ -5,7 +5,7 @@
 - Complete documentation: hardware setups, automation scripts, workflows, testing guides
 - 6 Vulcano setups (48 NICs, 96 consoles), multiple Salina setups
 - YAML-driven automation for console mgr, firmware updates, IB testing
-- **GTest full automation**: `~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh` (tmux, submod, docker, build)
+- **GTest full automation**: `~/dev-notes/pensando-sw/scripts/build-hydra-vulcano-gtest.sh` (tmux, submod, docker, build)
 - **GTest manual helpers**: `~/dev-notes/pensando-sw/scripts/run-hydra-gtest.sh` (build, test, status)
 - See [dev-notes-complete.md](dev-notes-complete.md) for complete reference
 - See [testing-gtest.md](testing-gtest.md) for gtest workflow
@@ -138,10 +138,10 @@ make -f Makefile.build build-rudra-salina-hydra-ainic-bundle-base
 **Fully automated (BEST - one command does everything):**
 ```bash
 # Complete automation: tmux, submodules, docker, assets, build
-~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh
+~/dev-notes/pensando-sw/scripts/build-hydra-vulcano-gtest.sh
 
 # With options
-~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh --clean
+~/dev-notes/pensando-sw/scripts/build-hydra-vulcano-gtest.sh --clean
 ```
 
 **Manual helpers (if already in Docker):**

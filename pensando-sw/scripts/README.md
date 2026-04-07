@@ -14,18 +14,18 @@ All build scripts (`build-hydra-*.sh`) share common functionality via `build-com
 
 ## Available Scripts
 
-### 1. build-hydra-gtest.sh - Automated Hydra GTest Build (NEW!)
+### 1. build-hydra-vulcano-gtest.sh - Automated Hydra GTest Build (NEW!)
 **Purpose:** Fully automated build from scratch - handles tmux, submodules, docker, assets, build
 
 **One command to do everything:**
 ```bash
-~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh
+~/dev-notes/pensando-sw/scripts/build-hydra-vulcano-gtest.sh
 
 # With options
-~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh --clean        # Clean before build
-~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh --skip-submod  # Skip submodule update
-~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh --skip-assets  # Skip pull-assets
-~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh --clean-docker # Clean up Docker containers
+~/dev-notes/pensando-sw/scripts/build-hydra-vulcano-gtest.sh --clean        # Clean before build
+~/dev-notes/pensando-sw/scripts/build-hydra-vulcano-gtest.sh --skip-submod  # Skip submodule update
+~/dev-notes/pensando-sw/scripts/build-hydra-vulcano-gtest.sh --skip-assets  # Skip pull-assets
+~/dev-notes/pensando-sw/scripts/build-hydra-vulcano-gtest.sh --clean-docker # Clean up Docker containers
 ```
 
 **What it automates:**
@@ -52,27 +52,27 @@ All build scripts (`build-hydra-*.sh`) share common functionality via `build-com
 ~/dev-notes/pensando-sw/scripts/run-hydra-gtest.sh all
 ```
 
-### 3. build-hydra-firmware.sh - Hydra Firmware Build (NEW!)
+### 3. build-hydra-vulcano-firmware.sh - Hydra Firmware Build (NEW!)
 **Purpose:** Automate firmware builds for hardware deployment
 
 ```bash
-~/dev-notes/pensando-sw/scripts/build-hydra-firmware.sh
+~/dev-notes/pensando-sw/scripts/build-hydra-vulcano-firmware.sh
 
 # With options
-~/dev-notes/pensando-sw/scripts/build-hydra-firmware.sh --clean
-~/dev-notes/pensando-sw/scripts/build-hydra-firmware.sh --variant m5
+~/dev-notes/pensando-sw/scripts/build-hydra-vulcano-firmware.sh --clean
+~/dev-notes/pensando-sw/scripts/build-hydra-vulcano-firmware.sh --variant m5
 ```
 
 **See:** `~/dev-notes/pensando-sw/testing/hydra-firmware-build.md`
 
-### 4. build-hydra-dol.sh - Hydra DOL Build (NEW!)
+### 4. build-hydra-vulcano-dol.sh - Hydra DOL Build (NEW!)
 **Purpose:** Automate x86 package builds for DOL testing
 
 ```bash
-~/dev-notes/pensando-sw/scripts/build-hydra-dol.sh
+~/dev-notes/pensando-sw/scripts/build-hydra-vulcano-dol.sh
 
 # With options
-~/dev-notes/pensando-sw/scripts/build-hydra-dol.sh --clean
+~/dev-notes/pensando-sw/scripts/build-hydra-vulcano-dol.sh --clean
 ```
 
 **See:** `~/dev-notes/pensando-sw/testing/hydra-dol-testing.md`

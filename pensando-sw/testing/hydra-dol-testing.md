@@ -8,13 +8,13 @@ DOL (Descore Operating Layer) integration tests for Hydra RDMA functionality.
 
 ```bash
 # Complete automation: tmux, submodules, docker, assets, x86 package build
-~/dev-notes/pensando-sw/scripts/build-hydra-dol.sh
+~/dev-notes/pensando-sw/scripts/build-hydra-vulcano-dol.sh
 
 # With options
-~/dev-notes/pensando-sw/scripts/build-hydra-dol.sh --clean          # Clean before build
-~/dev-notes/pensando-sw/scripts/build-hydra-dol.sh --skip-submod    # Skip submodule update
-~/dev-notes/pensando-sw/scripts/build-hydra-dol.sh --skip-assets    # Skip pull-assets
-~/dev-notes/pensando-sw/scripts/build-hydra-dol.sh --clean-docker   # Clean Docker containers
+~/dev-notes/pensando-sw/scripts/build-hydra-vulcano-dol.sh --clean          # Clean before build
+~/dev-notes/pensando-sw/scripts/build-hydra-vulcano-dol.sh --skip-submod    # Skip submodule update
+~/dev-notes/pensando-sw/scripts/build-hydra-vulcano-dol.sh --skip-assets    # Skip pull-assets
+~/dev-notes/pensando-sw/scripts/build-hydra-vulcano-dol.sh --clean-docker   # Clean Docker containers
 ```
 
 ## Manual Build (Inside Docker)

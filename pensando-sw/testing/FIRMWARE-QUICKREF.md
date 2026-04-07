@@ -52,8 +52,8 @@ sudo nicctl show version
 
 ```bash
 # Full automation
-~/dev-notes/pensando-sw/scripts/build-hydra-firmware.sh
+~/dev-notes/pensando-sw/scripts/build-hydra-vulcano-firmware.sh
 
 # With variant
-~/dev-notes/pensando-sw/scripts/build-hydra-firmware.sh --variant m5
+~/dev-notes/pensando-sw/scripts/build-hydra-vulcano-firmware.sh --variant m5
 ```

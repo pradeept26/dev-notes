@@ -9,13 +9,13 @@ Automated testing for hydra RDMA implementation using Google Test framework.
 **One-command build from scratch:**
 ```bash
 # Complete automation: tmux, submodules, docker, assets, build
-~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh
+~/dev-notes/pensando-sw/scripts/build-hydra-vulcano-gtest.sh
 
 # With options
-~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh --clean          # Clean before build
-~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh --skip-submod    # Skip submodule update
-~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh --skip-assets    # Skip pull-assets
-~/dev-notes/pensando-sw/scripts/build-hydra-gtest.sh --clean-docker   # Clean up old Docker containers
+~/dev-notes/pensando-sw/scripts/build-hydra-vulcano-gtest.sh --clean          # Clean before build
+~/dev-notes/pensando-sw/scripts/build-hydra-vulcano-gtest.sh --skip-submod    # Skip submodule update
+~/dev-notes/pensando-sw/scripts/build-hydra-vulcano-gtest.sh --skip-assets    # Skip pull-assets
+~/dev-notes/pensando-sw/scripts/build-hydra-vulcano-gtest.sh --clean-docker   # Clean up old Docker containers
 ```
 
 **What it does:**
