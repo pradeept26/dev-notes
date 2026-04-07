@@ -2,10 +2,12 @@
 
 ## Dev-Notes Context Repository
 **Location:** `~/dev-notes/pensando-sw/`
-- Complete documentation: hardware setups, automation scripts, workflows
+- Complete documentation: hardware setups, automation scripts, workflows, testing guides
 - 6 Vulcano setups (48 NICs, 96 consoles), multiple Salina setups
 - YAML-driven automation for console mgr, firmware updates, IB testing
+- **GTest automation**: `~/dev-notes/pensando-sw/scripts/run-hydra-gtest.sh`
 - See [dev-notes-complete.md](dev-notes-complete.md) for complete reference
+- See [testing-gtest.md](testing-gtest.md) for gtest workflow
 
 ## Memory Sync Protocol
 **IMPORTANT: After updating this memory file, ALWAYS run:**
@@ -128,13 +130,41 @@ make -f Makefile.build build-rudra-salina-hydra-ainic-bundle-base
 - `nic/conf/` - Configuration files
 
 ## Testing
-```bash
-# GTest (after x86 DOL build)
-tar -zxf /sw/build_rudra_vulcano_hydra_x86_dol.tar.gz -C /
-cd /sw/nic
-DMA_MODE=uxdma ASIC=vulcano ./rudra/test/tools/run_gtests.sh --p4_program hydra --bin hydra_gtest --gtest_filter=-*scale*
 
-# DOL Tests (requires both x86 and sim builds)
+### GTest (Unit Tests)
+**See:** [testing-gtest.md](testing-gtest.md) for complete reference
+
+**Helper script (recommended):**
+```bash
+# Build (inside Docker)
+~/dev-notes/pensando-sw/scripts/run-hydra-gtest.sh build
+
+# Run specific test
+~/dev-notes/pensando-sw/scripts/run-hydra-gtest.sh test resp_rx.invalid_path_id_nak
+
+# Run all tests
+~/dev-notes/pensando-sw/scripts/run-hydra-gtest.sh all
+```
+
+**Manual (if needed):**
+```bash
+# Build
+cd /sw
+make -f Makefile.build build-rudra-vulcano-hydra-gtest
+
+# Run
+cd /sw/nic
+DMA_MODE=uxdma ASIC=vulcano P4_PROGRAM=hydra \
+  GTEST_BINARY=/sw/nic/rudra/build/hydra/x86_64/sim/rudra/vulcano/bin/hydra_gtest \
+  GTEST_FILTER='-*scale*' \
+  PROFILE=qemu \
+  LOG_FILE=hydra_gtest.log \
+  rudra/test/tools/run_ionic_gtest.sh
+```
+
+### DOL Tests (Integration)
+```bash
+# Requires both x86 and sim builds
 PIPELINE=rudra ASIC=vulcano P4_PROGRAM=hydra PCIEMGR_IF=1 DMA_MODE=uxdma PROFILE=zephyr \
   rudra/test/tools/dol/rundol.sh --pipeline rudra --topo rdma_hydra --feature rdma_hydra --sub rdma_write --nohntap
 ```
