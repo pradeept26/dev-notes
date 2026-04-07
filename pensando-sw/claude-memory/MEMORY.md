@@ -7,6 +7,8 @@
 - YAML-driven automation for console mgr, firmware updates, IB testing
 - **GTest full automation**: `~/dev-notes/pensando-sw/scripts/build-hydra-vulcano-gtest.sh` (tmux, submod, docker, build)
 - **GTest manual helpers**: `~/dev-notes/pensando-sw/scripts/run-hydra-gtest.sh` (build, test, status)
+- **DOL full automation**: `~/dev-notes/pensando-sw/scripts/build-hydra-vulcano-dol.sh` (tmux, submod, docker, build)
+- **DOL manual helpers**: `~/dev-notes/pensando-sw/scripts/run-hydra-dol.sh` (build, test, status)
 - See [dev-notes-complete.md](dev-notes-complete.md) for complete reference
 - See [testing-gtest.md](testing-gtest.md) for gtest workflow
 
