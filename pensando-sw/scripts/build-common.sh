@@ -127,8 +127,8 @@ cleanup_docker_containers() {
 detect_docker() {
     log_info "Checking if Docker is already running in tmux session..."
 
-    # Send a command to check current directory (always use window 0)
-    local CHECK_FILE="/tmp/check_docker_pwd_$$.txt"
+    # Use repo dir for check file (shared between host and Docker)
+    local CHECK_FILE="$REPO_DIR/.docker_check_$$.txt"
     tmux send-keys -t "$TMUX_SESSION:0" "pwd > $CHECK_FILE" C-m
     sleep 1
 
