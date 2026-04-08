@@ -191,8 +191,8 @@ fi
 if [ "\$DO_CLEAN" = "true" ]; then
     echo -e "\033[0;34m▶ Cleaning build artifacts...\033[0m"
     cd /sw
-    make clean 2>/dev/null || true
-    make -f Makefile.ainic clean 2>/dev/null || true
+    sudo make clean 2>/dev/null || true
+    sudo make -f Makefile.ainic clean 2>/dev/null || true
     echo -e "\033[0;32m✓ Clean complete\033[0m"
 fi
 
