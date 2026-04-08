@@ -127,9 +127,9 @@ cleanup_docker_containers() {
 detect_docker() {
     log_info "Checking if Docker is already running in tmux session..."
 
-    # Send a command to check current directory
+    # Send a command to check current directory (always use window 0)
     local CHECK_FILE="/tmp/check_docker_pwd_$$.txt"
-    tmux send-keys -t "$TMUX_SESSION" "pwd > $CHECK_FILE" C-m
+    tmux send-keys -t "$TMUX_SESSION:0" "pwd > $CHECK_FILE" C-m
     sleep 1
 
     if [ -f "$CHECK_FILE" ]; then
@@ -149,8 +149,8 @@ detect_docker() {
 # Launch Docker container
 launch_docker() {
     log_info "Launching Docker container..."
-    tmux send-keys -t "$TMUX_SESSION" "cd $REPO_DIR/nic" C-m
-    tmux send-keys -t "$TMUX_SESSION" "make docker/shell" C-m
+    tmux send-keys -t "$TMUX_SESSION:0" "cd $REPO_DIR/nic" C-m
+    tmux send-keys -t "$TMUX_SESSION:0" "make docker/shell" C-m
     sleep 3  # Give Docker time to start
     log_info "Docker container launched"
 }
@@ -234,12 +234,12 @@ execute_and_monitor_build() {
     local DOCKER_BUILD_SCRIPT="/sw/$(basename $BUILD_SCRIPT)"
     local DOCKER_MARKER_FILE="/sw/$(basename $MARKER_FILE)"
 
-    # Execute build script
+    # Execute build script (always use window 0)
     log_info "Executing build inside Docker..."
-    tmux send-keys -t "$TMUX_SESSION" "bash $DOCKER_BUILD_SCRIPT $SKIP_ASSETS $DO_CLEAN && touch $DOCKER_MARKER_FILE" C-m
+    tmux send-keys -t "$TMUX_SESSION:0" "bash $DOCKER_BUILD_SCRIPT $SKIP_ASSETS $DO_CLEAN && touch $DOCKER_MARKER_FILE" C-m
 
     # Monitor
-    log_info "Build running in tmux session '$TMUX_SESSION'"
+    log_info "Build running in tmux session '$TMUX_SESSION' (window 0)"
     log_info "You can attach to watch: tmux attach -t $TMUX_SESSION"
 
     echo ""
