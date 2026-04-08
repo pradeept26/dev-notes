@@ -127,9 +127,11 @@ cleanup_docker_containers() {
 detect_docker() {
     log_info "Checking if Docker is already running in tmux session..."
 
-    # Use repo dir for check file (shared between host and Docker)
+    # Use path that works in both Docker (/sw) and host (bind-mounted at $REPO_DIR)
+    # If in Docker: writes to /sw/.docker_check_$$.txt (host sees at $REPO_DIR/.docker_check_$$.txt via bind mount)
+    # If on host: writes to $REPO_DIR/.docker_check_$$.txt directly
     local CHECK_FILE="$REPO_DIR/.docker_check_$$.txt"
-    tmux send-keys -t "$TMUX_SESSION:0" "pwd > $CHECK_FILE" C-m
+    tmux send-keys -t "$TMUX_SESSION:0" "[ -d /sw ] && pwd > /sw/.docker_check_$$.txt || pwd > $REPO_DIR/.docker_check_$$.txt" C-m
     sleep 1
 
     if [ -f "$CHECK_FILE" ]; then
