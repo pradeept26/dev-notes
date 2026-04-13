@@ -17,11 +17,13 @@ ls -lh /sw/nic/rudra/build/hydra/x86_64/sim/rudra/vulcano/bin/hydra_gtest
 
 ## Run Tests (at /sw/nic)
 
+**IMPORTANT: Run with sudo (required for model access)**
+
 ```bash
 cd /sw/nic
 
 # Single test - Path mismatch validation
-DMA_MODE=uxdma ASIC=vulcano P4_PROGRAM=hydra \
+sudo DMA_MODE=uxdma ASIC=vulcano P4_PROGRAM=hydra \
   GTEST_BINARY=/sw/nic/rudra/build/hydra/x86_64/sim/rudra/vulcano/bin/hydra_gtest \
   GTEST_FILTER='resp_rx.invalid_path_id_nak' \
   PROFILE=qemu \
@@ -29,7 +31,7 @@ DMA_MODE=uxdma ASIC=vulcano P4_PROGRAM=hydra \
   rudra/test/tools/run_ionic_gtest.sh
 
 # All resp_rx tests
-DMA_MODE=uxdma ASIC=vulcano P4_PROGRAM=hydra \
+sudo DMA_MODE=uxdma ASIC=vulcano P4_PROGRAM=hydra \
   GTEST_BINARY=/sw/nic/rudra/build/hydra/x86_64/sim/rudra/vulcano/bin/hydra_gtest \
   GTEST_FILTER='resp_rx.*:-*scale*' \
   PROFILE=qemu \
@@ -37,7 +39,7 @@ DMA_MODE=uxdma ASIC=vulcano P4_PROGRAM=hydra \
   rudra/test/tools/run_ionic_gtest.sh
 
 # All tests (excluding scale)
-DMA_MODE=uxdma ASIC=vulcano P4_PROGRAM=hydra \
+sudo DMA_MODE=uxdma ASIC=vulcano P4_PROGRAM=hydra \
   GTEST_BINARY=/sw/nic/rudra/build/hydra/x86_64/sim/rudra/vulcano/bin/hydra_gtest \
   GTEST_FILTER='-*scale*' \
   PROFILE=qemu \

@@ -1,0 +1,59 @@
+---
+# Kenya-3668 Vulcano Setup Configuration
+# Config: 32G x 6400, b2b (back-to-back)
+# Build: 157
+# Last updated: 2026-04-07
+
+setup:
+  name: kenya-3668
+  status: active
+  location: lab
+  asic: vulcano
+  use_case: rdma_testing
+  config: "32G x 6400"
+  topology: b2b
+  build: 157
+
+host:
+  hostname: kenya-3668
+  mgmt_ip: 10.30.56.56
+  os: linux
+  credentials:
+    ssh_user: root
+    ssh_password: docker
+
+bmc:
+  ip: 10.30.56.52
+  credentials:
+    user: root
+    password: "0penBmc"
+
+apc:
+  ip: 10.30.56.19
+  port: 12
+  credentials:
+    user: apc
+    password: apc
+
+network:
+  topology: back-to-back
+  telnet_ip: telnet
+
+nics:
+  - id: ai0
+    consoles:
+      vulcano:
+        host: telnet
+        port: 2034
+      suc:
+        host: telnet
+        port: 2035
+
+ownership:
+  owner: TBD
+  current_user: Prateek
+
+notes:
+  - "32G x 6400 configuration"
+  - "Back-to-back topology"
+  - "Build 157"

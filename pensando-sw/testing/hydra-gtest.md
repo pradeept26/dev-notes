@@ -30,7 +30,9 @@ Automated testing for hydra RDMA implementation using Google Test framework.
 
 ### Manual Commands (Inside Docker)
 
-**IMPORTANT:** Scripts in `~/dev-notes/` are NOT accessible inside Docker.
+**IMPORTANT:**
+- Scripts in `~/dev-notes/` are NOT accessible inside Docker
+- Tests must run with `sudo` (required for model/hardware access)
 Use direct commands inside Docker at `/sw` or `/sw/nic`:
 
 ```bash
@@ -39,9 +41,9 @@ cd /sw
 make -f Makefile.ainic rudra-vulcano-hydra-sw-emu
 make -f Makefile.ainic rudra-vulcano-hydra-gtest
 
-# Run specific test (at /sw/nic)
+# Run specific test (at /sw/nic) - MUST use sudo
 cd /sw/nic
-DMA_MODE=uxdma ASIC=vulcano P4_PROGRAM=hydra \
+sudo DMA_MODE=uxdma ASIC=vulcano P4_PROGRAM=hydra \
   GTEST_BINARY=/sw/nic/rudra/build/hydra/x86_64/sim/rudra/vulcano/bin/hydra_gtest \
   GTEST_FILTER='resp_rx.invalid_path_id_nak' \
   PROFILE=qemu \
@@ -49,7 +51,7 @@ DMA_MODE=uxdma ASIC=vulcano P4_PROGRAM=hydra \
   rudra/test/tools/run_ionic_gtest.sh
 
 # Run all tests (excluding scale)
-DMA_MODE=uxdma ASIC=vulcano P4_PROGRAM=hydra \
+sudo DMA_MODE=uxdma ASIC=vulcano P4_PROGRAM=hydra \
   GTEST_BINARY=/sw/nic/rudra/build/hydra/x86_64/sim/rudra/vulcano/bin/hydra_gtest \
   GTEST_FILTER='-*scale*' \
   PROFILE=qemu \
