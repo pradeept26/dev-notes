@@ -78,6 +78,8 @@ setup_tmux_session() {
     log_step "Step 1: Checking tmux session..."
     if tmux has-session -t "$TMUX_SESSION" 2>/dev/null; then
         log_success "Tmux session '$TMUX_SESSION' exists"
+        # Ensure window 0 is selected so all send-keys land on window 0
+        tmux select-window -t "$TMUX_SESSION:0"
     else
         log_info "Creating tmux session '$TMUX_SESSION'..."
         tmux new-session -d -s "$TMUX_SESSION" -c "$REPO_DIR"
