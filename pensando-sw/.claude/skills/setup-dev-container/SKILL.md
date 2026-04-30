@@ -1,17 +1,6 @@
 ---
-name: setup
-description: >
-  One-time workspace setup: submodule update, Docker launch, pull assets.
-  Use when switching branches, first time setup, or after pulling changes.
-  Triggers: "setup", "prep workspace", "pull assets", "launch docker",
-  "update submodules", "setup build environment".
-triggers:
-  - setup
-  - prep workspace
-  - pull assets
-  - launch docker
-  - update submodules
-  - setup build environment
+name: setup-dev-container
+description: "One-time dev container setup: kill old Docker containers, launch fresh pensando/nic container, update submodules, pull assets. Use when switching branches, first time setup, or after pulling changes. Triggers: setup dev container, setup container, prep workspace, launch docker, fresh docker, new container."
 ---
 
 # Workspace Setup Skill

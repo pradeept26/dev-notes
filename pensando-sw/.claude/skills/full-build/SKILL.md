@@ -1,20 +1,6 @@
 ---
 name: full-build
-description: >
-  Unified build skill for all ASIC/pipeline/target combinations.
-  Always runs in background with log file. Use for gtest, dol, hw/fw,
-  sim builds across vulcano/salina ASICs and hydra/pulsar pipelines.
-  Triggers: "full build", "build vulcano", "build salina", "build firmware",
-  "build gtest", "build dol", "build hw".
-triggers:
-  - full build
-  - full-build
-  - build vulcano
-  - build salina
-  - build firmware
-  - build gtest for
-  - build dol for
-  - build hw for
+description: "Unified build for all ASIC/pipeline/target combinations. Always runs in background with log file. Use for gtest, dol, hw/fw, sim builds across vulcano/salina ASICs and hydra/pulsar pipelines. Triggers: full build, build vulcano, build salina, build firmware, build gtest, build dol, build hw."
 ---
 
 # Full Build Skill

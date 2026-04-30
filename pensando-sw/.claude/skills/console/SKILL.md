@@ -1,19 +1,6 @@
 ---
 name: console
-description: >
-  Manage Vulcano/SuC NIC consoles — version check, reboot, status, custom commands.
-  Use when the user says "console", "manage consoles", "check nic console",
-  "reboot nic", "console command", "connect to console", or references
-  console operations on Vulcano NICs.
-triggers:
-  - console
-  - manage consoles
-  - check nic console
-  - reboot nic via console
-  - console command
-  - connect to console
-  - check vulcano version
-  - reboot suc
+description: "Manage Vulcano/SuC NIC consoles — version check, reboot, status, custom commands. Use when user says console, manage consoles, check nic console, reboot nic, console command, connect to console, check vulcano version, reboot suc."
 ---
 
 # Console Management Skill

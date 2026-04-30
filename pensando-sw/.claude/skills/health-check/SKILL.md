@@ -1,18 +1,6 @@
 ---
 name: health-check
-description: >
-  Parallel health check across hosts (SSH) and NICs (console) for any Vulcano setup.
-  Use when the user says "health check", "check setup", "cluster health",
-  "check waco health", "are the NICs healthy", or wants a quick status
-  of a lab setup.
-triggers:
-  - health check
-  - check setup
-  - cluster health
-  - check waco health
-  - setup status
-  - are the nics healthy
-  - check smc health
+description: "Parallel health check across hosts (SSH) and NICs (console) for any Vulcano setup. Use when user says health check, check setup, cluster health, check waco health, are the NICs healthy, setup status, check smc health."
 ---
 
 # Health Check Skill

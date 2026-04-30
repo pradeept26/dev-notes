@@ -1,18 +1,6 @@
 ---
 name: recover
-description: >
-  Step-by-step recovery when Vulcano NICs fail after firmware update.
-  Use when the user says "recover", "recovery", "card stuck",
-  "nic not coming up", "card not responding after update",
-  or when nicctl show card shows non-UP state after firmware update.
-triggers:
-  - recover
-  - recovery
-  - card stuck
-  - nic not coming up
-  - card not responding after update
-  - nic stuck after firmware
-  - recover after update
+description: "Step-by-step recovery when Vulcano NICs fail after firmware update. Use when user says recover, recovery, card stuck, nic not coming up, card not responding after update, nic stuck after firmware."
 ---
 
 # Post-Firmware Recovery Skill
