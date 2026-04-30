@@ -41,20 +41,24 @@ git submodule update --init --recursive
 
 This takes 1-2 minutes. Report when done.
 
-### Phase 2: Clean Up Old Containers
+### Phase 2: Stop and Remove ALL Existing Containers
+
+Kill every `pensando/nic` container for this user — running or stopped:
 
 ```bash
-docker ps -a | grep "$(whoami)_" | awk '{print $1}' | xargs -r docker stop | xargs -r docker rm
+docker ps -a --format '{{.ID}} {{.Image}}' | grep pensando/nic | awk '{print $1}' | xargs -r docker rm -f
 ```
 
-### Phase 3: Launch Docker
+This ensures a completely fresh Docker environment. No stale state from previous builds or branches.
+
+### Phase 3: Launch Fresh Docker
 
 ```bash
 cd /ws/pradeept/ws/usr/src/github.com/pensando/sw/nic && make docker/shell
 ```
 
-This launches a `pensando/nic` container with `/sw` mounted to the workspace.
-It drops you into the container shell. Note the container ID from the output.
+This launches a new `pensando/nic` container with `/sw` mounted to the workspace.
+It drops you into the container shell.
 
 **IMPORTANT**: `make docker/shell` is interactive — it attaches to the container.
 After it launches, exit the shell (Ctrl+D or `exit`) to return to the host.
