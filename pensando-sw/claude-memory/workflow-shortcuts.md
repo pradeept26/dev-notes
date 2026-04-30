@@ -3,48 +3,48 @@
 ## Key Principle
 **User wants maximum automation - execute complete workflows without asking questions.**
 
-## Shorthand Command Mappings
+## Command Mappings → Repo Skills
+Build/test/deploy shortcuts now map to repo skills (from PR #115193):
 
 ### Builds
-- "make vulcano hydra hw build" | "build hw" → Full hardware firmware build workflow
-- "make vulcano hydra sim build" | "build sim" → Full sim build workflow
-- "build gtest" → GTest-specific build
+- "build hw" | "build firmware" → `/build` skill (fw target)
+- "build sim" → `/build` skill (sim target)
+- "build gtest" → `/build-gtest` skill
 
 ### Testing
-- "run gtests" | "test basic" → Run gtests excluding scale tests
-- "run dol tests" | "test dol" → Run DOL test suite
+- "run gtests" | "test basic" → `/gtest` skill
+- "run dol tests" | "test dol" → `/dol` skill
+- "run p4 unit tests" → `/p4plus-unit-test` skill
 
 ### Deployment
-- "deploy to smc1/smc2" → Copy firmware + update + reset + verify
-- "deploy to all smc" | "deploy everywhere" → Deploy to both SMC systems
+- "deploy to smc1" → `/deploy` skill with testbed YAML
+- "transfer firmware" → `/transfer` skill
 
-### Git
-- "commit changes" | "make commit" → Auto-draft message and commit (don't push)
+### Benchmarking
+- "run ib test" → `/benchmark` skill
+- "compare results" → `/compare` skill
 
-### IB/RDMA Testing
-- "run ib test" | "test ib basic" → Basic 4 QP test SMC1→SMC2
-- "test msn window" | "run ib stress" → Stress test for 128 MSN window validation
-- "ib benchmark" | "run ib full" → Comprehensive test with Excel output
+### Console/Health (Private Skills)
+- "console version smc1" → `/console` skill
+- "health check waco5" → `/health-check` skill
+- "recover smc1" → `/recover` skill
 
 ## Automation Rules
 
-✅ **Auto-Execute Without Asking:**
+**Auto-Execute Without Asking:**
 - Build workflows (clean docker, launch, build, report)
 - Test execution (setup, run, summarize)
 - Standard deployments to dev/test systems
 - File operations (read, search, analyze)
 - Git operations except push
 
-⚠️ **Ask Before Executing:**
+**Ask Before Executing:**
 - git push operations
 - Production deployments
 - Destructive operations (reset --hard, force push, delete)
 - Operations affecting shared/remote systems beyond dev/test
 
-## Implementation Notes
-
-Created CLAUDE.md at project root with full workflow definitions.
-User prefers:
+## Preferences
 - Concise progress updates
 - Detailed results only at end
 - Parallel execution when possible
