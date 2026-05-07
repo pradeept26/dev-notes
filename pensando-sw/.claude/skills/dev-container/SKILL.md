@@ -30,39 +30,71 @@ git submodule update --init --recursive
 
 This takes 1-2 minutes. Report when done.
 
-### Phase 2: Stop and Remove ALL Existing Containers
+### Phase 2: Stop and Remove Existing Containers for This User
 
-Kill every `pensando/nic` container for this user — running or stopped:
+**IMPORTANT:** Each step must be a separate, simple Bash tool call — no pipe chains
+or compound commands. This ensures they match permission rules and run without prompts.
 
+**Step 1 — list containers to remove:**
 ```bash
-docker ps -a --format '{{.ID}} {{.Image}}' | grep pensando/nic | awk '{print $1}' | xargs -r docker rm -f
+docker ps -a --format '{{.Names}}' | grep "$(whoami)_"
 ```
 
-This ensures a completely fresh Docker environment. No stale state from previous builds or branches.
+**Step 2 — for each container name returned, remove it:**
+```bash
+docker rm -f <CONTAINER_NAME>
+```
+
+If step 1 returns nothing, skip step 2 — no containers to clean up.
+Only removes containers matching the user's naming pattern (`username_timestamp`).
+Does NOT touch other users' containers.
 
 ### Phase 3: Launch Fresh Docker
 
 ```bash
-cd /ws/pradeept/ws/usr/src/github.com/pensando/sw/nic && make docker/shell
+cd /ws/pradeept/ws/usr/src/github.com/pensando/sw-1/nic && make docker/background-shell
 ```
 
-This launches a new `pensando/nic` container with `/sw` mounted to the workspace.
-It drops you into the container shell.
+This is the one command that requires `cd &&` — it must run from the `nic/` directory.
+Uses `docker/background-shell` (not `docker/shell`) — launches the container
+detached so it works without a TTY. Functionally identical to `docker/shell`
+(same image, volumes, env, privileges) but compatible with Claude and automation.
 
-**IMPORTANT**: `make docker/shell` is interactive — it attaches to the container.
-After it launches, exit the shell (Ctrl+D or `exit`) to return to the host.
-The container stays running in the background.
+The container name follows the pattern `username_YYYY-MM-DD_HH.MM.SS`.
+
+### Phase 3.5: Fix Git Ownership (Inside Docker)
+
+**MUST run immediately after launching the container.** The `/sw` mount is owned by
+the host user but accessed as a different UID inside Docker. Without this fix,
+Zephyr CMake builds fail because `git describe` returns empty output.
+
+```bash
+docker exec <CONTAINER_NAME> git config --global --add safe.directory /sw
+```
 
 ### Phase 4: Pull Assets (Inside Docker)
 
-Find the running container and pull assets:
+First resolve the container name, then pull assets in background.
 
+**Step 1 — resolve container name:**
 ```bash
-CONTAINER_ID=$(docker ps --format '{{.ID}}' --filter ancestor=pensando/nic | head -1)
-docker exec -u $(whoami) -w /sw "$CONTAINER_ID" make pull-assets
+docker ps --format '{{.Names}}' | grep "$(whoami)_" | head -1
 ```
 
-This downloads P4 compiler and other build dependencies. Takes 2-5 minutes.
+**Step 2 — pull assets (use `run_in_background=true` on the Bash tool):**
+```bash
+docker exec <CONTAINER_NAME> bash -c 'cd /sw && make pull-assets'
+```
+
+**IMPORTANT:** Use the Bash tool's `run_in_background=true` parameter instead of
+shell `&` with redirects. This keeps the command simple so it matches the
+`Bash(docker exec *)` permission rule and avoids prompts. Each step must be a
+simple command — no compound `&&` chains, no variable assignments in the same call.
+
+Takes 2-5 minutes. Claude is notified automatically when it completes.
+
+The `platform_ainic_vulcano_suc_zephyr` asset may fail due to wsctl issues —
+this is non-critical and does not block gtest or firmware builds.
 
 ### Phase 5: Report
 
