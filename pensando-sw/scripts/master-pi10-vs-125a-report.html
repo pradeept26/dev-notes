@@ -1,0 +1,1873 @@
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<title>Master 1.130-pi-10 vs 1.125-a Baseline</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; max-width: 1800px; margin: 0 auto; padding: 20px; background: #f8f9fa; }
+h1 { color: #1a237e; border-bottom: 3px solid #1a237e; padding-bottom: 10px; }
+h2 { color: #283593; margin-top: 30px; border-bottom: 2px solid #c5cae9; padding-bottom: 6px; }
+h3 { color: #3949ab; margin-top: 16px; }
+table { border-collapse: collapse; width: 100%; margin: 8px 0 20px 0; font-size: 12px; }
+th { background: #1a237e; color: white; padding: 6px 8px; text-align: right; font-size: 11px; white-space: nowrap; }
+th:first-child { text-align: left; }
+td { padding: 4px 8px; border-bottom: 1px solid #e0e0e0; text-align: right; font-family: "SF Mono",Consolas,monospace; font-size: 11px; }
+td:first-child { text-align: left; font-family: inherit; font-weight: 500; }
+tr:nth-child(even) { background: #fafafa; }
+tr:hover { background: #e8eaf6; }
+.card { background: white; border-radius: 8px; padding: 18px; margin: 12px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
+.metric { display: inline-block; margin: 10px 30px 10px 0; text-align: center; }
+.metric-value { font-size: 32px; font-weight: bold; }
+.metric-label { font-size: 12px; color: #666; }
+.bl { border-left: 2px solid #c5cae9; }
+.skip { background: #ffe0b2; color: #555; font-style: italic; }
+</style></head><body>
+<h1>Master 1.130.0-pi-10 vs 1.125-a Baseline — SMC1/SMC2 CPU IB + RCCL</h1>
+<p><b>Testbed:</b> smc1 (10.30.75.198) + smc2 (10.30.75.204), Vulcano 8x400G, Micas switch<br>
+<b>Master FW:</b> 1.130.0-pi-10 (master + PT0 CSR meta_roce timestamp fix)<br>
+<b>Baseline:</b> 1.125-a (qp-scale-sweep-report.html @ 2026-05-14) + baseline_140 (FW 1.125-a-140 @ 2026-05-19)<br>
+<b>NIC:</b> roce_benic1p1 (single NIC, bidirectional, CPU memory)<br>
+<b>Master IB CSV:</b> /home/pradeept/dev-notes/pensando-sw/scripts/ib-master-pi10-20260525_1454/summary.csv</p>
+<div class="card"><h2 style="margin-top:0;border:none">RCCL (16-rank, 1K-16G, 100 iter, 5 warmup)</h2>
+<table><thead><tr><th>Collective</th><th class="bl">Baseline 1.125-a (GB/s)</th><th class="bl">Master 1.130-pi10 (GB/s)</th><th class="bl">Δ%</th></tr></thead><tbody>
+<tr><td>all_reduce</td><td class="bl">140.97</td><td class="bl">142.71</td><td class="bl" style="color:#2e7d32;font-weight:bold">+1.2%</td></tr>
+<tr><td>sendrecv</td><td class="bl">15.16</td><td class="bl">15.27</td><td class="bl" style="color:#2e7d32;font-weight:bold">+0.7%</td></tr>
+<tr><td>alltoall</td><td class="bl">43.26</td><td class="bl">42.99</td><td class="bl" style="color:#888;font-weight:bold">-0.6%</td></tr>
+<tr><td>alltoallv</td><td class="bl">31.63</td><td class="bl">31.79</td><td class="bl" style="color:#2e7d32;font-weight:bold">+0.5%</td></tr>
+</tbody></table></div>
+<h2>IB CPU write_bw — bidirectional</h2>
+<h3>QP = 2</h3>
+<table><thead><tr><th>Size</th><th class="bl">Base 1.125-a (Gbps)</th><th class="bl">Master pi-10 (Gbps)</th><th class="bl">Δ%</th></tr></thead><tbody>
+<tr>
+<td>2B</td>
+<td class="bl">0.14</td>
+<td class="bl">0.14</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+2.4%</td>
+</tr>
+<tr>
+<td>4B</td>
+<td class="bl">0.29</td>
+<td class="bl">0.30</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+3.4%</td>
+</tr>
+<tr>
+<td>8B</td>
+<td class="bl">0.58</td>
+<td class="bl">0.59</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+1.7%</td>
+</tr>
+<tr>
+<td>16B</td>
+<td class="bl">1.17</td>
+<td class="bl">1.19</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+1.7%</td>
+</tr>
+<tr>
+<td>32B</td>
+<td class="bl">2.34</td>
+<td class="bl">2.37</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+1.3%</td>
+</tr>
+<tr>
+<td>64B</td>
+<td class="bl">4.68</td>
+<td class="bl">4.75</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+1.5%</td>
+</tr>
+<tr>
+<td>128B</td>
+<td class="bl">9.35</td>
+<td class="bl">9.50</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+1.6%</td>
+</tr>
+<tr>
+<td>256B</td>
+<td class="bl">18.66</td>
+<td class="bl">19.18</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+2.8%</td>
+</tr>
+<tr>
+<td>512B</td>
+<td class="bl">37.11</td>
+<td class="bl">39.01</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+5.1%</td>
+</tr>
+<tr>
+<td>1K</td>
+<td class="bl">73.76</td>
+<td class="bl">76.52</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+3.7%</td>
+</tr>
+<tr>
+<td>2K</td>
+<td class="bl">146.42</td>
+<td class="bl">149.18</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+1.9%</td>
+</tr>
+<tr>
+<td>4K</td>
+<td class="bl">287.88</td>
+<td class="bl">297.26</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+3.3%</td>
+</tr>
+<tr>
+<td>8K</td>
+<td class="bl">562.19</td>
+<td class="bl">582.05</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+3.5%</td>
+</tr>
+<tr>
+<td>16K</td>
+<td class="bl">750.18</td>
+<td class="bl">768.08</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+2.4%</td>
+</tr>
+<tr>
+<td>32K</td>
+<td class="bl">765.60</td>
+<td class="bl">770.65</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.7%</td>
+</tr>
+<tr>
+<td>64K</td>
+<td class="bl">718.21</td>
+<td class="bl">742.81</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+3.4%</td>
+</tr>
+<tr>
+<td>128K</td>
+<td class="bl">719.61</td>
+<td class="bl">755.12</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+4.9%</td>
+</tr>
+<tr>
+<td>256K</td>
+<td class="bl">721.63</td>
+<td class="bl">761.57</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+5.5%</td>
+</tr>
+<tr>
+<td>512K</td>
+<td class="bl">720.92</td>
+<td class="bl">763.96</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+6.0%</td>
+</tr>
+<tr>
+<td>1M</td>
+<td class="bl">721.59</td>
+<td class="bl">764.68</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+6.0%</td>
+</tr>
+<tr>
+<td>2M</td>
+<td class="bl">721.85</td>
+<td class="bl">764.92</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+6.0%</td>
+</tr>
+<tr>
+<td>4M</td>
+<td class="bl">722.34</td>
+<td class="bl">765.15</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+5.9%</td>
+</tr>
+<tr>
+<td>8M</td>
+<td class="bl">722.35</td>
+<td class="bl">764.21</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+5.8%</td>
+</tr>
+</tbody></table>
+<h3>QP = 8</h3>
+<table><thead><tr><th>Size</th><th class="bl">Base 1.125-a (Gbps)</th><th class="bl">Master pi-10 (Gbps)</th><th class="bl">Δ%</th></tr></thead><tbody>
+<tr>
+<td>2B</td>
+<td class="bl">0.15</td>
+<td class="bl">0.15</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+2.8%</td>
+</tr>
+<tr>
+<td>4B</td>
+<td class="bl">0.31</td>
+<td class="bl">0.32</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+3.2%</td>
+</tr>
+<tr>
+<td>8B</td>
+<td class="bl">0.62</td>
+<td class="bl">0.64</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+3.2%</td>
+</tr>
+<tr>
+<td>16B</td>
+<td class="bl">1.24</td>
+<td class="bl">1.28</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+3.2%</td>
+</tr>
+<tr>
+<td>32B</td>
+<td class="bl">2.49</td>
+<td class="bl">2.55</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+2.4%</td>
+</tr>
+<tr>
+<td>64B</td>
+<td class="bl">4.98</td>
+<td class="bl">5.11</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+2.6%</td>
+</tr>
+<tr>
+<td>128B</td>
+<td class="bl">9.94</td>
+<td class="bl">10.19</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+2.5%</td>
+</tr>
+<tr>
+<td>256B</td>
+<td class="bl">19.76</td>
+<td class="bl">20.32</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+2.8%</td>
+</tr>
+<tr>
+<td>512B</td>
+<td class="bl">39.56</td>
+<td class="bl">40.57</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+2.6%</td>
+</tr>
+<tr>
+<td>1K</td>
+<td class="bl">78.79</td>
+<td class="bl">80.80</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+2.6%</td>
+</tr>
+<tr>
+<td>2K</td>
+<td class="bl">156.59</td>
+<td class="bl">160.56</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+2.5%</td>
+</tr>
+<tr>
+<td>4K</td>
+<td class="bl">310.78</td>
+<td class="bl">321.18</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+3.3%</td>
+</tr>
+<tr>
+<td>8K</td>
+<td class="bl">635.18</td>
+<td class="bl">627.37</td>
+<td class="bl" style="color:#888;font-weight:bold">-1.2%</td>
+</tr>
+<tr>
+<td>16K</td>
+<td class="bl">759.83</td>
+<td class="bl">765.04</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.7%</td>
+</tr>
+<tr>
+<td>32K</td>
+<td class="bl">760.06</td>
+<td class="bl">765.01</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.7%</td>
+</tr>
+<tr>
+<td>64K</td>
+<td class="bl">723.44</td>
+<td class="bl">760.70</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+5.2%</td>
+</tr>
+<tr>
+<td>128K</td>
+<td class="bl">721.59</td>
+<td class="bl">763.48</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+5.8%</td>
+</tr>
+<tr>
+<td>256K</td>
+<td class="bl">721.30</td>
+<td class="bl">764.58</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+6.0%</td>
+</tr>
+<tr>
+<td>512K</td>
+<td class="bl">721.05</td>
+<td class="bl">765.72</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+6.2%</td>
+</tr>
+<tr>
+<td>1M</td>
+<td class="bl">721.22</td>
+<td class="bl">766.28</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+6.2%</td>
+</tr>
+<tr>
+<td>2M</td>
+<td class="bl">722.20</td>
+<td class="bl">766.63</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+6.2%</td>
+</tr>
+<tr>
+<td>4M</td>
+<td class="bl">722.08</td>
+<td class="bl">766.86</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+6.2%</td>
+</tr>
+<tr>
+<td>8M</td>
+<td class="bl">722.14</td>
+<td class="bl">767.19</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+6.2%</td>
+</tr>
+</tbody></table>
+<h3>QP = 16</h3>
+<table><thead><tr><th>Size</th><th class="bl">Base 1.125-a (Gbps)</th><th class="bl">Master pi-10 (Gbps)</th><th class="bl">Δ%</th></tr></thead><tbody>
+<tr>
+<td>2B</td>
+<td class="bl">0.15</td>
+<td class="bl">0.16</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+3.6%</td>
+</tr>
+<tr>
+<td>4B</td>
+<td class="bl">0.31</td>
+<td class="bl">0.32</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+3.2%</td>
+</tr>
+<tr>
+<td>8B</td>
+<td class="bl">0.61</td>
+<td class="bl">0.64</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+4.9%</td>
+</tr>
+<tr>
+<td>16B</td>
+<td class="bl">1.22</td>
+<td class="bl">1.29</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+5.7%</td>
+</tr>
+<tr>
+<td>32B</td>
+<td class="bl">2.45</td>
+<td class="bl">2.57</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+4.9%</td>
+</tr>
+<tr>
+<td>64B</td>
+<td class="bl">4.90</td>
+<td class="bl">5.15</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+5.1%</td>
+</tr>
+<tr>
+<td>128B</td>
+<td class="bl">9.78</td>
+<td class="bl">10.29</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+5.2%</td>
+</tr>
+<tr>
+<td>256B</td>
+<td class="bl">19.53</td>
+<td class="bl">20.51</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+5.0%</td>
+</tr>
+<tr>
+<td>512B</td>
+<td class="bl">38.99</td>
+<td class="bl">40.98</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+5.1%</td>
+</tr>
+<tr>
+<td>1K</td>
+<td class="bl">77.65</td>
+<td class="bl">81.55</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+5.0%</td>
+</tr>
+<tr>
+<td>2K</td>
+<td class="bl">154.30</td>
+<td class="bl">161.99</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+5.0%</td>
+</tr>
+<tr>
+<td>4K</td>
+<td class="bl">306.82</td>
+<td class="bl">324.93</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+5.9%</td>
+</tr>
+<tr>
+<td>8K</td>
+<td class="bl">628.19</td>
+<td class="bl">635.35</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+1.1%</td>
+</tr>
+<tr>
+<td>16K</td>
+<td class="bl">759.46</td>
+<td class="bl">762.67</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.4%</td>
+</tr>
+<tr>
+<td>32K</td>
+<td class="bl">759.67</td>
+<td class="bl">761.86</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
+</tr>
+<tr>
+<td>64K</td>
+<td class="bl">759.29</td>
+<td class="bl">765.42</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.8%</td>
+</tr>
+<tr>
+<td>128K</td>
+<td class="bl">759.49</td>
+<td class="bl">765.18</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.7%</td>
+</tr>
+<tr>
+<td>256K</td>
+<td class="bl">759.77</td>
+<td class="bl">765.20</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.7%</td>
+</tr>
+<tr>
+<td>512K</td>
+<td class="bl">759.91</td>
+<td class="bl">765.21</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.7%</td>
+</tr>
+<tr>
+<td>1M</td>
+<td class="bl">760.05</td>
+<td class="bl">765.21</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.7%</td>
+</tr>
+<tr>
+<td>2M</td>
+<td class="bl">760.18</td>
+<td class="bl">765.21</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.7%</td>
+</tr>
+<tr>
+<td>4M</td>
+<td class="bl">760.19</td>
+<td class="bl">765.22</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.7%</td>
+</tr>
+<tr>
+<td>8M</td>
+<td class="bl">760.20</td>
+<td class="bl">765.22</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.7%</td>
+</tr>
+</tbody></table>
+<h3>QP = 64</h3>
+<table><thead><tr><th>Size</th><th class="bl">Base 1.125-a (Gbps)</th><th class="bl">Master pi-10 (Gbps)</th><th class="bl">Δ%</th></tr></thead><tbody>
+<tr>
+<td>2B</td>
+<td class="bl">0.15</td>
+<td class="bl">0.16</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+4.1%</td>
+</tr>
+<tr>
+<td>4B</td>
+<td class="bl">0.30</td>
+<td class="bl">0.32</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+6.7%</td>
+</tr>
+<tr>
+<td>8B</td>
+<td class="bl">0.61</td>
+<td class="bl">0.65</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+6.6%</td>
+</tr>
+<tr>
+<td>16B</td>
+<td class="bl">1.22</td>
+<td class="bl">1.29</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+5.7%</td>
+</tr>
+<tr>
+<td>32B</td>
+<td class="bl">2.44</td>
+<td class="bl">2.59</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+6.1%</td>
+</tr>
+<tr>
+<td>64B</td>
+<td class="bl">4.88</td>
+<td class="bl">5.17</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+5.9%</td>
+</tr>
+<tr>
+<td>128B</td>
+<td class="bl">9.74</td>
+<td class="bl">10.33</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+6.1%</td>
+</tr>
+<tr>
+<td>256B</td>
+<td class="bl">19.45</td>
+<td class="bl">20.59</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+5.9%</td>
+</tr>
+<tr>
+<td>512B</td>
+<td class="bl">38.81</td>
+<td class="bl">41.13</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+6.0%</td>
+</tr>
+<tr>
+<td>1K</td>
+<td class="bl">77.33</td>
+<td class="bl">82.03</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+6.1%</td>
+</tr>
+<tr>
+<td>2K</td>
+<td class="bl">153.64</td>
+<td class="bl">162.75</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+5.9%</td>
+</tr>
+<tr>
+<td>4K</td>
+<td class="bl">306.19</td>
+<td class="bl">326.22</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+6.5%</td>
+</tr>
+<tr>
+<td>8K</td>
+<td class="bl">626.62</td>
+<td class="bl">638.44</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+1.9%</td>
+</tr>
+<tr>
+<td>16K</td>
+<td class="bl">759.73</td>
+<td class="bl">761.26</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.2%</td>
+</tr>
+<tr>
+<td>32K</td>
+<td class="bl">759.76</td>
+<td class="bl">760.41</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.1%</td>
+</tr>
+<tr>
+<td>64K</td>
+<td class="bl">759.74</td>
+<td class="bl">764.81</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.7%</td>
+</tr>
+<tr>
+<td>128K</td>
+<td class="bl">759.73</td>
+<td class="bl">764.63</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.6%</td>
+</tr>
+<tr>
+<td>256K</td>
+<td class="bl">759.76</td>
+<td class="bl">764.46</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.6%</td>
+</tr>
+<tr>
+<td>512K</td>
+<td class="bl">759.77</td>
+<td class="bl">764.42</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.6%</td>
+</tr>
+<tr>
+<td>1M</td>
+<td class="bl">759.78</td>
+<td class="bl">764.43</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.6%</td>
+</tr>
+<tr>
+<td>2M</td>
+<td class="bl">759.78</td>
+<td class="bl">764.42</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.6%</td>
+</tr>
+<tr>
+<td>4M</td>
+<td class="bl">759.78</td>
+<td class="bl">764.42</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.6%</td>
+</tr>
+<tr>
+<td>8M</td>
+<td class="bl">759.78</td>
+<td class="bl">764.42</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.6%</td>
+</tr>
+</tbody></table>
+<h3>QP = 256</h3>
+<table><thead><tr><th>Size</th><th class="bl">Base 1.125-a (Gbps)</th><th class="bl">Master pi-10 (Gbps)</th><th class="bl">Δ%</th></tr></thead><tbody>
+<tr>
+<td>2B</td>
+<td class="bl">0.16</td>
+<td class="bl">0.16</td>
+<td class="bl" style="color:#f57c00;font-weight:bold">-2.7%</td>
+</tr>
+<tr>
+<td>4B</td>
+<td class="bl">0.32</td>
+<td class="bl">0.32</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.0%</td>
+</tr>
+<tr>
+<td>8B</td>
+<td class="bl">0.63</td>
+<td class="bl">0.64</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+1.6%</td>
+</tr>
+<tr>
+<td>16B</td>
+<td class="bl">1.24</td>
+<td class="bl">1.29</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+4.0%</td>
+</tr>
+<tr>
+<td>32B</td>
+<td class="bl">2.47</td>
+<td class="bl">2.58</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+4.5%</td>
+</tr>
+<tr>
+<td>64B</td>
+<td class="bl">4.93</td>
+<td class="bl">5.17</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+4.9%</td>
+</tr>
+<tr>
+<td>128B</td>
+<td class="bl">9.85</td>
+<td class="bl">10.31</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+4.7%</td>
+</tr>
+<tr>
+<td>256B</td>
+<td class="bl">19.65</td>
+<td class="bl">20.56</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+4.6%</td>
+</tr>
+<tr>
+<td>512B</td>
+<td class="bl">39.22</td>
+<td class="bl">41.11</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+4.8%</td>
+</tr>
+<tr>
+<td>1K</td>
+<td class="bl">78.22</td>
+<td class="bl">81.96</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+4.8%</td>
+</tr>
+<tr>
+<td>2K</td>
+<td class="bl">155.40</td>
+<td class="bl">162.97</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+4.9%</td>
+</tr>
+<tr>
+<td>4K</td>
+<td class="bl">310.57</td>
+<td class="bl">326.73</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+5.2%</td>
+</tr>
+<tr>
+<td>8K</td>
+<td class="bl">633.57</td>
+<td class="bl">635.88</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.4%</td>
+</tr>
+<tr>
+<td>16K</td>
+<td class="bl">759.54</td>
+<td class="bl">761.82</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
+</tr>
+<tr>
+<td>32K</td>
+<td class="bl">759.69</td>
+<td class="bl">761.50</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.2%</td>
+</tr>
+<tr>
+<td>64K</td>
+<td class="bl">759.71</td>
+<td class="bl">762.08</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
+</tr>
+<tr>
+<td>128K</td>
+<td class="bl">759.67</td>
+<td class="bl">761.11</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.2%</td>
+</tr>
+<tr>
+<td>256K</td>
+<td class="bl">759.72</td>
+<td class="bl">761.75</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
+</tr>
+<tr>
+<td>512K</td>
+<td class="bl">759.75</td>
+<td class="bl">761.94</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
+</tr>
+<tr>
+<td>1M</td>
+<td class="bl">759.77</td>
+<td class="bl">762.43</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.4%</td>
+</tr>
+<tr>
+<td>2M</td>
+<td class="bl">759.77</td>
+<td class="bl">762.65</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.4%</td>
+</tr>
+<tr>
+<td>4M</td>
+<td class="bl">759.78</td>
+<td class="bl">762.75</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.4%</td>
+</tr>
+<tr>
+<td>8M</td>
+<td class="bl">759.78</td>
+<td class="bl">762.70</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.4%</td>
+</tr>
+</tbody></table>
+<h3>QP = 1024</h3>
+<table><thead><tr><th>Size</th><th class="bl">Base 1.125-a (Gbps)</th><th class="bl">Master pi-10 (Gbps)</th><th class="bl">Δ%</th></tr></thead><tbody>
+<tr>
+<td>2B</td>
+<td class="bl">0.15</td>
+<td class="bl">0.15</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+3.0%</td>
+</tr>
+<tr>
+<td>4B</td>
+<td class="bl">0.30</td>
+<td class="bl">0.31</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+3.3%</td>
+</tr>
+<tr>
+<td>8B</td>
+<td class="bl">0.61</td>
+<td class="bl">0.62</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+1.6%</td>
+</tr>
+<tr>
+<td>16B</td>
+<td class="bl">1.21</td>
+<td class="bl">1.24</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+2.5%</td>
+</tr>
+<tr>
+<td>32B</td>
+<td class="bl">2.43</td>
+<td class="bl">2.47</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+1.6%</td>
+</tr>
+<tr>
+<td>64B</td>
+<td class="bl">4.86</td>
+<td class="bl">4.95</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+1.9%</td>
+</tr>
+<tr>
+<td>128B</td>
+<td class="bl">9.70</td>
+<td class="bl">9.88</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+1.9%</td>
+</tr>
+<tr>
+<td>256B</td>
+<td class="bl">19.37</td>
+<td class="bl">19.74</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+1.9%</td>
+</tr>
+<tr>
+<td>512B</td>
+<td class="bl">38.68</td>
+<td class="bl">39.40</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+1.9%</td>
+</tr>
+<tr>
+<td>1K</td>
+<td class="bl">77.10</td>
+<td class="bl">78.52</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+1.8%</td>
+</tr>
+<tr>
+<td>2K</td>
+<td class="bl">153.45</td>
+<td class="bl">156.04</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+1.7%</td>
+</tr>
+<tr>
+<td>4K</td>
+<td class="bl">305.59</td>
+<td class="bl">312.32</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+2.2%</td>
+</tr>
+<tr>
+<td>8K</td>
+<td class="bl">588.44</td>
+<td class="bl">609.75</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+3.6%</td>
+</tr>
+<tr>
+<td>16K</td>
+<td class="bl">759.76</td>
+<td class="bl">761.72</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
+</tr>
+<tr>
+<td>32K</td>
+<td class="bl">759.76</td>
+<td class="bl">761.74</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
+</tr>
+<tr>
+<td>64K</td>
+<td class="bl">759.77</td>
+<td class="bl">762.09</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
+</tr>
+<tr>
+<td>128K</td>
+<td class="bl">759.77</td>
+<td class="bl">761.82</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
+</tr>
+<tr>
+<td>256K</td>
+<td class="bl">759.77</td>
+<td class="bl">761.85</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
+</tr>
+<tr>
+<td>512K</td>
+<td class="bl">759.78</td>
+<td class="bl">761.99</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
+</tr>
+<tr>
+<td>1M</td>
+<td class="bl">759.78</td>
+<td class="bl">761.92</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
+</tr>
+<tr>
+<td>2M</td>
+<td class="bl">759.78</td>
+<td class="bl">761.91</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
+</tr>
+<tr>
+<td>4M</td>
+<td class="bl">759.78</td>
+<td class="bl">761.89</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
+</tr>
+<tr>
+<td>8M</td>
+<td class="bl">759.78</td>
+<td class="bl">761.89</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
+</tr>
+</tbody></table>
+<h3>QP = 4090</h3>
+<table><thead><tr><th>Size</th><th class="bl">Base 1.125-a (Gbps)</th><th class="bl">Master pi-10 (Gbps)</th><th class="bl">Δ%</th></tr></thead><tbody>
+<tr>
+<td>2B</td>
+<td class="bl">0.15</td>
+<td class="bl">0.15</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.5%</td>
+</tr>
+<tr>
+<td>4B</td>
+<td class="bl">0.31</td>
+<td class="bl">0.30</td>
+<td class="bl" style="color:#f57c00;font-weight:bold">-3.2%</td>
+</tr>
+<tr>
+<td>8B</td>
+<td class="bl">0.62</td>
+<td class="bl">0.60</td>
+<td class="bl" style="color:#f57c00;font-weight:bold">-3.2%</td>
+</tr>
+<tr>
+<td>16B</td>
+<td class="bl">1.24</td>
+<td class="bl">1.21</td>
+<td class="bl" style="color:#f57c00;font-weight:bold">-2.4%</td>
+</tr>
+<tr>
+<td>32B</td>
+<td class="bl">2.48</td>
+<td class="bl">2.41</td>
+<td class="bl" style="color:#f57c00;font-weight:bold">-2.8%</td>
+</tr>
+<tr>
+<td>64B</td>
+<td class="bl">4.95</td>
+<td class="bl">4.82</td>
+<td class="bl" style="color:#f57c00;font-weight:bold">-2.6%</td>
+</tr>
+<tr>
+<td>128B</td>
+<td class="bl">9.89</td>
+<td class="bl">9.63</td>
+<td class="bl" style="color:#f57c00;font-weight:bold">-2.6%</td>
+</tr>
+<tr>
+<td>256B</td>
+<td class="bl">19.74</td>
+<td class="bl">19.23</td>
+<td class="bl" style="color:#f57c00;font-weight:bold">-2.6%</td>
+</tr>
+<tr>
+<td>512B</td>
+<td class="bl">39.34</td>
+<td class="bl">38.32</td>
+<td class="bl" style="color:#f57c00;font-weight:bold">-2.6%</td>
+</tr>
+<tr>
+<td>1K</td>
+<td class="bl">78.21</td>
+<td class="bl">76.15</td>
+<td class="bl" style="color:#f57c00;font-weight:bold">-2.6%</td>
+</tr>
+<tr>
+<td>2K</td>
+<td class="bl">154.73</td>
+<td class="bl">150.76</td>
+<td class="bl" style="color:#f57c00;font-weight:bold">-2.6%</td>
+</tr>
+<tr>
+<td>4K</td>
+<td class="bl">305.56</td>
+<td class="bl">300.23</td>
+<td class="bl" style="color:#888;font-weight:bold">-1.7%</td>
+</tr>
+<tr>
+<td>8K</td>
+<td class="bl">574.81</td>
+<td class="bl">578.09</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.6%</td>
+</tr>
+<tr>
+<td>16K</td>
+<td class="bl">758.76</td>
+<td class="bl">761.35</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
+</tr>
+<tr>
+<td>32K</td>
+<td class="bl">759.16</td>
+<td class="bl">759.93</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.1%</td>
+</tr>
+<tr>
+<td>64K</td>
+<td class="bl">759.17</td>
+<td class="bl">759.54</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.0%</td>
+</tr>
+<tr>
+<td>128K</td>
+<td class="bl">759.15</td>
+<td class="bl">759.17</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.0%</td>
+</tr>
+<tr>
+<td>256K</td>
+<td class="bl">759.19</td>
+<td class="bl">759.96</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.1%</td>
+</tr>
+<tr>
+<td>512K</td>
+<td class="bl">759.17</td>
+<td class="bl">759.76</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.1%</td>
+</tr>
+<tr>
+<td>1M</td>
+<td class="bl">759.17</td>
+<td class="bl">759.61</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.1%</td>
+</tr>
+<tr>
+<td>2M</td>
+<td class="bl">759.17</td>
+<td class="bl">759.62</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.1%</td>
+</tr>
+<tr>
+<td>4M</td>
+<td class="bl">759.17</td>
+<td class="bl">759.58</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.1%</td>
+</tr>
+<tr>
+<td>8M</td>
+<td class="bl">759.31</td>
+<td class="bl">759.60</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.0%</td>
+</tr>
+</tbody></table>
+<h2>IB CPU write_with_imm — bidirectional</h2>
+<h3>QP = 2</h3>
+<table><thead><tr><th>Size</th><th class="bl">Base 1.125-a (Gbps)</th><th class="bl">Master pi-10 (Gbps)</th><th class="bl">Δ%</th></tr></thead><tbody>
+<tr>
+<td>2B</td>
+<td class="bl">0.08</td>
+<td class="bl">0.08</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.0%</td>
+</tr>
+<tr>
+<td>4B</td>
+<td class="bl">0.16</td>
+<td class="bl">0.17</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+4.9%</td>
+</tr>
+<tr>
+<td>8B</td>
+<td class="bl">0.33</td>
+<td class="bl">0.35</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+6.1%</td>
+</tr>
+<tr>
+<td>16B</td>
+<td class="bl">0.66</td>
+<td class="bl">0.66</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.0%</td>
+</tr>
+<tr>
+<td>32B</td>
+<td class="bl">1.28</td>
+<td class="bl">1.34</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+4.7%</td>
+</tr>
+<tr>
+<td>64B</td>
+<td class="bl">2.60</td>
+<td class="bl">2.82</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+8.5%</td>
+</tr>
+<tr>
+<td>128B</td>
+<td class="bl">5.10</td>
+<td class="bl">5.33</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+4.5%</td>
+</tr>
+<tr>
+<td>256B</td>
+<td class="bl">10.32</td>
+<td class="bl">11.00</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+6.6%</td>
+</tr>
+<tr>
+<td>512B</td>
+<td class="bl">21.14</td>
+<td class="bl">22.34</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+5.7%</td>
+</tr>
+<tr>
+<td>1K</td>
+<td class="bl">41.74</td>
+<td class="bl">42.61</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+2.1%</td>
+</tr>
+<tr>
+<td>2K</td>
+<td class="bl">85.17</td>
+<td class="bl">88.13</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+3.5%</td>
+</tr>
+<tr>
+<td>4K</td>
+<td class="bl">173.65</td>
+<td class="bl">182.87</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+5.3%</td>
+</tr>
+<tr>
+<td>8K</td>
+<td class="bl">351.32</td>
+<td class="bl">346.99</td>
+<td class="bl" style="color:#888;font-weight:bold">-1.2%</td>
+</tr>
+<tr>
+<td>16K</td>
+<td class="bl">614.98</td>
+<td class="bl">618.26</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.5%</td>
+</tr>
+<tr>
+<td>32K</td>
+<td class="bl">761.76</td>
+<td class="bl">770.69</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+1.2%</td>
+</tr>
+<tr>
+<td>64K</td>
+<td class="bl">714.71</td>
+<td class="bl">742.15</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+3.8%</td>
+</tr>
+<tr>
+<td>128K</td>
+<td class="bl">718.07</td>
+<td class="bl">753.91</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+5.0%</td>
+</tr>
+<tr>
+<td>256K</td>
+<td class="bl">720.02</td>
+<td class="bl">760.44</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+5.6%</td>
+</tr>
+<tr>
+<td>512K</td>
+<td class="bl">719.84</td>
+<td class="bl">762.56</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+5.9%</td>
+</tr>
+<tr>
+<td>1M</td>
+<td class="bl">720.44</td>
+<td class="bl">764.00</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+6.0%</td>
+</tr>
+<tr>
+<td>2M</td>
+<td class="bl">720.93</td>
+<td class="bl">764.89</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+6.1%</td>
+</tr>
+<tr>
+<td>4M</td>
+<td class="bl">721.41</td>
+<td class="bl">765.51</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+6.1%</td>
+</tr>
+<tr>
+<td>8M</td>
+<td class="bl">721.59</td>
+<td class="bl">765.78</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+6.1%</td>
+</tr>
+</tbody></table>
+<h3>QP = 8</h3>
+<table><thead><tr><th>Size</th><th class="bl">Base 1.125-a (Gbps)</th><th class="bl">Master pi-10 (Gbps)</th><th class="bl">Δ%</th></tr></thead><tbody>
+<tr>
+<td>2B</td>
+<td class="bl">0.08</td>
+<td class="bl">0.05</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-31.8%</td>
+</tr>
+<tr>
+<td>4B</td>
+<td class="bl">0.17</td>
+<td class="bl">0.00</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-99.2%</td>
+</tr>
+<tr>
+<td>8B</td>
+<td class="bl">0.33</td>
+<td class="bl">0.00</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-99.2%</td>
+</tr>
+<tr>
+<td>16B</td>
+<td class="bl">0.66</td>
+<td class="bl">0.01</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-99.2%</td>
+</tr>
+<tr>
+<td>32B</td>
+<td class="bl">1.33</td>
+<td class="bl">0.01</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-99.2%</td>
+</tr>
+<tr>
+<td>64B</td>
+<td class="bl">2.65</td>
+<td class="bl">0.02</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-99.2%</td>
+</tr>
+<tr>
+<td>128B</td>
+<td class="bl">5.29</td>
+<td class="bl">0.04</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-99.2%</td>
+</tr>
+<tr>
+<td>256B</td>
+<td class="bl">10.62</td>
+<td class="bl">6.73</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-36.6%</td>
+</tr>
+<tr>
+<td>512B</td>
+<td class="bl">21.13</td>
+<td class="bl">0.17</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-99.2%</td>
+</tr>
+<tr>
+<td>1K</td>
+<td class="bl">42.19</td>
+<td class="bl">0.33</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-99.2%</td>
+</tr>
+<tr>
+<td>2K</td>
+<td class="bl">83.89</td>
+<td class="bl">0.67</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-99.2%</td>
+</tr>
+<tr>
+<td>4K</td>
+<td class="bl">166.08</td>
+<td class="bl">1.34</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-99.2%</td>
+</tr>
+<tr>
+<td>8K</td>
+<td class="bl">324.20</td>
+<td class="bl">332.54</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+2.6%</td>
+</tr>
+<tr>
+<td>16K</td>
+<td class="bl">629.81</td>
+<td class="bl">633.33</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.6%</td>
+</tr>
+<tr>
+<td>32K</td>
+<td class="bl">750.98</td>
+<td class="bl">763.48</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+1.7%</td>
+</tr>
+<tr>
+<td>64K</td>
+<td class="bl">709.08</td>
+<td class="bl">758.37</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+7.0%</td>
+</tr>
+<tr>
+<td>128K</td>
+<td class="bl">708.28</td>
+<td class="bl">761.44</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+7.5%</td>
+</tr>
+<tr>
+<td>256K</td>
+<td class="bl">708.20</td>
+<td class="bl">763.30</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+7.8%</td>
+</tr>
+<tr>
+<td>512K</td>
+<td class="bl">709.40</td>
+<td class="bl">764.49</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+7.8%</td>
+</tr>
+<tr>
+<td>1M</td>
+<td class="bl">709.91</td>
+<td class="bl">765.15</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+7.8%</td>
+</tr>
+<tr>
+<td>2M</td>
+<td class="bl">710.55</td>
+<td class="bl">765.41</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+7.7%</td>
+</tr>
+<tr>
+<td>4M</td>
+<td class="bl">710.38</td>
+<td class="bl">765.72</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+7.8%</td>
+</tr>
+<tr>
+<td>8M</td>
+<td class="bl">710.59</td>
+<td class="bl">766.10</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+7.8%</td>
+</tr>
+</tbody></table>
+<h3>QP = 16</h3>
+<table><thead><tr><th>Size</th><th class="bl">Base 1.125-a (Gbps)</th><th class="bl">Master pi-10 (Gbps)</th><th class="bl">Δ%</th></tr></thead><tbody>
+<tr>
+<td>2B</td>
+<td class="bl">0.09</td>
+<td class="bl">0.00</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-98.6%</td>
+</tr>
+<tr>
+<td>4B</td>
+<td class="bl">0.08</td>
+<td class="bl">0.00</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-96.7%</td>
+</tr>
+<tr>
+<td>8B</td>
+<td class="bl">0.37</td>
+<td class="bl">0.01</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-98.6%</td>
+</tr>
+<tr>
+<td>16B</td>
+<td class="bl">0.76</td>
+<td class="bl">0.01</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-98.6%</td>
+</tr>
+<tr>
+<td>32B</td>
+<td class="bl">1.51</td>
+<td class="bl">0.01</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-99.3%</td>
+</tr>
+<tr>
+<td>64B</td>
+<td class="bl">3.03</td>
+<td class="bl">0.04</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-98.6%</td>
+</tr>
+<tr>
+<td>128B</td>
+<td class="bl">6.03</td>
+<td class="bl">0.04</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-99.3%</td>
+</tr>
+<tr>
+<td>256B</td>
+<td class="bl">12.07</td>
+<td class="bl">0.17</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-98.6%</td>
+</tr>
+<tr>
+<td>512B</td>
+<td class="bl">24.21</td>
+<td class="bl">0.33</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-98.6%</td>
+</tr>
+<tr>
+<td>1K</td>
+<td class="bl">48.11</td>
+<td class="bl">0.50</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-99.0%</td>
+</tr>
+<tr>
+<td>2K</td>
+<td class="bl">95.76</td>
+<td class="bl">0.67</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-99.3%</td>
+</tr>
+<tr>
+<td>4K</td>
+<td class="bl">188.44</td>
+<td class="bl">2.66</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-98.6%</td>
+</tr>
+<tr>
+<td>8K</td>
+<td class="bl">364.73</td>
+<td class="bl">337.50</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-7.5%</td>
+</tr>
+<tr>
+<td>16K</td>
+<td class="bl">643.78</td>
+<td class="bl">636.00</td>
+<td class="bl" style="color:#888;font-weight:bold">-1.2%</td>
+</tr>
+<tr>
+<td>32K</td>
+<td class="bl">758.29</td>
+<td class="bl">762.02</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.5%</td>
+</tr>
+<tr>
+<td>64K</td>
+<td class="bl">741.33</td>
+<td class="bl">765.39</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+3.2%</td>
+</tr>
+<tr>
+<td>128K</td>
+<td class="bl">739.88</td>
+<td class="bl">765.15</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+3.4%</td>
+</tr>
+<tr>
+<td>256K</td>
+<td class="bl">737.47</td>
+<td class="bl">765.20</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+3.8%</td>
+</tr>
+<tr>
+<td>512K</td>
+<td class="bl">737.52</td>
+<td class="bl">765.21</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+3.8%</td>
+</tr>
+<tr>
+<td>1M</td>
+<td class="bl">737.66</td>
+<td class="bl">765.21</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+3.7%</td>
+</tr>
+<tr>
+<td>2M</td>
+<td class="bl">737.31</td>
+<td class="bl">765.22</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+3.8%</td>
+</tr>
+<tr>
+<td>4M</td>
+<td class="bl">737.27</td>
+<td class="bl">765.22</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+3.8%</td>
+</tr>
+<tr>
+<td>8M</td>
+<td class="bl">737.19</td>
+<td class="bl">765.22</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+3.8%</td>
+</tr>
+</tbody></table>
+<h3>QP = 64</h3>
+<table><thead><tr><th>Size</th><th class="bl">Base 1.125-a (Gbps)</th><th class="bl">Master pi-10 (Gbps)</th><th class="bl">Δ%</th></tr></thead><tbody>
+<tr>
+<td>2B</td>
+<td class="bl">0.01</td>
+<td class="bl">0.01</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-50.0%</td>
+</tr>
+<tr>
+<td>4B</td>
+<td class="bl">0.01</td>
+<td class="bl">0.01</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-23.2%</td>
+</tr>
+<tr>
+<td>8B</td>
+<td class="bl">0.02</td>
+<td class="bl">0.02</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-23.2%</td>
+</tr>
+<tr>
+<td>16B</td>
+<td class="bl">0.04</td>
+<td class="bl">0.03</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-23.3%</td>
+</tr>
+<tr>
+<td>32B</td>
+<td class="bl">0.08</td>
+<td class="bl">0.04</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-47.7%</td>
+</tr>
+<tr>
+<td>64B</td>
+<td class="bl">1.41</td>
+<td class="bl">0.12</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-91.3%</td>
+</tr>
+<tr>
+<td>128B</td>
+<td class="bl">0.33</td>
+<td class="bl">0.25</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-24.2%</td>
+</tr>
+<tr>
+<td>256B</td>
+<td class="bl">0.67</td>
+<td class="bl">0.49</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-26.9%</td>
+</tr>
+<tr>
+<td>512B</td>
+<td class="bl">1.34</td>
+<td class="bl">0.67</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-50.0%</td>
+</tr>
+<tr>
+<td>1K</td>
+<td class="bl">2.68</td>
+<td class="bl">1.96</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-26.9%</td>
+</tr>
+<tr>
+<td>2K</td>
+<td class="bl">5.34</td>
+<td class="bl">3.92</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-26.6%</td>
+</tr>
+<tr>
+<td>4K</td>
+<td class="bl">10.69</td>
+<td class="bl">7.83</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-26.8%</td>
+</tr>
+<tr>
+<td>8K</td>
+<td class="bl">375.96</td>
+<td class="bl">336.39</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-10.5%</td>
+</tr>
+<tr>
+<td>16K</td>
+<td class="bl">639.15</td>
+<td class="bl">611.12</td>
+<td class="bl" style="color:#f57c00;font-weight:bold">-4.4%</td>
+</tr>
+<tr>
+<td>32K</td>
+<td class="bl">759.50</td>
+<td class="bl">760.84</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.2%</td>
+</tr>
+<tr>
+<td>64K</td>
+<td class="bl">759.81</td>
+<td class="bl">763.87</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.5%</td>
+</tr>
+<tr>
+<td>128K</td>
+<td class="bl">759.83</td>
+<td class="bl">763.55</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.5%</td>
+</tr>
+<tr>
+<td>256K</td>
+<td class="bl">759.91</td>
+<td class="bl">763.55</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.5%</td>
+</tr>
+<tr>
+<td>512K</td>
+<td class="bl">759.94</td>
+<td class="bl">763.52</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.5%</td>
+</tr>
+<tr>
+<td>1M</td>
+<td class="bl">759.99</td>
+<td class="bl">763.52</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.5%</td>
+</tr>
+<tr>
+<td>2M</td>
+<td class="bl">760.00</td>
+<td class="bl">763.54</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.5%</td>
+</tr>
+<tr>
+<td>4M</td>
+<td class="bl">760.00</td>
+<td class="bl">763.53</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.5%</td>
+</tr>
+<tr>
+<td>8M</td>
+<td class="bl">760.02</td>
+<td class="bl">763.54</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.5%</td>
+</tr>
+</tbody></table>
+<h3>QP = 256</h3>
+<table><thead><tr><th>Size</th><th class="bl">Base 1.125-a (Gbps)</th><th class="bl">Master pi-10 (Gbps)</th><th class="bl">Δ%</th></tr></thead><tbody>
+<tr>
+<td>2B</td>
+<td class="bl">0.08</td>
+<td class="bl">0.00</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-97.4%</td>
+</tr>
+<tr>
+<td>4B</td>
+<td class="bl">0.00</td>
+<td class="bl">0.00</td>
+<td class="bl"></td>
+</tr>
+<tr>
+<td>8B</td>
+<td class="bl">0.01</td>
+<td class="bl">0.01</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-17.1%</td>
+</tr>
+<tr>
+<td>16B</td>
+<td class="bl">0.02</td>
+<td class="bl">0.02</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-16.6%</td>
+</tr>
+<tr>
+<td>32B</td>
+<td class="bl">0.03</td>
+<td class="bl">0.03</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+11.6%</td>
+</tr>
+<tr>
+<td>64B</td>
+<td class="bl">1.31</td>
+<td class="bl">0.07</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-94.9%</td>
+</tr>
+<tr>
+<td>128B</td>
+<td class="bl">2.60</td>
+<td class="bl">0.13</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-94.9%</td>
+</tr>
+<tr>
+<td>256B</td>
+<td class="bl">5.19</td>
+<td class="bl">0.27</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-94.8%</td>
+</tr>
+<tr>
+<td>512B</td>
+<td class="bl">10.30</td>
+<td class="bl">0.54</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-94.8%</td>
+</tr>
+<tr>
+<td>1K</td>
+<td class="bl">20.51</td>
+<td class="bl">1.07</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-94.8%</td>
+</tr>
+<tr>
+<td>2K</td>
+<td class="bl">40.55</td>
+<td class="bl">2.14</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-94.7%</td>
+</tr>
+<tr>
+<td>4K</td>
+<td class="bl">79.53</td>
+<td class="bl">4.27</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-94.6%</td>
+</tr>
+<tr>
+<td>8K</td>
+<td class="bl">322.31</td>
+<td class="bl">318.08</td>
+<td class="bl" style="color:#888;font-weight:bold">-1.3%</td>
+</tr>
+<tr>
+<td>16K</td>
+<td class="bl">606.81</td>
+<td class="bl">606.66</td>
+<td class="bl" style="color:#888;font-weight:bold">-0.0%</td>
+</tr>
+<tr>
+<td>32K</td>
+<td class="bl">759.63</td>
+<td class="bl">759.46</td>
+<td class="bl" style="color:#888;font-weight:bold">-0.0%</td>
+</tr>
+<tr>
+<td>64K</td>
+<td class="bl">760.21</td>
+<td class="bl">761.50</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.2%</td>
+</tr>
+<tr>
+<td>128K</td>
+<td class="bl">760.15</td>
+<td class="bl">761.78</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.2%</td>
+</tr>
+<tr>
+<td>256K</td>
+<td class="bl">760.24</td>
+<td class="bl">761.92</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.2%</td>
+</tr>
+<tr>
+<td>512K</td>
+<td class="bl">760.29</td>
+<td class="bl">761.79</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.2%</td>
+</tr>
+<tr>
+<td>1M</td>
+<td class="bl">760.32</td>
+<td class="bl">762.03</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.2%</td>
+</tr>
+<tr>
+<td>2M</td>
+<td class="bl">760.33</td>
+<td class="bl">762.57</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
+</tr>
+<tr>
+<td>4M</td>
+<td class="bl">760.34</td>
+<td class="bl">762.52</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
+</tr>
+<tr>
+<td>8M</td>
+<td class="bl">760.35</td>
+<td class="bl">762.75</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
+</tr>
+</tbody></table>
+<h3>QP = 1024</h3>
+<table><thead><tr><th>Size</th><th class="bl">Base 1.125-a (Gbps)</th><th class="bl">Master pi-10 (Gbps)</th><th class="bl">Δ%</th></tr></thead><tbody>
+<tr>
+<td>2B</td>
+<td class="bl">0.05</td>
+<td class="bl">0.05</td>
+<td class="bl" style="color:#c62828;font-weight:bold">-9.0%</td>
+</tr>
+<tr>
+<td>4B</td>
+<td class="bl">0.09</td>
+<td class="bl">0.09</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+1.1%</td>
+</tr>
+<tr>
+<td>8B</td>
+<td class="bl">0.19</td>
+<td class="bl">0.18</td>
+<td class="bl" style="color:#f57c00;font-weight:bold">-4.2%</td>
+</tr>
+<tr>
+<td>16B</td>
+<td class="bl">0.37</td>
+<td class="bl">0.36</td>
+<td class="bl" style="color:#f57c00;font-weight:bold">-2.7%</td>
+</tr>
+<tr>
+<td>32B</td>
+<td class="bl">0.75</td>
+<td class="bl">0.73</td>
+<td class="bl" style="color:#f57c00;font-weight:bold">-2.7%</td>
+</tr>
+<tr>
+<td>64B</td>
+<td class="bl">1.50</td>
+<td class="bl">1.45</td>
+<td class="bl" style="color:#f57c00;font-weight:bold">-3.3%</td>
+</tr>
+<tr>
+<td>128B</td>
+<td class="bl">2.99</td>
+<td class="bl">2.90</td>
+<td class="bl" style="color:#f57c00;font-weight:bold">-3.0%</td>
+</tr>
+<tr>
+<td>256B</td>
+<td class="bl">5.97</td>
+<td class="bl">5.79</td>
+<td class="bl" style="color:#f57c00;font-weight:bold">-3.0%</td>
+</tr>
+<tr>
+<td>512B</td>
+<td class="bl">11.88</td>
+<td class="bl">11.52</td>
+<td class="bl" style="color:#f57c00;font-weight:bold">-3.0%</td>
+</tr>
+<tr>
+<td>1K</td>
+<td class="bl">23.63</td>
+<td class="bl">22.93</td>
+<td class="bl" style="color:#f57c00;font-weight:bold">-3.0%</td>
+</tr>
+<tr>
+<td>2K</td>
+<td class="bl">47.04</td>
+<td class="bl">45.54</td>
+<td class="bl" style="color:#f57c00;font-weight:bold">-3.2%</td>
+</tr>
+<tr>
+<td>4K</td>
+<td class="bl">93.08</td>
+<td class="bl">90.72</td>
+<td class="bl" style="color:#f57c00;font-weight:bold">-2.5%</td>
+</tr>
+<tr>
+<td>8K</td>
+<td class="bl">180.01</td>
+<td class="bl">178.68</td>
+<td class="bl" style="color:#888;font-weight:bold">-0.7%</td>
+</tr>
+<tr>
+<td>16K</td>
+<td class="bl">346.04</td>
+<td class="bl">349.74</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+1.1%</td>
+</tr>
+<tr>
+<td>32K</td>
+<td class="bl">676.07</td>
+<td class="bl">659.15</td>
+<td class="bl" style="color:#f57c00;font-weight:bold">-2.5%</td>
+</tr>
+<tr>
+<td>64K</td>
+<td class="bl">760.28</td>
+<td class="bl">762.58</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
+</tr>
+<tr>
+<td>128K</td>
+<td class="bl">760.29</td>
+<td class="bl">762.69</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
+</tr>
+<tr>
+<td>256K</td>
+<td class="bl">760.29</td>
+<td class="bl">762.68</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
+</tr>
+<tr>
+<td>512K</td>
+<td class="bl">760.08</td>
+<td class="bl">762.69</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
+</tr>
+<tr>
+<td>1M</td>
+<td class="bl">759.93</td>
+<td class="bl">762.39</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
+</tr>
+<tr>
+<td>2M</td>
+<td class="bl">759.83</td>
+<td class="bl">762.30</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
+</tr>
+<tr>
+<td>4M</td>
+<td class="bl">759.81</td>
+<td class="bl">762.21</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
+</tr>
+<tr>
+<td>8M</td>
+<td class="bl">759.74</td>
+<td class="bl">762.14</td>
+<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
+</tr>
+</tbody></table>
+<h3>QP = 4090</h3>
+<p class="skip" style="padding:8px;background:#ffe0b2">SKIPPED — KI-009: write_with_imm fails at 4090 QPs on 1x800 profile</p>
+<hr><p style="color:#999;font-size:11px">Generated by gen-master-vs-125a-report.py | Color: green ≥0%, gray -2..0%, orange -2..-5%, red &lt;-5%</p>
+</body></html>

@@ -1,0 +1,5 @@
+mode,qp,size,iters,bw_gbps
+write_bw,2,2,10000,0.118314
+write_bw,8,2,10000,0.124731
+write_bw,16,2,10000,0.126177
+write_bw,64,2,10000,0.124240

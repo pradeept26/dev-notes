@@ -25,14 +25,7 @@ cd ~/dev-notes && git pull
 ```
 
 ## Critical Build and Test Requirements
-- **ALWAYS use tmux for builds AND long-running tests**: Session name is ALWAYS `pensando-sw` (one per workspace)
-  - Check existing session: `tmux ls | grep pensando-sw`
-  - Attach to existing: `tmux attach -t pensando-sw`
-  - Create new if doesn't exist: `~/dev-notes/pensando-sw/scripts/build-hydra.sh`
-  - Protects against SSH disconnects, allows background builds
-  - Detach: `Ctrl+b d`, Reattach: `tmux attach -t pensando-sw`
-  - **IMPORTANT:** Reuse same session across Claude sessions - check if it exists first!
-  - **IB/RDMA Tests**: ALWAYS run in tmux window (tests take 45-60+ minutes, network interruptions fatal)
+- **tmux is NOT required** (user feedback 2026-05-25): the older "ALWAYS use tmux" guidance is stale. Use Claude's `run_in_background: true` for long-running shell commands instead — output streams to a file you can poll. Only use tmux if the user explicitly asks for it.
 - **ALWAYS build inside Docker**: All builds MUST run in Docker container
 - Check if in docker: `pwd` should show `/sw` (not `/ws/pradeept/...`)
 - **Update submodules FIRST (outside docker)**: `git submodule update --init --recursive` when switching branches/versions
