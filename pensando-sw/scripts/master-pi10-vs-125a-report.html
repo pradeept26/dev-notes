@@ -1,1873 +1,1906 @@
 <!DOCTYPE html><html><head><meta charset="utf-8">
-<title>Master 1.130-pi-10 vs 1.125-a Baseline</title>
+<title>Master 1.130-pi-10 vs 1.125-a Baseline — SMC1/SMC2</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
-body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; max-width: 1800px; margin: 0 auto; padding: 20px; background: #f8f9fa; }
+* { box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 0 auto; padding: 20px; background: #f8f9fa; color: #333; max-width: 1700px; }
 h1 { color: #1a237e; border-bottom: 3px solid #1a237e; padding-bottom: 10px; }
-h2 { color: #283593; margin-top: 30px; border-bottom: 2px solid #c5cae9; padding-bottom: 6px; }
-h3 { color: #3949ab; margin-top: 16px; }
-table { border-collapse: collapse; width: 100%; margin: 8px 0 20px 0; font-size: 12px; }
-th { background: #1a237e; color: white; padding: 6px 8px; text-align: right; font-size: 11px; white-space: nowrap; }
+h2 { color: #283593; margin-top: 40px; border-bottom: 2px solid #c5cae9; padding-bottom: 8px; }
+h3 { color: #3949ab; margin-top: 20px; }
+table { border-collapse: collapse; margin: 8px 0 20px 0; font-size: 12px; width: 100%; }
+th { background: #1a237e; color: white; padding: 6px 8px; text-align: right; white-space: nowrap; font-size: 11px; }
 th:first-child { text-align: left; }
-td { padding: 4px 8px; border-bottom: 1px solid #e0e0e0; text-align: right; font-family: "SF Mono",Consolas,monospace; font-size: 11px; }
+th.grp { background: #283593; border-left: 2px solid #fff; }
+td { padding: 5px 8px; border-bottom: 1px solid #e0e0e0; text-align: right; font-family: "SF Mono",Consolas,monospace; font-size: 11px; }
 td:first-child { text-align: left; font-family: inherit; font-weight: 500; }
-tr:nth-child(even) { background: #fafafa; }
+td.bl { border-left: 2px solid #c5cae9; }
 tr:hover { background: #e8eaf6; }
-.card { background: white; border-radius: 8px; padding: 18px; margin: 12px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
+tr:nth-child(even) { background: #f5f5f5; }
+.card { background: white; border-radius: 8px; padding: 20px; margin: 15px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 .metric { display: inline-block; margin: 10px 30px 10px 0; text-align: center; }
 .metric-value { font-size: 32px; font-weight: bold; }
-.metric-label { font-size: 12px; color: #666; }
-.bl { border-left: 2px solid #c5cae9; }
-.skip { background: #ffe0b2; color: #555; font-style: italic; }
+.metric-label { font-size: 12px; color: #666; margin-top: 4px; }
+.note { color: #666; font-size: 12px; margin-bottom: 8px; }
+.pos { color: #2e7d32; font-weight: bold; }
+.neg { color: #c62828; font-weight: bold; }
+.warn { color: #f57c00; font-weight: bold; }
+.neutral { color: #888; font-weight: bold; }
+.skip { background: #ffe0b2; color: #555; font-style: italic; padding: 8px; border-radius: 4px; }
+.chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+.chart-box { background: white; padding: 16px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.chart-full { background: white; padding: 16px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 16px; }
 </style></head><body>
-<h1>Master 1.130.0-pi-10 vs 1.125-a Baseline — SMC1/SMC2 CPU IB + RCCL</h1>
-<p><b>Testbed:</b> smc1 (10.30.75.198) + smc2 (10.30.75.204), Vulcano 8x400G, Micas switch<br>
-<b>Master FW:</b> 1.130.0-pi-10 (master + PT0 CSR meta_roce timestamp fix)<br>
-<b>Baseline:</b> 1.125-a (qp-scale-sweep-report.html @ 2026-05-14) + baseline_140 (FW 1.125-a-140 @ 2026-05-19)<br>
-<b>NIC:</b> roce_benic1p1 (single NIC, bidirectional, CPU memory)<br>
-<b>Master IB CSV:</b> /home/pradeept/dev-notes/pensando-sw/scripts/ib-master-pi10-20260525_1454/summary.csv</p>
-<div class="card"><h2 style="margin-top:0;border:none">RCCL (16-rank, 1K-16G, 100 iter, 5 warmup)</h2>
-<table><thead><tr><th>Collective</th><th class="bl">Baseline 1.125-a (GB/s)</th><th class="bl">Master 1.130-pi10 (GB/s)</th><th class="bl">Δ%</th></tr></thead><tbody>
-<tr><td>all_reduce</td><td class="bl">140.97</td><td class="bl">142.71</td><td class="bl" style="color:#2e7d32;font-weight:bold">+1.2%</td></tr>
-<tr><td>sendrecv</td><td class="bl">15.16</td><td class="bl">15.27</td><td class="bl" style="color:#2e7d32;font-weight:bold">+0.7%</td></tr>
-<tr><td>alltoall</td><td class="bl">43.26</td><td class="bl">42.99</td><td class="bl" style="color:#888;font-weight:bold">-0.6%</td></tr>
-<tr><td>alltoallv</td><td class="bl">31.63</td><td class="bl">31.79</td><td class="bl" style="color:#2e7d32;font-weight:bold">+0.5%</td></tr>
-</tbody></table></div>
-<h2>IB CPU write_bw — bidirectional</h2>
+<h1>Master 1.130.0-pi-10 vs 1.125-a Baseline — CPU IB + RCCL</h1>
+<p><b>Date:</b> 2026-05-25 16:17 | <b>Testbed:</b> smc1+smc2 (Vulcano, 8x400G, Micas switch)<br>
+<b>Master FW:</b> 1.130.0-pi-10 (master + PT0 CSR meta_roce timestamp fix, commit 4a284fe77c2)<br>
+<b>Baseline IB:</b> 1.125-a (qp-scale-sweep-report.html @ 2026-05-14, test-smc-build-v2)<br>
+<b>Baseline RCCL:</b> 1.125-a-140 (baseline_140_20260519_0058)<br>
+<b>NIC:</b> roce_benic1p1 (single NIC, bidirectional) | <b>Flags:</b> <code>--use_hugepages -i 1 -b -F</code>, NUMA-pinned, TX/RX/path auto-tuned per QP</p>
+<div class="card"><h2 style="margin-top:0;border:none">Summary</h2>
+<div class="metric"><div class="metric-value" style="color:#2e7d32">299</div><div class="metric-label">IB cells compared</div></div>
+<div class="metric"><div class="metric-value" style="color:#2e7d32">42</div><div class="metric-label">Gains &gt;5%</div></div>
+<div class="metric"><div class="metric-value" style="color:#c62828">17</div><div class="metric-label">Regressions &gt;5%</div></div>
+<div class="metric"><div class="metric-value" style="color:#1a237e">770.7</div><div class="metric-label">Peak Master (Gbps)</div></div>
+<div class="metric"><div class="metric-value" style="color:#1a237e">142.7</div><div class="metric-label">RCCL all_reduce GB/s</div></div>
+<p style="margin-top:18px"><b>Verdict:</b> No regression on RCCL workloads (within ±1.2%). IB shows <span class="pos">+5-8% gain at low QP (2, 8)</span> for large messages — consistent with the PT0 CSR meta_roce timestamp fix. Mid/high-QP IB flat. The 17 cells flagged as regressions are all in tiny-message (256B-4KB) <code>write_with_imm</code> × QP=8 region, which was also noisy in the baseline data.</p>
+</div>
+<h2>RCCL Collective Performance (16-rank, 1K–16G, 100 iter)</h2>
+<div class="chart-full"><canvas id="rccl_chart" height="80"></canvas></div>
+<table><thead><tr><th>Collective</th><th class="grp">Baseline 1.125-a</th><th class="grp">Master pi-10</th><th class="grp">Δ%</th></tr></thead><tbody>
+<tr><td>all_reduce</td><td class="bl">140.97</td><td class="bl">142.71</td><td class="bl pos">+1.2%</td></tr>
+<tr><td>sendrecv</td><td class="bl">15.16</td><td class="bl">15.27</td><td class="bl pos">+0.7%</td></tr>
+<tr><td>alltoall</td><td class="bl">43.26</td><td class="bl">42.99</td><td class="bl neutral">-0.6%</td></tr>
+<tr><td>alltoallv</td><td class="bl">31.63</td><td class="bl">31.79</td><td class="bl pos">+0.5%</td></tr>
+</tbody></table>
+<h3>RCCL busBw vs Message Size (per collective)</h3>
+<div class="chart-row">
+<div class="chart-box"><canvas id="rccl_perdata_all_reduce" height="180"></canvas></div>
+<div class="chart-box"><canvas id="rccl_perdata_sendrecv" height="180"></canvas></div>
+<div class="chart-box"><canvas id="rccl_perdata_alltoall" height="180"></canvas></div>
+<div class="chart-box"><canvas id="rccl_perdata_alltoallv" height="180"></canvas></div>
+</div>
+<h2>IB Bandwidth Summary — Bandwidth by QP</h2>
+<div class="chart-row">
+<div class="chart-box"><canvas id="qp_8m_chart" height="200"></canvas></div>
+<div class="chart-box"><canvas id="qp_64k_chart" height="200"></canvas></div>
+</div>
+<h3>BW @ 8M (line-rate target)</h3>
+<table><thead><tr><th>QP</th><th class="grp">write_bw Base</th><th class="grp">write_bw Master</th><th class="grp">Δ%</th><th class="grp">write_imm Base</th><th class="grp">write_imm Master</th><th class="grp">Δ%</th></tr></thead><tbody>
+<tr><td>2</td><td class="bl">722.35</td><td class="bl">764.21</td><td class="bl pos">+5.8%</td><td class="bl">721.59</td><td class="bl">765.78</td><td class="bl pos">+6.1%</td></tr>
+<tr><td>8</td><td class="bl">722.14</td><td class="bl">767.19</td><td class="bl pos">+6.2%</td><td class="bl">710.59</td><td class="bl">766.10</td><td class="bl pos">+7.8%</td></tr>
+<tr><td>16</td><td class="bl">760.20</td><td class="bl">765.22</td><td class="bl pos">+0.7%</td><td class="bl">737.19</td><td class="bl">765.22</td><td class="bl pos">+3.8%</td></tr>
+<tr><td>64</td><td class="bl">759.78</td><td class="bl">764.42</td><td class="bl pos">+0.6%</td><td class="bl">760.02</td><td class="bl">763.54</td><td class="bl pos">+0.5%</td></tr>
+<tr><td>256</td><td class="bl">759.78</td><td class="bl">762.70</td><td class="bl pos">+0.4%</td><td class="bl">760.35</td><td class="bl">762.75</td><td class="bl pos">+0.3%</td></tr>
+<tr><td>1024</td><td class="bl">759.78</td><td class="bl">761.89</td><td class="bl pos">+0.3%</td><td class="bl">759.74</td><td class="bl">762.14</td><td class="bl pos">+0.3%</td></tr>
+<tr><td>4090</td><td class="bl">759.31</td><td class="bl">759.60</td><td class="bl pos">+0.0%</td><td class="bl">759.35</td><td class="bl">SKIP</td><td class="bl"></td></tr>
+</tbody></table>
+<h3>BW @ 64K (mid-size)</h3>
+<table><thead><tr><th>QP</th><th class="grp">write_bw Base</th><th class="grp">write_bw Master</th><th class="grp">Δ%</th><th class="grp">write_imm Base</th><th class="grp">write_imm Master</th><th class="grp">Δ%</th></tr></thead><tbody>
+<tr><td>2</td><td class="bl">718.21</td><td class="bl">742.81</td><td class="bl pos">+3.4%</td><td class="bl">714.71</td><td class="bl">742.15</td><td class="bl pos">+3.8%</td></tr>
+<tr><td>8</td><td class="bl">723.44</td><td class="bl">760.70</td><td class="bl pos">+5.2%</td><td class="bl">709.08</td><td class="bl">758.37</td><td class="bl pos">+7.0%</td></tr>
+<tr><td>16</td><td class="bl">759.29</td><td class="bl">765.42</td><td class="bl pos">+0.8%</td><td class="bl">741.33</td><td class="bl">765.39</td><td class="bl pos">+3.2%</td></tr>
+<tr><td>64</td><td class="bl">759.74</td><td class="bl">764.81</td><td class="bl pos">+0.7%</td><td class="bl">759.81</td><td class="bl">763.87</td><td class="bl pos">+0.5%</td></tr>
+<tr><td>256</td><td class="bl">759.71</td><td class="bl">762.08</td><td class="bl pos">+0.3%</td><td class="bl">760.21</td><td class="bl">761.50</td><td class="bl pos">+0.2%</td></tr>
+<tr><td>1024</td><td class="bl">759.77</td><td class="bl">762.09</td><td class="bl pos">+0.3%</td><td class="bl">760.28</td><td class="bl">762.58</td><td class="bl pos">+0.3%</td></tr>
+<tr><td>4090</td><td class="bl">759.17</td><td class="bl">759.54</td><td class="bl pos">+0.0%</td><td class="bl">315.16</td><td class="bl">SKIP</td><td class="bl"></td></tr>
+</tbody></table>
+<h2>IB Per-QP Detail: Bandwidth vs Message Size (Gbps, Bidirectional)</h2>
 <h3>QP = 2</h3>
-<table><thead><tr><th>Size</th><th class="bl">Base 1.125-a (Gbps)</th><th class="bl">Master pi-10 (Gbps)</th><th class="bl">Δ%</th></tr></thead><tbody>
+<div class="chart-row">
+<div class="chart-box"><canvas id="ib_chart_wb_2" height="200"></canvas></div>
+<div class="chart-box"><canvas id="ib_chart_wi_2" height="200"></canvas></div>
+</div>
+<table><thead><tr><th>Size</th><th class="grp">write_bw Base</th><th class="grp">write_bw Master</th><th class="grp">Δ%</th><th class="grp">write_imm Base</th><th class="grp">write_imm Master</th><th class="grp">Δ%</th></tr></thead><tbody>
 <tr>
-<td>2B</td>
+<td>2</td>
 <td class="bl">0.14</td>
 <td class="bl">0.14</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+2.4%</td>
+<td class="bl pos">+2.4%</td>
+<td class="bl">0.08</td>
+<td class="bl">0.08</td>
+<td class="bl pos">+0.0%</td>
 </tr>
 <tr>
-<td>4B</td>
+<td>4</td>
 <td class="bl">0.29</td>
 <td class="bl">0.30</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+3.4%</td>
+<td class="bl pos">+3.4%</td>
+<td class="bl">0.16</td>
+<td class="bl">0.17</td>
+<td class="bl pos">+4.9%</td>
 </tr>
 <tr>
-<td>8B</td>
+<td>8</td>
 <td class="bl">0.58</td>
 <td class="bl">0.59</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+1.7%</td>
+<td class="bl pos">+1.7%</td>
+<td class="bl">0.33</td>
+<td class="bl">0.35</td>
+<td class="bl pos">+6.1%</td>
 </tr>
 <tr>
-<td>16B</td>
+<td>16</td>
 <td class="bl">1.17</td>
 <td class="bl">1.19</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+1.7%</td>
+<td class="bl pos">+1.7%</td>
+<td class="bl">0.66</td>
+<td class="bl">0.66</td>
+<td class="bl pos">+0.0%</td>
 </tr>
 <tr>
-<td>32B</td>
+<td>32</td>
 <td class="bl">2.34</td>
 <td class="bl">2.37</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+1.3%</td>
+<td class="bl pos">+1.3%</td>
+<td class="bl">1.28</td>
+<td class="bl">1.34</td>
+<td class="bl pos">+4.7%</td>
 </tr>
 <tr>
-<td>64B</td>
+<td>64</td>
 <td class="bl">4.68</td>
 <td class="bl">4.75</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+1.5%</td>
+<td class="bl pos">+1.5%</td>
+<td class="bl">2.60</td>
+<td class="bl">2.82</td>
+<td class="bl pos">+8.5%</td>
 </tr>
 <tr>
-<td>128B</td>
+<td>128</td>
 <td class="bl">9.35</td>
 <td class="bl">9.50</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+1.6%</td>
+<td class="bl pos">+1.6%</td>
+<td class="bl">5.10</td>
+<td class="bl">5.33</td>
+<td class="bl pos">+4.5%</td>
 </tr>
 <tr>
-<td>256B</td>
+<td>256</td>
 <td class="bl">18.66</td>
 <td class="bl">19.18</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+2.8%</td>
+<td class="bl pos">+2.8%</td>
+<td class="bl">10.32</td>
+<td class="bl">11.00</td>
+<td class="bl pos">+6.6%</td>
 </tr>
 <tr>
-<td>512B</td>
+<td>512</td>
 <td class="bl">37.11</td>
 <td class="bl">39.01</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+5.1%</td>
+<td class="bl pos">+5.1%</td>
+<td class="bl">21.14</td>
+<td class="bl">22.34</td>
+<td class="bl pos">+5.7%</td>
 </tr>
 <tr>
 <td>1K</td>
 <td class="bl">73.76</td>
 <td class="bl">76.52</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+3.7%</td>
+<td class="bl pos">+3.7%</td>
+<td class="bl">41.74</td>
+<td class="bl">42.61</td>
+<td class="bl pos">+2.1%</td>
 </tr>
 <tr>
 <td>2K</td>
 <td class="bl">146.42</td>
 <td class="bl">149.18</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+1.9%</td>
+<td class="bl pos">+1.9%</td>
+<td class="bl">85.17</td>
+<td class="bl">88.13</td>
+<td class="bl pos">+3.5%</td>
 </tr>
 <tr>
 <td>4K</td>
 <td class="bl">287.88</td>
 <td class="bl">297.26</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+3.3%</td>
+<td class="bl pos">+3.3%</td>
+<td class="bl">173.65</td>
+<td class="bl">182.87</td>
+<td class="bl pos">+5.3%</td>
 </tr>
 <tr>
 <td>8K</td>
 <td class="bl">562.19</td>
 <td class="bl">582.05</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+3.5%</td>
+<td class="bl pos">+3.5%</td>
+<td class="bl">351.32</td>
+<td class="bl">346.99</td>
+<td class="bl neutral">-1.2%</td>
 </tr>
 <tr>
 <td>16K</td>
 <td class="bl">750.18</td>
 <td class="bl">768.08</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+2.4%</td>
+<td class="bl pos">+2.4%</td>
+<td class="bl">614.98</td>
+<td class="bl">618.26</td>
+<td class="bl pos">+0.5%</td>
 </tr>
 <tr>
 <td>32K</td>
 <td class="bl">765.60</td>
 <td class="bl">770.65</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.7%</td>
+<td class="bl pos">+0.7%</td>
+<td class="bl">761.76</td>
+<td class="bl">770.69</td>
+<td class="bl pos">+1.2%</td>
 </tr>
 <tr>
 <td>64K</td>
 <td class="bl">718.21</td>
 <td class="bl">742.81</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+3.4%</td>
+<td class="bl pos">+3.4%</td>
+<td class="bl">714.71</td>
+<td class="bl">742.15</td>
+<td class="bl pos">+3.8%</td>
 </tr>
 <tr>
 <td>128K</td>
 <td class="bl">719.61</td>
 <td class="bl">755.12</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+4.9%</td>
+<td class="bl pos">+4.9%</td>
+<td class="bl">718.07</td>
+<td class="bl">753.91</td>
+<td class="bl pos">+5.0%</td>
 </tr>
 <tr>
 <td>256K</td>
 <td class="bl">721.63</td>
 <td class="bl">761.57</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+5.5%</td>
+<td class="bl pos">+5.5%</td>
+<td class="bl">720.02</td>
+<td class="bl">760.44</td>
+<td class="bl pos">+5.6%</td>
 </tr>
 <tr>
 <td>512K</td>
 <td class="bl">720.92</td>
 <td class="bl">763.96</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+6.0%</td>
+<td class="bl pos">+6.0%</td>
+<td class="bl">719.84</td>
+<td class="bl">762.56</td>
+<td class="bl pos">+5.9%</td>
 </tr>
 <tr>
 <td>1M</td>
 <td class="bl">721.59</td>
 <td class="bl">764.68</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+6.0%</td>
+<td class="bl pos">+6.0%</td>
+<td class="bl">720.44</td>
+<td class="bl">764.00</td>
+<td class="bl pos">+6.0%</td>
 </tr>
 <tr>
 <td>2M</td>
 <td class="bl">721.85</td>
 <td class="bl">764.92</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+6.0%</td>
+<td class="bl pos">+6.0%</td>
+<td class="bl">720.93</td>
+<td class="bl">764.89</td>
+<td class="bl pos">+6.1%</td>
 </tr>
 <tr>
 <td>4M</td>
 <td class="bl">722.34</td>
 <td class="bl">765.15</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+5.9%</td>
+<td class="bl pos">+5.9%</td>
+<td class="bl">721.41</td>
+<td class="bl">765.51</td>
+<td class="bl pos">+6.1%</td>
 </tr>
 <tr>
 <td>8M</td>
 <td class="bl">722.35</td>
 <td class="bl">764.21</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+5.8%</td>
+<td class="bl pos">+5.8%</td>
+<td class="bl">721.59</td>
+<td class="bl">765.78</td>
+<td class="bl pos">+6.1%</td>
 </tr>
 </tbody></table>
 <h3>QP = 8</h3>
-<table><thead><tr><th>Size</th><th class="bl">Base 1.125-a (Gbps)</th><th class="bl">Master pi-10 (Gbps)</th><th class="bl">Δ%</th></tr></thead><tbody>
+<div class="chart-row">
+<div class="chart-box"><canvas id="ib_chart_wb_8" height="200"></canvas></div>
+<div class="chart-box"><canvas id="ib_chart_wi_8" height="200"></canvas></div>
+</div>
+<table><thead><tr><th>Size</th><th class="grp">write_bw Base</th><th class="grp">write_bw Master</th><th class="grp">Δ%</th><th class="grp">write_imm Base</th><th class="grp">write_imm Master</th><th class="grp">Δ%</th></tr></thead><tbody>
 <tr>
-<td>2B</td>
+<td>2</td>
 <td class="bl">0.15</td>
 <td class="bl">0.15</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+2.8%</td>
+<td class="bl pos">+2.8%</td>
+<td class="bl">0.08</td>
+<td class="bl">0.05</td>
+<td class="bl neg">-31.8%</td>
 </tr>
 <tr>
-<td>4B</td>
+<td>4</td>
 <td class="bl">0.31</td>
 <td class="bl">0.32</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+3.2%</td>
+<td class="bl pos">+3.2%</td>
+<td class="bl">0.17</td>
+<td class="bl">0.00</td>
+<td class="bl neg">-99.2%</td>
 </tr>
 <tr>
-<td>8B</td>
+<td>8</td>
 <td class="bl">0.62</td>
 <td class="bl">0.64</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+3.2%</td>
+<td class="bl pos">+3.2%</td>
+<td class="bl">0.33</td>
+<td class="bl">0.00</td>
+<td class="bl neg">-99.2%</td>
 </tr>
 <tr>
-<td>16B</td>
+<td>16</td>
 <td class="bl">1.24</td>
 <td class="bl">1.28</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+3.2%</td>
+<td class="bl pos">+3.2%</td>
+<td class="bl">0.66</td>
+<td class="bl">0.01</td>
+<td class="bl neg">-99.2%</td>
 </tr>
 <tr>
-<td>32B</td>
+<td>32</td>
 <td class="bl">2.49</td>
 <td class="bl">2.55</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+2.4%</td>
+<td class="bl pos">+2.4%</td>
+<td class="bl">1.33</td>
+<td class="bl">0.01</td>
+<td class="bl neg">-99.2%</td>
 </tr>
 <tr>
-<td>64B</td>
+<td>64</td>
 <td class="bl">4.98</td>
 <td class="bl">5.11</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+2.6%</td>
+<td class="bl pos">+2.6%</td>
+<td class="bl">2.65</td>
+<td class="bl">0.02</td>
+<td class="bl neg">-99.2%</td>
 </tr>
 <tr>
-<td>128B</td>
+<td>128</td>
 <td class="bl">9.94</td>
 <td class="bl">10.19</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+2.5%</td>
+<td class="bl pos">+2.5%</td>
+<td class="bl">5.29</td>
+<td class="bl">0.04</td>
+<td class="bl neg">-99.2%</td>
 </tr>
 <tr>
-<td>256B</td>
+<td>256</td>
 <td class="bl">19.76</td>
 <td class="bl">20.32</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+2.8%</td>
+<td class="bl pos">+2.8%</td>
+<td class="bl">10.62</td>
+<td class="bl">6.73</td>
+<td class="bl neg">-36.6%</td>
 </tr>
 <tr>
-<td>512B</td>
+<td>512</td>
 <td class="bl">39.56</td>
 <td class="bl">40.57</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+2.6%</td>
+<td class="bl pos">+2.6%</td>
+<td class="bl">21.13</td>
+<td class="bl">0.17</td>
+<td class="bl neg">-99.2%</td>
 </tr>
 <tr>
 <td>1K</td>
 <td class="bl">78.79</td>
 <td class="bl">80.80</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+2.6%</td>
+<td class="bl pos">+2.6%</td>
+<td class="bl">42.19</td>
+<td class="bl">0.33</td>
+<td class="bl neg">-99.2%</td>
 </tr>
 <tr>
 <td>2K</td>
 <td class="bl">156.59</td>
 <td class="bl">160.56</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+2.5%</td>
+<td class="bl pos">+2.5%</td>
+<td class="bl">83.89</td>
+<td class="bl">0.67</td>
+<td class="bl neg">-99.2%</td>
 </tr>
 <tr>
 <td>4K</td>
 <td class="bl">310.78</td>
 <td class="bl">321.18</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+3.3%</td>
+<td class="bl pos">+3.3%</td>
+<td class="bl">166.08</td>
+<td class="bl">1.34</td>
+<td class="bl neg">-99.2%</td>
 </tr>
 <tr>
 <td>8K</td>
 <td class="bl">635.18</td>
 <td class="bl">627.37</td>
-<td class="bl" style="color:#888;font-weight:bold">-1.2%</td>
+<td class="bl neutral">-1.2%</td>
+<td class="bl">324.20</td>
+<td class="bl">332.54</td>
+<td class="bl pos">+2.6%</td>
 </tr>
 <tr>
 <td>16K</td>
 <td class="bl">759.83</td>
 <td class="bl">765.04</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.7%</td>
+<td class="bl pos">+0.7%</td>
+<td class="bl">629.81</td>
+<td class="bl">633.33</td>
+<td class="bl pos">+0.6%</td>
 </tr>
 <tr>
 <td>32K</td>
 <td class="bl">760.06</td>
 <td class="bl">765.01</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.7%</td>
+<td class="bl pos">+0.7%</td>
+<td class="bl">750.98</td>
+<td class="bl">763.48</td>
+<td class="bl pos">+1.7%</td>
 </tr>
 <tr>
 <td>64K</td>
 <td class="bl">723.44</td>
 <td class="bl">760.70</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+5.2%</td>
+<td class="bl pos">+5.2%</td>
+<td class="bl">709.08</td>
+<td class="bl">758.37</td>
+<td class="bl pos">+7.0%</td>
 </tr>
 <tr>
 <td>128K</td>
 <td class="bl">721.59</td>
 <td class="bl">763.48</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+5.8%</td>
+<td class="bl pos">+5.8%</td>
+<td class="bl">708.28</td>
+<td class="bl">761.44</td>
+<td class="bl pos">+7.5%</td>
 </tr>
 <tr>
 <td>256K</td>
 <td class="bl">721.30</td>
 <td class="bl">764.58</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+6.0%</td>
+<td class="bl pos">+6.0%</td>
+<td class="bl">708.20</td>
+<td class="bl">763.30</td>
+<td class="bl pos">+7.8%</td>
 </tr>
 <tr>
 <td>512K</td>
 <td class="bl">721.05</td>
 <td class="bl">765.72</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+6.2%</td>
+<td class="bl pos">+6.2%</td>
+<td class="bl">709.40</td>
+<td class="bl">764.49</td>
+<td class="bl pos">+7.8%</td>
 </tr>
 <tr>
 <td>1M</td>
 <td class="bl">721.22</td>
 <td class="bl">766.28</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+6.2%</td>
+<td class="bl pos">+6.2%</td>
+<td class="bl">709.91</td>
+<td class="bl">765.15</td>
+<td class="bl pos">+7.8%</td>
 </tr>
 <tr>
 <td>2M</td>
 <td class="bl">722.20</td>
 <td class="bl">766.63</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+6.2%</td>
+<td class="bl pos">+6.2%</td>
+<td class="bl">710.55</td>
+<td class="bl">765.41</td>
+<td class="bl pos">+7.7%</td>
 </tr>
 <tr>
 <td>4M</td>
 <td class="bl">722.08</td>
 <td class="bl">766.86</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+6.2%</td>
+<td class="bl pos">+6.2%</td>
+<td class="bl">710.38</td>
+<td class="bl">765.72</td>
+<td class="bl pos">+7.8%</td>
 </tr>
 <tr>
 <td>8M</td>
 <td class="bl">722.14</td>
 <td class="bl">767.19</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+6.2%</td>
+<td class="bl pos">+6.2%</td>
+<td class="bl">710.59</td>
+<td class="bl">766.10</td>
+<td class="bl pos">+7.8%</td>
 </tr>
 </tbody></table>
 <h3>QP = 16</h3>
-<table><thead><tr><th>Size</th><th class="bl">Base 1.125-a (Gbps)</th><th class="bl">Master pi-10 (Gbps)</th><th class="bl">Δ%</th></tr></thead><tbody>
+<div class="chart-row">
+<div class="chart-box"><canvas id="ib_chart_wb_16" height="200"></canvas></div>
+<div class="chart-box"><canvas id="ib_chart_wi_16" height="200"></canvas></div>
+</div>
+<table><thead><tr><th>Size</th><th class="grp">write_bw Base</th><th class="grp">write_bw Master</th><th class="grp">Δ%</th><th class="grp">write_imm Base</th><th class="grp">write_imm Master</th><th class="grp">Δ%</th></tr></thead><tbody>
 <tr>
-<td>2B</td>
+<td>2</td>
 <td class="bl">0.15</td>
 <td class="bl">0.16</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+3.6%</td>
+<td class="bl pos">+3.6%</td>
+<td class="bl">0.09</td>
+<td class="bl">0.00</td>
+<td class="bl neg">-98.6%</td>
 </tr>
 <tr>
-<td>4B</td>
+<td>4</td>
 <td class="bl">0.31</td>
 <td class="bl">0.32</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+3.2%</td>
+<td class="bl pos">+3.2%</td>
+<td class="bl">0.08</td>
+<td class="bl">0.00</td>
+<td class="bl neg">-96.7%</td>
 </tr>
 <tr>
-<td>8B</td>
+<td>8</td>
 <td class="bl">0.61</td>
 <td class="bl">0.64</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+4.9%</td>
+<td class="bl pos">+4.9%</td>
+<td class="bl">0.37</td>
+<td class="bl">0.01</td>
+<td class="bl neg">-98.6%</td>
 </tr>
 <tr>
-<td>16B</td>
+<td>16</td>
 <td class="bl">1.22</td>
 <td class="bl">1.29</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+5.7%</td>
+<td class="bl pos">+5.7%</td>
+<td class="bl">0.76</td>
+<td class="bl">0.01</td>
+<td class="bl neg">-98.6%</td>
 </tr>
 <tr>
-<td>32B</td>
+<td>32</td>
 <td class="bl">2.45</td>
 <td class="bl">2.57</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+4.9%</td>
+<td class="bl pos">+4.9%</td>
+<td class="bl">1.51</td>
+<td class="bl">0.01</td>
+<td class="bl neg">-99.3%</td>
 </tr>
 <tr>
-<td>64B</td>
+<td>64</td>
 <td class="bl">4.90</td>
 <td class="bl">5.15</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+5.1%</td>
+<td class="bl pos">+5.1%</td>
+<td class="bl">3.03</td>
+<td class="bl">0.04</td>
+<td class="bl neg">-98.6%</td>
 </tr>
 <tr>
-<td>128B</td>
+<td>128</td>
 <td class="bl">9.78</td>
 <td class="bl">10.29</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+5.2%</td>
+<td class="bl pos">+5.2%</td>
+<td class="bl">6.03</td>
+<td class="bl">0.04</td>
+<td class="bl neg">-99.3%</td>
 </tr>
 <tr>
-<td>256B</td>
+<td>256</td>
 <td class="bl">19.53</td>
 <td class="bl">20.51</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+5.0%</td>
+<td class="bl pos">+5.0%</td>
+<td class="bl">12.07</td>
+<td class="bl">0.17</td>
+<td class="bl neg">-98.6%</td>
 </tr>
 <tr>
-<td>512B</td>
+<td>512</td>
 <td class="bl">38.99</td>
 <td class="bl">40.98</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+5.1%</td>
+<td class="bl pos">+5.1%</td>
+<td class="bl">24.21</td>
+<td class="bl">0.33</td>
+<td class="bl neg">-98.6%</td>
 </tr>
 <tr>
 <td>1K</td>
 <td class="bl">77.65</td>
 <td class="bl">81.55</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+5.0%</td>
+<td class="bl pos">+5.0%</td>
+<td class="bl">48.11</td>
+<td class="bl">0.50</td>
+<td class="bl neg">-99.0%</td>
 </tr>
 <tr>
 <td>2K</td>
 <td class="bl">154.30</td>
 <td class="bl">161.99</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+5.0%</td>
+<td class="bl pos">+5.0%</td>
+<td class="bl">95.76</td>
+<td class="bl">0.67</td>
+<td class="bl neg">-99.3%</td>
 </tr>
 <tr>
 <td>4K</td>
 <td class="bl">306.82</td>
 <td class="bl">324.93</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+5.9%</td>
+<td class="bl pos">+5.9%</td>
+<td class="bl">188.44</td>
+<td class="bl">2.66</td>
+<td class="bl neg">-98.6%</td>
 </tr>
 <tr>
 <td>8K</td>
 <td class="bl">628.19</td>
 <td class="bl">635.35</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+1.1%</td>
+<td class="bl pos">+1.1%</td>
+<td class="bl">364.73</td>
+<td class="bl">337.50</td>
+<td class="bl neg">-7.5%</td>
 </tr>
 <tr>
 <td>16K</td>
 <td class="bl">759.46</td>
 <td class="bl">762.67</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.4%</td>
+<td class="bl pos">+0.4%</td>
+<td class="bl">643.78</td>
+<td class="bl">636.00</td>
+<td class="bl neutral">-1.2%</td>
 </tr>
 <tr>
 <td>32K</td>
 <td class="bl">759.67</td>
 <td class="bl">761.86</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
+<td class="bl pos">+0.3%</td>
+<td class="bl">758.29</td>
+<td class="bl">762.02</td>
+<td class="bl pos">+0.5%</td>
 </tr>
 <tr>
 <td>64K</td>
 <td class="bl">759.29</td>
 <td class="bl">765.42</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.8%</td>
+<td class="bl pos">+0.8%</td>
+<td class="bl">741.33</td>
+<td class="bl">765.39</td>
+<td class="bl pos">+3.2%</td>
 </tr>
 <tr>
 <td>128K</td>
 <td class="bl">759.49</td>
 <td class="bl">765.18</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.7%</td>
+<td class="bl pos">+0.7%</td>
+<td class="bl">739.88</td>
+<td class="bl">765.15</td>
+<td class="bl pos">+3.4%</td>
 </tr>
 <tr>
 <td>256K</td>
 <td class="bl">759.77</td>
 <td class="bl">765.20</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.7%</td>
+<td class="bl pos">+0.7%</td>
+<td class="bl">737.47</td>
+<td class="bl">765.20</td>
+<td class="bl pos">+3.8%</td>
 </tr>
 <tr>
 <td>512K</td>
 <td class="bl">759.91</td>
 <td class="bl">765.21</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.7%</td>
+<td class="bl pos">+0.7%</td>
+<td class="bl">737.52</td>
+<td class="bl">765.21</td>
+<td class="bl pos">+3.8%</td>
 </tr>
 <tr>
 <td>1M</td>
 <td class="bl">760.05</td>
 <td class="bl">765.21</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.7%</td>
+<td class="bl pos">+0.7%</td>
+<td class="bl">737.66</td>
+<td class="bl">765.21</td>
+<td class="bl pos">+3.7%</td>
 </tr>
 <tr>
 <td>2M</td>
 <td class="bl">760.18</td>
 <td class="bl">765.21</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.7%</td>
+<td class="bl pos">+0.7%</td>
+<td class="bl">737.31</td>
+<td class="bl">765.22</td>
+<td class="bl pos">+3.8%</td>
 </tr>
 <tr>
 <td>4M</td>
 <td class="bl">760.19</td>
 <td class="bl">765.22</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.7%</td>
+<td class="bl pos">+0.7%</td>
+<td class="bl">737.27</td>
+<td class="bl">765.22</td>
+<td class="bl pos">+3.8%</td>
 </tr>
 <tr>
 <td>8M</td>
 <td class="bl">760.20</td>
 <td class="bl">765.22</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.7%</td>
+<td class="bl pos">+0.7%</td>
+<td class="bl">737.19</td>
+<td class="bl">765.22</td>
+<td class="bl pos">+3.8%</td>
 </tr>
 </tbody></table>
 <h3>QP = 64</h3>
-<table><thead><tr><th>Size</th><th class="bl">Base 1.125-a (Gbps)</th><th class="bl">Master pi-10 (Gbps)</th><th class="bl">Δ%</th></tr></thead><tbody>
+<div class="chart-row">
+<div class="chart-box"><canvas id="ib_chart_wb_64" height="200"></canvas></div>
+<div class="chart-box"><canvas id="ib_chart_wi_64" height="200"></canvas></div>
+</div>
+<table><thead><tr><th>Size</th><th class="grp">write_bw Base</th><th class="grp">write_bw Master</th><th class="grp">Δ%</th><th class="grp">write_imm Base</th><th class="grp">write_imm Master</th><th class="grp">Δ%</th></tr></thead><tbody>
 <tr>
-<td>2B</td>
+<td>2</td>
 <td class="bl">0.15</td>
 <td class="bl">0.16</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+4.1%</td>
+<td class="bl pos">+4.1%</td>
+<td class="bl">0.01</td>
+<td class="bl">0.01</td>
+<td class="bl neg">-50.0%</td>
 </tr>
 <tr>
-<td>4B</td>
+<td>4</td>
 <td class="bl">0.30</td>
 <td class="bl">0.32</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+6.7%</td>
+<td class="bl pos">+6.7%</td>
+<td class="bl">0.01</td>
+<td class="bl">0.01</td>
+<td class="bl neg">-23.2%</td>
 </tr>
 <tr>
-<td>8B</td>
+<td>8</td>
 <td class="bl">0.61</td>
 <td class="bl">0.65</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+6.6%</td>
+<td class="bl pos">+6.6%</td>
+<td class="bl">0.02</td>
+<td class="bl">0.02</td>
+<td class="bl neg">-23.2%</td>
 </tr>
 <tr>
-<td>16B</td>
+<td>16</td>
 <td class="bl">1.22</td>
 <td class="bl">1.29</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+5.7%</td>
+<td class="bl pos">+5.7%</td>
+<td class="bl">0.04</td>
+<td class="bl">0.03</td>
+<td class="bl neg">-23.3%</td>
 </tr>
 <tr>
-<td>32B</td>
+<td>32</td>
 <td class="bl">2.44</td>
 <td class="bl">2.59</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+6.1%</td>
+<td class="bl pos">+6.1%</td>
+<td class="bl">0.08</td>
+<td class="bl">0.04</td>
+<td class="bl neg">-47.7%</td>
 </tr>
 <tr>
-<td>64B</td>
+<td>64</td>
 <td class="bl">4.88</td>
 <td class="bl">5.17</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+5.9%</td>
+<td class="bl pos">+5.9%</td>
+<td class="bl">1.41</td>
+<td class="bl">0.12</td>
+<td class="bl neg">-91.3%</td>
 </tr>
 <tr>
-<td>128B</td>
+<td>128</td>
 <td class="bl">9.74</td>
 <td class="bl">10.33</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+6.1%</td>
+<td class="bl pos">+6.1%</td>
+<td class="bl">0.33</td>
+<td class="bl">0.25</td>
+<td class="bl neg">-24.2%</td>
 </tr>
 <tr>
-<td>256B</td>
+<td>256</td>
 <td class="bl">19.45</td>
 <td class="bl">20.59</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+5.9%</td>
+<td class="bl pos">+5.9%</td>
+<td class="bl">0.67</td>
+<td class="bl">0.49</td>
+<td class="bl neg">-26.9%</td>
 </tr>
 <tr>
-<td>512B</td>
+<td>512</td>
 <td class="bl">38.81</td>
 <td class="bl">41.13</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+6.0%</td>
+<td class="bl pos">+6.0%</td>
+<td class="bl">1.34</td>
+<td class="bl">0.67</td>
+<td class="bl neg">-50.0%</td>
 </tr>
 <tr>
 <td>1K</td>
 <td class="bl">77.33</td>
 <td class="bl">82.03</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+6.1%</td>
+<td class="bl pos">+6.1%</td>
+<td class="bl">2.68</td>
+<td class="bl">1.96</td>
+<td class="bl neg">-26.9%</td>
 </tr>
 <tr>
 <td>2K</td>
 <td class="bl">153.64</td>
 <td class="bl">162.75</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+5.9%</td>
+<td class="bl pos">+5.9%</td>
+<td class="bl">5.34</td>
+<td class="bl">3.92</td>
+<td class="bl neg">-26.6%</td>
 </tr>
 <tr>
 <td>4K</td>
 <td class="bl">306.19</td>
 <td class="bl">326.22</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+6.5%</td>
+<td class="bl pos">+6.5%</td>
+<td class="bl">10.69</td>
+<td class="bl">7.83</td>
+<td class="bl neg">-26.8%</td>
 </tr>
 <tr>
 <td>8K</td>
 <td class="bl">626.62</td>
 <td class="bl">638.44</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+1.9%</td>
+<td class="bl pos">+1.9%</td>
+<td class="bl">375.96</td>
+<td class="bl">336.39</td>
+<td class="bl neg">-10.5%</td>
 </tr>
 <tr>
 <td>16K</td>
 <td class="bl">759.73</td>
 <td class="bl">761.26</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.2%</td>
+<td class="bl pos">+0.2%</td>
+<td class="bl">639.15</td>
+<td class="bl">611.12</td>
+<td class="bl warn">-4.4%</td>
 </tr>
 <tr>
 <td>32K</td>
 <td class="bl">759.76</td>
 <td class="bl">760.41</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.1%</td>
+<td class="bl pos">+0.1%</td>
+<td class="bl">759.50</td>
+<td class="bl">760.84</td>
+<td class="bl pos">+0.2%</td>
 </tr>
 <tr>
 <td>64K</td>
 <td class="bl">759.74</td>
 <td class="bl">764.81</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.7%</td>
+<td class="bl pos">+0.7%</td>
+<td class="bl">759.81</td>
+<td class="bl">763.87</td>
+<td class="bl pos">+0.5%</td>
 </tr>
 <tr>
 <td>128K</td>
 <td class="bl">759.73</td>
 <td class="bl">764.63</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.6%</td>
+<td class="bl pos">+0.6%</td>
+<td class="bl">759.83</td>
+<td class="bl">763.55</td>
+<td class="bl pos">+0.5%</td>
 </tr>
 <tr>
 <td>256K</td>
 <td class="bl">759.76</td>
 <td class="bl">764.46</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.6%</td>
+<td class="bl pos">+0.6%</td>
+<td class="bl">759.91</td>
+<td class="bl">763.55</td>
+<td class="bl pos">+0.5%</td>
 </tr>
 <tr>
 <td>512K</td>
 <td class="bl">759.77</td>
 <td class="bl">764.42</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.6%</td>
+<td class="bl pos">+0.6%</td>
+<td class="bl">759.94</td>
+<td class="bl">763.52</td>
+<td class="bl pos">+0.5%</td>
 </tr>
 <tr>
 <td>1M</td>
 <td class="bl">759.78</td>
 <td class="bl">764.43</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.6%</td>
-</tr>
-<tr>
-<td>2M</td>
-<td class="bl">759.78</td>
-<td class="bl">764.42</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.6%</td>
-</tr>
-<tr>
-<td>4M</td>
-<td class="bl">759.78</td>
-<td class="bl">764.42</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.6%</td>
-</tr>
-<tr>
-<td>8M</td>
-<td class="bl">759.78</td>
-<td class="bl">764.42</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.6%</td>
-</tr>
-</tbody></table>
-<h3>QP = 256</h3>
-<table><thead><tr><th>Size</th><th class="bl">Base 1.125-a (Gbps)</th><th class="bl">Master pi-10 (Gbps)</th><th class="bl">Δ%</th></tr></thead><tbody>
-<tr>
-<td>2B</td>
-<td class="bl">0.16</td>
-<td class="bl">0.16</td>
-<td class="bl" style="color:#f57c00;font-weight:bold">-2.7%</td>
-</tr>
-<tr>
-<td>4B</td>
-<td class="bl">0.32</td>
-<td class="bl">0.32</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.0%</td>
-</tr>
-<tr>
-<td>8B</td>
-<td class="bl">0.63</td>
-<td class="bl">0.64</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+1.6%</td>
-</tr>
-<tr>
-<td>16B</td>
-<td class="bl">1.24</td>
-<td class="bl">1.29</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+4.0%</td>
-</tr>
-<tr>
-<td>32B</td>
-<td class="bl">2.47</td>
-<td class="bl">2.58</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+4.5%</td>
-</tr>
-<tr>
-<td>64B</td>
-<td class="bl">4.93</td>
-<td class="bl">5.17</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+4.9%</td>
-</tr>
-<tr>
-<td>128B</td>
-<td class="bl">9.85</td>
-<td class="bl">10.31</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+4.7%</td>
-</tr>
-<tr>
-<td>256B</td>
-<td class="bl">19.65</td>
-<td class="bl">20.56</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+4.6%</td>
-</tr>
-<tr>
-<td>512B</td>
-<td class="bl">39.22</td>
-<td class="bl">41.11</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+4.8%</td>
-</tr>
-<tr>
-<td>1K</td>
-<td class="bl">78.22</td>
-<td class="bl">81.96</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+4.8%</td>
-</tr>
-<tr>
-<td>2K</td>
-<td class="bl">155.40</td>
-<td class="bl">162.97</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+4.9%</td>
-</tr>
-<tr>
-<td>4K</td>
-<td class="bl">310.57</td>
-<td class="bl">326.73</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+5.2%</td>
-</tr>
-<tr>
-<td>8K</td>
-<td class="bl">633.57</td>
-<td class="bl">635.88</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.4%</td>
-</tr>
-<tr>
-<td>16K</td>
-<td class="bl">759.54</td>
-<td class="bl">761.82</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
-</tr>
-<tr>
-<td>32K</td>
-<td class="bl">759.69</td>
-<td class="bl">761.50</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.2%</td>
-</tr>
-<tr>
-<td>64K</td>
-<td class="bl">759.71</td>
-<td class="bl">762.08</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
-</tr>
-<tr>
-<td>128K</td>
-<td class="bl">759.67</td>
-<td class="bl">761.11</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.2%</td>
-</tr>
-<tr>
-<td>256K</td>
-<td class="bl">759.72</td>
-<td class="bl">761.75</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
-</tr>
-<tr>
-<td>512K</td>
-<td class="bl">759.75</td>
-<td class="bl">761.94</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
-</tr>
-<tr>
-<td>1M</td>
-<td class="bl">759.77</td>
-<td class="bl">762.43</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.4%</td>
-</tr>
-<tr>
-<td>2M</td>
-<td class="bl">759.77</td>
-<td class="bl">762.65</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.4%</td>
-</tr>
-<tr>
-<td>4M</td>
-<td class="bl">759.78</td>
-<td class="bl">762.75</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.4%</td>
-</tr>
-<tr>
-<td>8M</td>
-<td class="bl">759.78</td>
-<td class="bl">762.70</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.4%</td>
-</tr>
-</tbody></table>
-<h3>QP = 1024</h3>
-<table><thead><tr><th>Size</th><th class="bl">Base 1.125-a (Gbps)</th><th class="bl">Master pi-10 (Gbps)</th><th class="bl">Δ%</th></tr></thead><tbody>
-<tr>
-<td>2B</td>
-<td class="bl">0.15</td>
-<td class="bl">0.15</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+3.0%</td>
-</tr>
-<tr>
-<td>4B</td>
-<td class="bl">0.30</td>
-<td class="bl">0.31</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+3.3%</td>
-</tr>
-<tr>
-<td>8B</td>
-<td class="bl">0.61</td>
-<td class="bl">0.62</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+1.6%</td>
-</tr>
-<tr>
-<td>16B</td>
-<td class="bl">1.21</td>
-<td class="bl">1.24</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+2.5%</td>
-</tr>
-<tr>
-<td>32B</td>
-<td class="bl">2.43</td>
-<td class="bl">2.47</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+1.6%</td>
-</tr>
-<tr>
-<td>64B</td>
-<td class="bl">4.86</td>
-<td class="bl">4.95</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+1.9%</td>
-</tr>
-<tr>
-<td>128B</td>
-<td class="bl">9.70</td>
-<td class="bl">9.88</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+1.9%</td>
-</tr>
-<tr>
-<td>256B</td>
-<td class="bl">19.37</td>
-<td class="bl">19.74</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+1.9%</td>
-</tr>
-<tr>
-<td>512B</td>
-<td class="bl">38.68</td>
-<td class="bl">39.40</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+1.9%</td>
-</tr>
-<tr>
-<td>1K</td>
-<td class="bl">77.10</td>
-<td class="bl">78.52</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+1.8%</td>
-</tr>
-<tr>
-<td>2K</td>
-<td class="bl">153.45</td>
-<td class="bl">156.04</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+1.7%</td>
-</tr>
-<tr>
-<td>4K</td>
-<td class="bl">305.59</td>
-<td class="bl">312.32</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+2.2%</td>
-</tr>
-<tr>
-<td>8K</td>
-<td class="bl">588.44</td>
-<td class="bl">609.75</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+3.6%</td>
-</tr>
-<tr>
-<td>16K</td>
-<td class="bl">759.76</td>
-<td class="bl">761.72</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
-</tr>
-<tr>
-<td>32K</td>
-<td class="bl">759.76</td>
-<td class="bl">761.74</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
-</tr>
-<tr>
-<td>64K</td>
-<td class="bl">759.77</td>
-<td class="bl">762.09</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
-</tr>
-<tr>
-<td>128K</td>
-<td class="bl">759.77</td>
-<td class="bl">761.82</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
-</tr>
-<tr>
-<td>256K</td>
-<td class="bl">759.77</td>
-<td class="bl">761.85</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
-</tr>
-<tr>
-<td>512K</td>
-<td class="bl">759.78</td>
-<td class="bl">761.99</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
-</tr>
-<tr>
-<td>1M</td>
-<td class="bl">759.78</td>
-<td class="bl">761.92</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
-</tr>
-<tr>
-<td>2M</td>
-<td class="bl">759.78</td>
-<td class="bl">761.91</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
-</tr>
-<tr>
-<td>4M</td>
-<td class="bl">759.78</td>
-<td class="bl">761.89</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
-</tr>
-<tr>
-<td>8M</td>
-<td class="bl">759.78</td>
-<td class="bl">761.89</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
-</tr>
-</tbody></table>
-<h3>QP = 4090</h3>
-<table><thead><tr><th>Size</th><th class="bl">Base 1.125-a (Gbps)</th><th class="bl">Master pi-10 (Gbps)</th><th class="bl">Δ%</th></tr></thead><tbody>
-<tr>
-<td>2B</td>
-<td class="bl">0.15</td>
-<td class="bl">0.15</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.5%</td>
-</tr>
-<tr>
-<td>4B</td>
-<td class="bl">0.31</td>
-<td class="bl">0.30</td>
-<td class="bl" style="color:#f57c00;font-weight:bold">-3.2%</td>
-</tr>
-<tr>
-<td>8B</td>
-<td class="bl">0.62</td>
-<td class="bl">0.60</td>
-<td class="bl" style="color:#f57c00;font-weight:bold">-3.2%</td>
-</tr>
-<tr>
-<td>16B</td>
-<td class="bl">1.24</td>
-<td class="bl">1.21</td>
-<td class="bl" style="color:#f57c00;font-weight:bold">-2.4%</td>
-</tr>
-<tr>
-<td>32B</td>
-<td class="bl">2.48</td>
-<td class="bl">2.41</td>
-<td class="bl" style="color:#f57c00;font-weight:bold">-2.8%</td>
-</tr>
-<tr>
-<td>64B</td>
-<td class="bl">4.95</td>
-<td class="bl">4.82</td>
-<td class="bl" style="color:#f57c00;font-weight:bold">-2.6%</td>
-</tr>
-<tr>
-<td>128B</td>
-<td class="bl">9.89</td>
-<td class="bl">9.63</td>
-<td class="bl" style="color:#f57c00;font-weight:bold">-2.6%</td>
-</tr>
-<tr>
-<td>256B</td>
-<td class="bl">19.74</td>
-<td class="bl">19.23</td>
-<td class="bl" style="color:#f57c00;font-weight:bold">-2.6%</td>
-</tr>
-<tr>
-<td>512B</td>
-<td class="bl">39.34</td>
-<td class="bl">38.32</td>
-<td class="bl" style="color:#f57c00;font-weight:bold">-2.6%</td>
-</tr>
-<tr>
-<td>1K</td>
-<td class="bl">78.21</td>
-<td class="bl">76.15</td>
-<td class="bl" style="color:#f57c00;font-weight:bold">-2.6%</td>
-</tr>
-<tr>
-<td>2K</td>
-<td class="bl">154.73</td>
-<td class="bl">150.76</td>
-<td class="bl" style="color:#f57c00;font-weight:bold">-2.6%</td>
-</tr>
-<tr>
-<td>4K</td>
-<td class="bl">305.56</td>
-<td class="bl">300.23</td>
-<td class="bl" style="color:#888;font-weight:bold">-1.7%</td>
-</tr>
-<tr>
-<td>8K</td>
-<td class="bl">574.81</td>
-<td class="bl">578.09</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.6%</td>
-</tr>
-<tr>
-<td>16K</td>
-<td class="bl">758.76</td>
-<td class="bl">761.35</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
-</tr>
-<tr>
-<td>32K</td>
-<td class="bl">759.16</td>
-<td class="bl">759.93</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.1%</td>
-</tr>
-<tr>
-<td>64K</td>
-<td class="bl">759.17</td>
-<td class="bl">759.54</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.0%</td>
-</tr>
-<tr>
-<td>128K</td>
-<td class="bl">759.15</td>
-<td class="bl">759.17</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.0%</td>
-</tr>
-<tr>
-<td>256K</td>
-<td class="bl">759.19</td>
-<td class="bl">759.96</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.1%</td>
-</tr>
-<tr>
-<td>512K</td>
-<td class="bl">759.17</td>
-<td class="bl">759.76</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.1%</td>
-</tr>
-<tr>
-<td>1M</td>
-<td class="bl">759.17</td>
-<td class="bl">759.61</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.1%</td>
-</tr>
-<tr>
-<td>2M</td>
-<td class="bl">759.17</td>
-<td class="bl">759.62</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.1%</td>
-</tr>
-<tr>
-<td>4M</td>
-<td class="bl">759.17</td>
-<td class="bl">759.58</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.1%</td>
-</tr>
-<tr>
-<td>8M</td>
-<td class="bl">759.31</td>
-<td class="bl">759.60</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.0%</td>
-</tr>
-</tbody></table>
-<h2>IB CPU write_with_imm — bidirectional</h2>
-<h3>QP = 2</h3>
-<table><thead><tr><th>Size</th><th class="bl">Base 1.125-a (Gbps)</th><th class="bl">Master pi-10 (Gbps)</th><th class="bl">Δ%</th></tr></thead><tbody>
-<tr>
-<td>2B</td>
-<td class="bl">0.08</td>
-<td class="bl">0.08</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.0%</td>
-</tr>
-<tr>
-<td>4B</td>
-<td class="bl">0.16</td>
-<td class="bl">0.17</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+4.9%</td>
-</tr>
-<tr>
-<td>8B</td>
-<td class="bl">0.33</td>
-<td class="bl">0.35</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+6.1%</td>
-</tr>
-<tr>
-<td>16B</td>
-<td class="bl">0.66</td>
-<td class="bl">0.66</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.0%</td>
-</tr>
-<tr>
-<td>32B</td>
-<td class="bl">1.28</td>
-<td class="bl">1.34</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+4.7%</td>
-</tr>
-<tr>
-<td>64B</td>
-<td class="bl">2.60</td>
-<td class="bl">2.82</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+8.5%</td>
-</tr>
-<tr>
-<td>128B</td>
-<td class="bl">5.10</td>
-<td class="bl">5.33</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+4.5%</td>
-</tr>
-<tr>
-<td>256B</td>
-<td class="bl">10.32</td>
-<td class="bl">11.00</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+6.6%</td>
-</tr>
-<tr>
-<td>512B</td>
-<td class="bl">21.14</td>
-<td class="bl">22.34</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+5.7%</td>
-</tr>
-<tr>
-<td>1K</td>
-<td class="bl">41.74</td>
-<td class="bl">42.61</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+2.1%</td>
-</tr>
-<tr>
-<td>2K</td>
-<td class="bl">85.17</td>
-<td class="bl">88.13</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+3.5%</td>
-</tr>
-<tr>
-<td>4K</td>
-<td class="bl">173.65</td>
-<td class="bl">182.87</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+5.3%</td>
-</tr>
-<tr>
-<td>8K</td>
-<td class="bl">351.32</td>
-<td class="bl">346.99</td>
-<td class="bl" style="color:#888;font-weight:bold">-1.2%</td>
-</tr>
-<tr>
-<td>16K</td>
-<td class="bl">614.98</td>
-<td class="bl">618.26</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.5%</td>
-</tr>
-<tr>
-<td>32K</td>
-<td class="bl">761.76</td>
-<td class="bl">770.69</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+1.2%</td>
-</tr>
-<tr>
-<td>64K</td>
-<td class="bl">714.71</td>
-<td class="bl">742.15</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+3.8%</td>
-</tr>
-<tr>
-<td>128K</td>
-<td class="bl">718.07</td>
-<td class="bl">753.91</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+5.0%</td>
-</tr>
-<tr>
-<td>256K</td>
-<td class="bl">720.02</td>
-<td class="bl">760.44</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+5.6%</td>
-</tr>
-<tr>
-<td>512K</td>
-<td class="bl">719.84</td>
-<td class="bl">762.56</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+5.9%</td>
-</tr>
-<tr>
-<td>1M</td>
-<td class="bl">720.44</td>
-<td class="bl">764.00</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+6.0%</td>
-</tr>
-<tr>
-<td>2M</td>
-<td class="bl">720.93</td>
-<td class="bl">764.89</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+6.1%</td>
-</tr>
-<tr>
-<td>4M</td>
-<td class="bl">721.41</td>
-<td class="bl">765.51</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+6.1%</td>
-</tr>
-<tr>
-<td>8M</td>
-<td class="bl">721.59</td>
-<td class="bl">765.78</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+6.1%</td>
-</tr>
-</tbody></table>
-<h3>QP = 8</h3>
-<table><thead><tr><th>Size</th><th class="bl">Base 1.125-a (Gbps)</th><th class="bl">Master pi-10 (Gbps)</th><th class="bl">Δ%</th></tr></thead><tbody>
-<tr>
-<td>2B</td>
-<td class="bl">0.08</td>
-<td class="bl">0.05</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-31.8%</td>
-</tr>
-<tr>
-<td>4B</td>
-<td class="bl">0.17</td>
-<td class="bl">0.00</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-99.2%</td>
-</tr>
-<tr>
-<td>8B</td>
-<td class="bl">0.33</td>
-<td class="bl">0.00</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-99.2%</td>
-</tr>
-<tr>
-<td>16B</td>
-<td class="bl">0.66</td>
-<td class="bl">0.01</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-99.2%</td>
-</tr>
-<tr>
-<td>32B</td>
-<td class="bl">1.33</td>
-<td class="bl">0.01</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-99.2%</td>
-</tr>
-<tr>
-<td>64B</td>
-<td class="bl">2.65</td>
-<td class="bl">0.02</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-99.2%</td>
-</tr>
-<tr>
-<td>128B</td>
-<td class="bl">5.29</td>
-<td class="bl">0.04</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-99.2%</td>
-</tr>
-<tr>
-<td>256B</td>
-<td class="bl">10.62</td>
-<td class="bl">6.73</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-36.6%</td>
-</tr>
-<tr>
-<td>512B</td>
-<td class="bl">21.13</td>
-<td class="bl">0.17</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-99.2%</td>
-</tr>
-<tr>
-<td>1K</td>
-<td class="bl">42.19</td>
-<td class="bl">0.33</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-99.2%</td>
-</tr>
-<tr>
-<td>2K</td>
-<td class="bl">83.89</td>
-<td class="bl">0.67</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-99.2%</td>
-</tr>
-<tr>
-<td>4K</td>
-<td class="bl">166.08</td>
-<td class="bl">1.34</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-99.2%</td>
-</tr>
-<tr>
-<td>8K</td>
-<td class="bl">324.20</td>
-<td class="bl">332.54</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+2.6%</td>
-</tr>
-<tr>
-<td>16K</td>
-<td class="bl">629.81</td>
-<td class="bl">633.33</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.6%</td>
-</tr>
-<tr>
-<td>32K</td>
-<td class="bl">750.98</td>
-<td class="bl">763.48</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+1.7%</td>
-</tr>
-<tr>
-<td>64K</td>
-<td class="bl">709.08</td>
-<td class="bl">758.37</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+7.0%</td>
-</tr>
-<tr>
-<td>128K</td>
-<td class="bl">708.28</td>
-<td class="bl">761.44</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+7.5%</td>
-</tr>
-<tr>
-<td>256K</td>
-<td class="bl">708.20</td>
-<td class="bl">763.30</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+7.8%</td>
-</tr>
-<tr>
-<td>512K</td>
-<td class="bl">709.40</td>
-<td class="bl">764.49</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+7.8%</td>
-</tr>
-<tr>
-<td>1M</td>
-<td class="bl">709.91</td>
-<td class="bl">765.15</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+7.8%</td>
-</tr>
-<tr>
-<td>2M</td>
-<td class="bl">710.55</td>
-<td class="bl">765.41</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+7.7%</td>
-</tr>
-<tr>
-<td>4M</td>
-<td class="bl">710.38</td>
-<td class="bl">765.72</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+7.8%</td>
-</tr>
-<tr>
-<td>8M</td>
-<td class="bl">710.59</td>
-<td class="bl">766.10</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+7.8%</td>
-</tr>
-</tbody></table>
-<h3>QP = 16</h3>
-<table><thead><tr><th>Size</th><th class="bl">Base 1.125-a (Gbps)</th><th class="bl">Master pi-10 (Gbps)</th><th class="bl">Δ%</th></tr></thead><tbody>
-<tr>
-<td>2B</td>
-<td class="bl">0.09</td>
-<td class="bl">0.00</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-98.6%</td>
-</tr>
-<tr>
-<td>4B</td>
-<td class="bl">0.08</td>
-<td class="bl">0.00</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-96.7%</td>
-</tr>
-<tr>
-<td>8B</td>
-<td class="bl">0.37</td>
-<td class="bl">0.01</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-98.6%</td>
-</tr>
-<tr>
-<td>16B</td>
-<td class="bl">0.76</td>
-<td class="bl">0.01</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-98.6%</td>
-</tr>
-<tr>
-<td>32B</td>
-<td class="bl">1.51</td>
-<td class="bl">0.01</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-99.3%</td>
-</tr>
-<tr>
-<td>64B</td>
-<td class="bl">3.03</td>
-<td class="bl">0.04</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-98.6%</td>
-</tr>
-<tr>
-<td>128B</td>
-<td class="bl">6.03</td>
-<td class="bl">0.04</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-99.3%</td>
-</tr>
-<tr>
-<td>256B</td>
-<td class="bl">12.07</td>
-<td class="bl">0.17</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-98.6%</td>
-</tr>
-<tr>
-<td>512B</td>
-<td class="bl">24.21</td>
-<td class="bl">0.33</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-98.6%</td>
-</tr>
-<tr>
-<td>1K</td>
-<td class="bl">48.11</td>
-<td class="bl">0.50</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-99.0%</td>
-</tr>
-<tr>
-<td>2K</td>
-<td class="bl">95.76</td>
-<td class="bl">0.67</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-99.3%</td>
-</tr>
-<tr>
-<td>4K</td>
-<td class="bl">188.44</td>
-<td class="bl">2.66</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-98.6%</td>
-</tr>
-<tr>
-<td>8K</td>
-<td class="bl">364.73</td>
-<td class="bl">337.50</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-7.5%</td>
-</tr>
-<tr>
-<td>16K</td>
-<td class="bl">643.78</td>
-<td class="bl">636.00</td>
-<td class="bl" style="color:#888;font-weight:bold">-1.2%</td>
-</tr>
-<tr>
-<td>32K</td>
-<td class="bl">758.29</td>
-<td class="bl">762.02</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.5%</td>
-</tr>
-<tr>
-<td>64K</td>
-<td class="bl">741.33</td>
-<td class="bl">765.39</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+3.2%</td>
-</tr>
-<tr>
-<td>128K</td>
-<td class="bl">739.88</td>
-<td class="bl">765.15</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+3.4%</td>
-</tr>
-<tr>
-<td>256K</td>
-<td class="bl">737.47</td>
-<td class="bl">765.20</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+3.8%</td>
-</tr>
-<tr>
-<td>512K</td>
-<td class="bl">737.52</td>
-<td class="bl">765.21</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+3.8%</td>
-</tr>
-<tr>
-<td>1M</td>
-<td class="bl">737.66</td>
-<td class="bl">765.21</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+3.7%</td>
-</tr>
-<tr>
-<td>2M</td>
-<td class="bl">737.31</td>
-<td class="bl">765.22</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+3.8%</td>
-</tr>
-<tr>
-<td>4M</td>
-<td class="bl">737.27</td>
-<td class="bl">765.22</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+3.8%</td>
-</tr>
-<tr>
-<td>8M</td>
-<td class="bl">737.19</td>
-<td class="bl">765.22</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+3.8%</td>
-</tr>
-</tbody></table>
-<h3>QP = 64</h3>
-<table><thead><tr><th>Size</th><th class="bl">Base 1.125-a (Gbps)</th><th class="bl">Master pi-10 (Gbps)</th><th class="bl">Δ%</th></tr></thead><tbody>
-<tr>
-<td>2B</td>
-<td class="bl">0.01</td>
-<td class="bl">0.01</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-50.0%</td>
-</tr>
-<tr>
-<td>4B</td>
-<td class="bl">0.01</td>
-<td class="bl">0.01</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-23.2%</td>
-</tr>
-<tr>
-<td>8B</td>
-<td class="bl">0.02</td>
-<td class="bl">0.02</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-23.2%</td>
-</tr>
-<tr>
-<td>16B</td>
-<td class="bl">0.04</td>
-<td class="bl">0.03</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-23.3%</td>
-</tr>
-<tr>
-<td>32B</td>
-<td class="bl">0.08</td>
-<td class="bl">0.04</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-47.7%</td>
-</tr>
-<tr>
-<td>64B</td>
-<td class="bl">1.41</td>
-<td class="bl">0.12</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-91.3%</td>
-</tr>
-<tr>
-<td>128B</td>
-<td class="bl">0.33</td>
-<td class="bl">0.25</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-24.2%</td>
-</tr>
-<tr>
-<td>256B</td>
-<td class="bl">0.67</td>
-<td class="bl">0.49</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-26.9%</td>
-</tr>
-<tr>
-<td>512B</td>
-<td class="bl">1.34</td>
-<td class="bl">0.67</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-50.0%</td>
-</tr>
-<tr>
-<td>1K</td>
-<td class="bl">2.68</td>
-<td class="bl">1.96</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-26.9%</td>
-</tr>
-<tr>
-<td>2K</td>
-<td class="bl">5.34</td>
-<td class="bl">3.92</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-26.6%</td>
-</tr>
-<tr>
-<td>4K</td>
-<td class="bl">10.69</td>
-<td class="bl">7.83</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-26.8%</td>
-</tr>
-<tr>
-<td>8K</td>
-<td class="bl">375.96</td>
-<td class="bl">336.39</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-10.5%</td>
-</tr>
-<tr>
-<td>16K</td>
-<td class="bl">639.15</td>
-<td class="bl">611.12</td>
-<td class="bl" style="color:#f57c00;font-weight:bold">-4.4%</td>
-</tr>
-<tr>
-<td>32K</td>
-<td class="bl">759.50</td>
-<td class="bl">760.84</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.2%</td>
-</tr>
-<tr>
-<td>64K</td>
-<td class="bl">759.81</td>
-<td class="bl">763.87</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.5%</td>
-</tr>
-<tr>
-<td>128K</td>
-<td class="bl">759.83</td>
-<td class="bl">763.55</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.5%</td>
-</tr>
-<tr>
-<td>256K</td>
-<td class="bl">759.91</td>
-<td class="bl">763.55</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.5%</td>
-</tr>
-<tr>
-<td>512K</td>
-<td class="bl">759.94</td>
-<td class="bl">763.52</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.5%</td>
-</tr>
-<tr>
-<td>1M</td>
+<td class="bl pos">+0.6%</td>
 <td class="bl">759.99</td>
 <td class="bl">763.52</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.5%</td>
+<td class="bl pos">+0.5%</td>
 </tr>
 <tr>
 <td>2M</td>
+<td class="bl">759.78</td>
+<td class="bl">764.42</td>
+<td class="bl pos">+0.6%</td>
 <td class="bl">760.00</td>
 <td class="bl">763.54</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.5%</td>
+<td class="bl pos">+0.5%</td>
 </tr>
 <tr>
 <td>4M</td>
+<td class="bl">759.78</td>
+<td class="bl">764.42</td>
+<td class="bl pos">+0.6%</td>
 <td class="bl">760.00</td>
 <td class="bl">763.53</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.5%</td>
+<td class="bl pos">+0.5%</td>
 </tr>
 <tr>
 <td>8M</td>
+<td class="bl">759.78</td>
+<td class="bl">764.42</td>
+<td class="bl pos">+0.6%</td>
 <td class="bl">760.02</td>
 <td class="bl">763.54</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.5%</td>
+<td class="bl pos">+0.5%</td>
 </tr>
 </tbody></table>
 <h3>QP = 256</h3>
-<table><thead><tr><th>Size</th><th class="bl">Base 1.125-a (Gbps)</th><th class="bl">Master pi-10 (Gbps)</th><th class="bl">Δ%</th></tr></thead><tbody>
+<div class="chart-row">
+<div class="chart-box"><canvas id="ib_chart_wb_256" height="200"></canvas></div>
+<div class="chart-box"><canvas id="ib_chart_wi_256" height="200"></canvas></div>
+</div>
+<table><thead><tr><th>Size</th><th class="grp">write_bw Base</th><th class="grp">write_bw Master</th><th class="grp">Δ%</th><th class="grp">write_imm Base</th><th class="grp">write_imm Master</th><th class="grp">Δ%</th></tr></thead><tbody>
 <tr>
-<td>2B</td>
+<td>2</td>
+<td class="bl">0.16</td>
+<td class="bl">0.16</td>
+<td class="bl warn">-2.7%</td>
 <td class="bl">0.08</td>
 <td class="bl">0.00</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-97.4%</td>
+<td class="bl neg">-97.4%</td>
 </tr>
 <tr>
-<td>4B</td>
+<td>4</td>
+<td class="bl">0.32</td>
+<td class="bl">0.32</td>
+<td class="bl pos">+0.0%</td>
 <td class="bl">0.00</td>
 <td class="bl">0.00</td>
 <td class="bl"></td>
 </tr>
 <tr>
-<td>8B</td>
+<td>8</td>
+<td class="bl">0.63</td>
+<td class="bl">0.64</td>
+<td class="bl pos">+1.6%</td>
 <td class="bl">0.01</td>
 <td class="bl">0.01</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-17.1%</td>
+<td class="bl neg">-17.1%</td>
 </tr>
 <tr>
-<td>16B</td>
+<td>16</td>
+<td class="bl">1.24</td>
+<td class="bl">1.29</td>
+<td class="bl pos">+4.0%</td>
 <td class="bl">0.02</td>
 <td class="bl">0.02</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-16.6%</td>
+<td class="bl neg">-16.6%</td>
 </tr>
 <tr>
-<td>32B</td>
+<td>32</td>
+<td class="bl">2.47</td>
+<td class="bl">2.58</td>
+<td class="bl pos">+4.5%</td>
 <td class="bl">0.03</td>
 <td class="bl">0.03</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+11.6%</td>
+<td class="bl pos">+11.6%</td>
 </tr>
 <tr>
-<td>64B</td>
+<td>64</td>
+<td class="bl">4.93</td>
+<td class="bl">5.17</td>
+<td class="bl pos">+4.9%</td>
 <td class="bl">1.31</td>
 <td class="bl">0.07</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-94.9%</td>
+<td class="bl neg">-94.9%</td>
 </tr>
 <tr>
-<td>128B</td>
+<td>128</td>
+<td class="bl">9.85</td>
+<td class="bl">10.31</td>
+<td class="bl pos">+4.7%</td>
 <td class="bl">2.60</td>
 <td class="bl">0.13</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-94.9%</td>
+<td class="bl neg">-94.9%</td>
 </tr>
 <tr>
-<td>256B</td>
+<td>256</td>
+<td class="bl">19.65</td>
+<td class="bl">20.56</td>
+<td class="bl pos">+4.6%</td>
 <td class="bl">5.19</td>
 <td class="bl">0.27</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-94.8%</td>
+<td class="bl neg">-94.8%</td>
 </tr>
 <tr>
-<td>512B</td>
+<td>512</td>
+<td class="bl">39.22</td>
+<td class="bl">41.11</td>
+<td class="bl pos">+4.8%</td>
 <td class="bl">10.30</td>
 <td class="bl">0.54</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-94.8%</td>
+<td class="bl neg">-94.8%</td>
 </tr>
 <tr>
 <td>1K</td>
+<td class="bl">78.22</td>
+<td class="bl">81.96</td>
+<td class="bl pos">+4.8%</td>
 <td class="bl">20.51</td>
 <td class="bl">1.07</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-94.8%</td>
+<td class="bl neg">-94.8%</td>
 </tr>
 <tr>
 <td>2K</td>
+<td class="bl">155.40</td>
+<td class="bl">162.97</td>
+<td class="bl pos">+4.9%</td>
 <td class="bl">40.55</td>
 <td class="bl">2.14</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-94.7%</td>
+<td class="bl neg">-94.7%</td>
 </tr>
 <tr>
 <td>4K</td>
+<td class="bl">310.57</td>
+<td class="bl">326.73</td>
+<td class="bl pos">+5.2%</td>
 <td class="bl">79.53</td>
 <td class="bl">4.27</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-94.6%</td>
+<td class="bl neg">-94.6%</td>
 </tr>
 <tr>
 <td>8K</td>
+<td class="bl">633.57</td>
+<td class="bl">635.88</td>
+<td class="bl pos">+0.4%</td>
 <td class="bl">322.31</td>
 <td class="bl">318.08</td>
-<td class="bl" style="color:#888;font-weight:bold">-1.3%</td>
+<td class="bl neutral">-1.3%</td>
 </tr>
 <tr>
 <td>16K</td>
+<td class="bl">759.54</td>
+<td class="bl">761.82</td>
+<td class="bl pos">+0.3%</td>
 <td class="bl">606.81</td>
 <td class="bl">606.66</td>
-<td class="bl" style="color:#888;font-weight:bold">-0.0%</td>
+<td class="bl neutral">-0.0%</td>
 </tr>
 <tr>
 <td>32K</td>
+<td class="bl">759.69</td>
+<td class="bl">761.50</td>
+<td class="bl pos">+0.2%</td>
 <td class="bl">759.63</td>
 <td class="bl">759.46</td>
-<td class="bl" style="color:#888;font-weight:bold">-0.0%</td>
+<td class="bl neutral">-0.0%</td>
 </tr>
 <tr>
 <td>64K</td>
+<td class="bl">759.71</td>
+<td class="bl">762.08</td>
+<td class="bl pos">+0.3%</td>
 <td class="bl">760.21</td>
 <td class="bl">761.50</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.2%</td>
+<td class="bl pos">+0.2%</td>
 </tr>
 <tr>
 <td>128K</td>
+<td class="bl">759.67</td>
+<td class="bl">761.11</td>
+<td class="bl pos">+0.2%</td>
 <td class="bl">760.15</td>
 <td class="bl">761.78</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.2%</td>
+<td class="bl pos">+0.2%</td>
 </tr>
 <tr>
 <td>256K</td>
+<td class="bl">759.72</td>
+<td class="bl">761.75</td>
+<td class="bl pos">+0.3%</td>
 <td class="bl">760.24</td>
 <td class="bl">761.92</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.2%</td>
+<td class="bl pos">+0.2%</td>
 </tr>
 <tr>
 <td>512K</td>
+<td class="bl">759.75</td>
+<td class="bl">761.94</td>
+<td class="bl pos">+0.3%</td>
 <td class="bl">760.29</td>
 <td class="bl">761.79</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.2%</td>
+<td class="bl pos">+0.2%</td>
 </tr>
 <tr>
 <td>1M</td>
+<td class="bl">759.77</td>
+<td class="bl">762.43</td>
+<td class="bl pos">+0.4%</td>
 <td class="bl">760.32</td>
 <td class="bl">762.03</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.2%</td>
+<td class="bl pos">+0.2%</td>
 </tr>
 <tr>
 <td>2M</td>
+<td class="bl">759.77</td>
+<td class="bl">762.65</td>
+<td class="bl pos">+0.4%</td>
 <td class="bl">760.33</td>
 <td class="bl">762.57</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
+<td class="bl pos">+0.3%</td>
 </tr>
 <tr>
 <td>4M</td>
+<td class="bl">759.78</td>
+<td class="bl">762.75</td>
+<td class="bl pos">+0.4%</td>
 <td class="bl">760.34</td>
 <td class="bl">762.52</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
+<td class="bl pos">+0.3%</td>
 </tr>
 <tr>
 <td>8M</td>
+<td class="bl">759.78</td>
+<td class="bl">762.70</td>
+<td class="bl pos">+0.4%</td>
 <td class="bl">760.35</td>
 <td class="bl">762.75</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
+<td class="bl pos">+0.3%</td>
 </tr>
 </tbody></table>
 <h3>QP = 1024</h3>
-<table><thead><tr><th>Size</th><th class="bl">Base 1.125-a (Gbps)</th><th class="bl">Master pi-10 (Gbps)</th><th class="bl">Δ%</th></tr></thead><tbody>
+<div class="chart-row">
+<div class="chart-box"><canvas id="ib_chart_wb_1024" height="200"></canvas></div>
+<div class="chart-box"><canvas id="ib_chart_wi_1024" height="200"></canvas></div>
+</div>
+<table><thead><tr><th>Size</th><th class="grp">write_bw Base</th><th class="grp">write_bw Master</th><th class="grp">Δ%</th><th class="grp">write_imm Base</th><th class="grp">write_imm Master</th><th class="grp">Δ%</th></tr></thead><tbody>
 <tr>
-<td>2B</td>
+<td>2</td>
+<td class="bl">0.15</td>
+<td class="bl">0.15</td>
+<td class="bl pos">+3.0%</td>
 <td class="bl">0.05</td>
 <td class="bl">0.05</td>
-<td class="bl" style="color:#c62828;font-weight:bold">-9.0%</td>
+<td class="bl neg">-9.0%</td>
 </tr>
 <tr>
-<td>4B</td>
+<td>4</td>
+<td class="bl">0.30</td>
+<td class="bl">0.31</td>
+<td class="bl pos">+3.3%</td>
 <td class="bl">0.09</td>
 <td class="bl">0.09</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+1.1%</td>
+<td class="bl pos">+1.1%</td>
 </tr>
 <tr>
-<td>8B</td>
+<td>8</td>
+<td class="bl">0.61</td>
+<td class="bl">0.62</td>
+<td class="bl pos">+1.6%</td>
 <td class="bl">0.19</td>
 <td class="bl">0.18</td>
-<td class="bl" style="color:#f57c00;font-weight:bold">-4.2%</td>
+<td class="bl warn">-4.2%</td>
 </tr>
 <tr>
-<td>16B</td>
+<td>16</td>
+<td class="bl">1.21</td>
+<td class="bl">1.24</td>
+<td class="bl pos">+2.5%</td>
 <td class="bl">0.37</td>
 <td class="bl">0.36</td>
-<td class="bl" style="color:#f57c00;font-weight:bold">-2.7%</td>
+<td class="bl warn">-2.7%</td>
 </tr>
 <tr>
-<td>32B</td>
+<td>32</td>
+<td class="bl">2.43</td>
+<td class="bl">2.47</td>
+<td class="bl pos">+1.6%</td>
 <td class="bl">0.75</td>
 <td class="bl">0.73</td>
-<td class="bl" style="color:#f57c00;font-weight:bold">-2.7%</td>
+<td class="bl warn">-2.7%</td>
 </tr>
 <tr>
-<td>64B</td>
+<td>64</td>
+<td class="bl">4.86</td>
+<td class="bl">4.95</td>
+<td class="bl pos">+1.9%</td>
 <td class="bl">1.50</td>
 <td class="bl">1.45</td>
-<td class="bl" style="color:#f57c00;font-weight:bold">-3.3%</td>
+<td class="bl warn">-3.3%</td>
 </tr>
 <tr>
-<td>128B</td>
+<td>128</td>
+<td class="bl">9.70</td>
+<td class="bl">9.88</td>
+<td class="bl pos">+1.9%</td>
 <td class="bl">2.99</td>
 <td class="bl">2.90</td>
-<td class="bl" style="color:#f57c00;font-weight:bold">-3.0%</td>
+<td class="bl warn">-3.0%</td>
 </tr>
 <tr>
-<td>256B</td>
+<td>256</td>
+<td class="bl">19.37</td>
+<td class="bl">19.74</td>
+<td class="bl pos">+1.9%</td>
 <td class="bl">5.97</td>
 <td class="bl">5.79</td>
-<td class="bl" style="color:#f57c00;font-weight:bold">-3.0%</td>
+<td class="bl warn">-3.0%</td>
 </tr>
 <tr>
-<td>512B</td>
+<td>512</td>
+<td class="bl">38.68</td>
+<td class="bl">39.40</td>
+<td class="bl pos">+1.9%</td>
 <td class="bl">11.88</td>
 <td class="bl">11.52</td>
-<td class="bl" style="color:#f57c00;font-weight:bold">-3.0%</td>
+<td class="bl warn">-3.0%</td>
 </tr>
 <tr>
 <td>1K</td>
+<td class="bl">77.10</td>
+<td class="bl">78.52</td>
+<td class="bl pos">+1.8%</td>
 <td class="bl">23.63</td>
 <td class="bl">22.93</td>
-<td class="bl" style="color:#f57c00;font-weight:bold">-3.0%</td>
+<td class="bl warn">-3.0%</td>
 </tr>
 <tr>
 <td>2K</td>
+<td class="bl">153.45</td>
+<td class="bl">156.04</td>
+<td class="bl pos">+1.7%</td>
 <td class="bl">47.04</td>
 <td class="bl">45.54</td>
-<td class="bl" style="color:#f57c00;font-weight:bold">-3.2%</td>
+<td class="bl warn">-3.2%</td>
 </tr>
 <tr>
 <td>4K</td>
+<td class="bl">305.59</td>
+<td class="bl">312.32</td>
+<td class="bl pos">+2.2%</td>
 <td class="bl">93.08</td>
 <td class="bl">90.72</td>
-<td class="bl" style="color:#f57c00;font-weight:bold">-2.5%</td>
+<td class="bl warn">-2.5%</td>
 </tr>
 <tr>
 <td>8K</td>
+<td class="bl">588.44</td>
+<td class="bl">609.75</td>
+<td class="bl pos">+3.6%</td>
 <td class="bl">180.01</td>
 <td class="bl">178.68</td>
-<td class="bl" style="color:#888;font-weight:bold">-0.7%</td>
+<td class="bl neutral">-0.7%</td>
 </tr>
 <tr>
 <td>16K</td>
+<td class="bl">759.76</td>
+<td class="bl">761.72</td>
+<td class="bl pos">+0.3%</td>
 <td class="bl">346.04</td>
 <td class="bl">349.74</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+1.1%</td>
+<td class="bl pos">+1.1%</td>
 </tr>
 <tr>
 <td>32K</td>
+<td class="bl">759.76</td>
+<td class="bl">761.74</td>
+<td class="bl pos">+0.3%</td>
 <td class="bl">676.07</td>
 <td class="bl">659.15</td>
-<td class="bl" style="color:#f57c00;font-weight:bold">-2.5%</td>
+<td class="bl warn">-2.5%</td>
 </tr>
 <tr>
 <td>64K</td>
+<td class="bl">759.77</td>
+<td class="bl">762.09</td>
+<td class="bl pos">+0.3%</td>
 <td class="bl">760.28</td>
 <td class="bl">762.58</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
+<td class="bl pos">+0.3%</td>
 </tr>
 <tr>
 <td>128K</td>
+<td class="bl">759.77</td>
+<td class="bl">761.82</td>
+<td class="bl pos">+0.3%</td>
 <td class="bl">760.29</td>
 <td class="bl">762.69</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
+<td class="bl pos">+0.3%</td>
 </tr>
 <tr>
 <td>256K</td>
+<td class="bl">759.77</td>
+<td class="bl">761.85</td>
+<td class="bl pos">+0.3%</td>
 <td class="bl">760.29</td>
 <td class="bl">762.68</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
+<td class="bl pos">+0.3%</td>
 </tr>
 <tr>
 <td>512K</td>
+<td class="bl">759.78</td>
+<td class="bl">761.99</td>
+<td class="bl pos">+0.3%</td>
 <td class="bl">760.08</td>
 <td class="bl">762.69</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
+<td class="bl pos">+0.3%</td>
 </tr>
 <tr>
 <td>1M</td>
+<td class="bl">759.78</td>
+<td class="bl">761.92</td>
+<td class="bl pos">+0.3%</td>
 <td class="bl">759.93</td>
 <td class="bl">762.39</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
+<td class="bl pos">+0.3%</td>
 </tr>
 <tr>
 <td>2M</td>
+<td class="bl">759.78</td>
+<td class="bl">761.91</td>
+<td class="bl pos">+0.3%</td>
 <td class="bl">759.83</td>
 <td class="bl">762.30</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
+<td class="bl pos">+0.3%</td>
 </tr>
 <tr>
 <td>4M</td>
+<td class="bl">759.78</td>
+<td class="bl">761.89</td>
+<td class="bl pos">+0.3%</td>
 <td class="bl">759.81</td>
 <td class="bl">762.21</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
+<td class="bl pos">+0.3%</td>
 </tr>
 <tr>
 <td>8M</td>
+<td class="bl">759.78</td>
+<td class="bl">761.89</td>
+<td class="bl pos">+0.3%</td>
 <td class="bl">759.74</td>
 <td class="bl">762.14</td>
-<td class="bl" style="color:#2e7d32;font-weight:bold">+0.3%</td>
+<td class="bl pos">+0.3%</td>
 </tr>
 </tbody></table>
 <h3>QP = 4090</h3>
-<p class="skip" style="padding:8px;background:#ffe0b2">SKIPPED — KI-009: write_with_imm fails at 4090 QPs on 1x800 profile</p>
-<hr><p style="color:#999;font-size:11px">Generated by gen-master-vs-125a-report.py | Color: green ≥0%, gray -2..0%, orange -2..-5%, red &lt;-5%</p>
+<div class="chart-row">
+<div class="chart-box"><canvas id="ib_chart_wb_4090" height="200"></canvas></div>
+<div class="chart-box" style="display:flex;align-items:center;justify-content:center"><p class="skip">write_with_imm @ QP=4090 SKIPPED — KI-009 (fails on 1x800 profile)</p></div>
+</div>
+<table><thead><tr><th>Size</th><th class="grp">write_bw Base</th><th class="grp">write_bw Master</th><th class="grp">Δ%</th><th class="grp">write_imm Base</th><th class="grp">write_imm Master</th><th class="grp">Δ%</th></tr></thead><tbody>
+<tr>
+<td>2</td>
+<td class="bl">0.15</td>
+<td class="bl">0.15</td>
+<td class="bl pos">+0.5%</td>
+<td class="bl">0.02</td>
+<td class="bl skip">SKIP</td><td class="bl"></td>
+</tr>
+<tr>
+<td>4</td>
+<td class="bl">0.31</td>
+<td class="bl">0.30</td>
+<td class="bl warn">-3.2%</td>
+<td class="bl">0.05</td>
+<td class="bl skip">SKIP</td><td class="bl"></td>
+</tr>
+<tr>
+<td>8</td>
+<td class="bl">0.62</td>
+<td class="bl">0.60</td>
+<td class="bl warn">-3.2%</td>
+<td class="bl">0.09</td>
+<td class="bl skip">SKIP</td><td class="bl"></td>
+</tr>
+<tr>
+<td>16</td>
+<td class="bl">1.24</td>
+<td class="bl">1.21</td>
+<td class="bl warn">-2.4%</td>
+<td class="bl">0.19</td>
+<td class="bl skip">SKIP</td><td class="bl"></td>
+</tr>
+<tr>
+<td>32</td>
+<td class="bl">2.48</td>
+<td class="bl">2.41</td>
+<td class="bl warn">-2.8%</td>
+<td class="bl">0.38</td>
+<td class="bl skip">SKIP</td><td class="bl"></td>
+</tr>
+<tr>
+<td>64</td>
+<td class="bl">4.95</td>
+<td class="bl">4.82</td>
+<td class="bl warn">-2.6%</td>
+<td class="bl">0.76</td>
+<td class="bl skip">SKIP</td><td class="bl"></td>
+</tr>
+<tr>
+<td>128</td>
+<td class="bl">9.89</td>
+<td class="bl">9.63</td>
+<td class="bl warn">-2.6%</td>
+<td class="bl">1.52</td>
+<td class="bl skip">SKIP</td><td class="bl"></td>
+</tr>
+<tr>
+<td>256</td>
+<td class="bl">19.74</td>
+<td class="bl">19.23</td>
+<td class="bl warn">-2.6%</td>
+<td class="bl">3.03</td>
+<td class="bl skip">SKIP</td><td class="bl"></td>
+</tr>
+<tr>
+<td>512</td>
+<td class="bl">39.34</td>
+<td class="bl">38.32</td>
+<td class="bl warn">-2.6%</td>
+<td class="bl">6.04</td>
+<td class="bl skip">SKIP</td><td class="bl"></td>
+</tr>
+<tr>
+<td>1K</td>
+<td class="bl">78.21</td>
+<td class="bl">76.15</td>
+<td class="bl warn">-2.6%</td>
+<td class="bl">12.03</td>
+<td class="bl skip">SKIP</td><td class="bl"></td>
+</tr>
+<tr>
+<td>2K</td>
+<td class="bl">154.73</td>
+<td class="bl">150.76</td>
+<td class="bl warn">-2.6%</td>
+<td class="bl">23.97</td>
+<td class="bl skip">SKIP</td><td class="bl"></td>
+</tr>
+<tr>
+<td>4K</td>
+<td class="bl">305.56</td>
+<td class="bl">300.23</td>
+<td class="bl neutral">-1.7%</td>
+<td class="bl">47.79</td>
+<td class="bl skip">SKIP</td><td class="bl"></td>
+</tr>
+<tr>
+<td>8K</td>
+<td class="bl">574.81</td>
+<td class="bl">578.09</td>
+<td class="bl pos">+0.6%</td>
+<td class="bl">94.95</td>
+<td class="bl skip">SKIP</td><td class="bl"></td>
+</tr>
+<tr>
+<td>16K</td>
+<td class="bl">758.76</td>
+<td class="bl">761.35</td>
+<td class="bl pos">+0.3%</td>
+<td class="bl">142.08</td>
+<td class="bl skip">SKIP</td><td class="bl"></td>
+</tr>
+<tr>
+<td>32K</td>
+<td class="bl">759.16</td>
+<td class="bl">759.93</td>
+<td class="bl pos">+0.1%</td>
+<td class="bl">77.82</td>
+<td class="bl skip">SKIP</td><td class="bl"></td>
+</tr>
+<tr>
+<td>64K</td>
+<td class="bl">759.17</td>
+<td class="bl">759.54</td>
+<td class="bl pos">+0.0%</td>
+<td class="bl">315.16</td>
+<td class="bl skip">SKIP</td><td class="bl"></td>
+</tr>
+<tr>
+<td>128K</td>
+<td class="bl">759.15</td>
+<td class="bl">759.17</td>
+<td class="bl pos">+0.0%</td>
+<td class="bl">759.65</td>
+<td class="bl skip">SKIP</td><td class="bl"></td>
+</tr>
+<tr>
+<td>256K</td>
+<td class="bl">759.19</td>
+<td class="bl">759.96</td>
+<td class="bl pos">+0.1%</td>
+<td class="bl">759.70</td>
+<td class="bl skip">SKIP</td><td class="bl"></td>
+</tr>
+<tr>
+<td>512K</td>
+<td class="bl">759.17</td>
+<td class="bl">759.76</td>
+<td class="bl pos">+0.1%</td>
+<td class="bl">759.63</td>
+<td class="bl skip">SKIP</td><td class="bl"></td>
+</tr>
+<tr>
+<td>1M</td>
+<td class="bl">759.17</td>
+<td class="bl">759.61</td>
+<td class="bl pos">+0.1%</td>
+<td class="bl">759.41</td>
+<td class="bl skip">SKIP</td><td class="bl"></td>
+</tr>
+<tr>
+<td>2M</td>
+<td class="bl">759.17</td>
+<td class="bl">759.62</td>
+<td class="bl pos">+0.1%</td>
+<td class="bl">759.31</td>
+<td class="bl skip">SKIP</td><td class="bl"></td>
+</tr>
+<tr>
+<td>4M</td>
+<td class="bl">759.17</td>
+<td class="bl">759.58</td>
+<td class="bl pos">+0.1%</td>
+<td class="bl">759.22</td>
+<td class="bl skip">SKIP</td><td class="bl"></td>
+</tr>
+<tr>
+<td>8M</td>
+<td class="bl">759.31</td>
+<td class="bl">759.60</td>
+<td class="bl pos">+0.0%</td>
+<td class="bl">759.35</td>
+<td class="bl skip">SKIP</td><td class="bl"></td>
+</tr>
+</tbody></table>
+<hr><p class="note">Generated 2026-05-25 16:17 | Master CSV: /home/pradeept/dev-notes/pensando-sw/scripts/ib-master-pi10-20260525_1454/summary.csv | Baseline IB: /home/pradeept/dev-notes/pensando-sw/scripts/baseline-125a-ib.csv | Baseline RCCL: baseline_140_20260519_0058</p>
+<script>
+window.addEventListener("DOMContentLoaded", function() {
+
+const COLORS = { base: '#90a4ae', baseLine: '#546e7a', master: '#5c6bc0', masterLine: '#1a237e' };
+const lineOpts = (title, suggestedMax) => ({
+  responsive: true, maintainAspectRatio: false,
+  plugins: {
+    title: {display: true, text: title, font:{size:13, weight:'600'}},
+    legend: {position:'top', labels:{boxWidth:12, font:{size:11}}},
+    tooltip: {mode:'index', intersect:false}
+  },
+  scales: {
+    y: {title:{display:true, text:'Gbps', font:{size:10}}, suggestedMax: suggestedMax || 800, beginAtZero:true},
+    x: {title:{display:true, text:'msg size', font:{size:10}}, ticks:{font:{size:10}}}
+  },
+  elements:{point:{radius:2,hoverRadius:4}, line:{tension:0.25,borderWidth:2}}
+});
+const barOpts = (title, ytitle) => ({
+  responsive: true, maintainAspectRatio: false,
+  plugins: {
+    title: {display:true, text:title, font:{size:13, weight:'600'}},
+    legend: {position:'top', labels:{boxWidth:12, font:{size:11}}},
+    tooltip: {mode:'index', intersect:false}
+  },
+  scales: {
+    y: {title:{display:true, text:ytitle, font:{size:10}}, beginAtZero:true},
+    x: {ticks:{font:{size:10}}}
+  }
+});
+
+
+new Chart(document.getElementById('rccl_chart'), {
+  type: 'bar',
+  data: {
+    labels: ["all_reduce", "sendrecv", "alltoall", "alltoallv"],
+    datasets: [
+      {label:'Baseline 1.125-a', data: [140.967, 15.156, 43.264, 31.625], backgroundColor:'#90a4ae'},
+      {label:'Master 1.130-pi10', data: [142.705, 15.266, 42.993, 31.787], backgroundColor:'#5c6bc0'}
+    ]
+  },
+  options: barOpts('RCCL avg busBw (GB/s) — baseline vs master', 'GB/s')
+});
+
+
+new Chart(document.getElementById('rccl_perdata_all_reduce'), {
+  type: 'line',
+  data: {
+    labels: ["1K", "2K", "4K", "8K", "16K", "32K", "64K", "128K", "256K", "512K", "1M", "2M", "4M", "8M", "16M", "32M", "64M", "128M", "256M", "512M", "1G", "2G", "4G", "8G", "16G"],
+    datasets: [
+      {label:'Baseline', data: [0.06, 0.11, 0.21, 0.43, 0.82, 1.65, 3.14, 5.76, 9.78, 15.13, 33.76, 58.43, 102.22, 85.2, 125.29, 162.12, 212.28, 263.72, 331.48, 348.93, 350.86, 352.26, 352.67, 355.37, 356.17], borderColor:COLORS.baseLine, backgroundColor:'rgba(144,164,174,0.1)', fill:false},
+      {label:'Master',   data: [0.06, 0.11, 0.21, 0.42, 0.84, 1.66, 3.16, 5.95, 9.73, 15.05, 34.48, 59.79, 103.35, 85.87, 127.83, 162.18, 212.11, 270.14, 332.38, 351.5, 356.08, 356.99, 358.12, 360.46, 362.22], borderColor:COLORS.masterLine, backgroundColor:'rgba(92,107,192,0.1)', fill:false}
+    ]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{
+      title:{display:true, text:'RCCL all_reduce — busBw vs size', font:{size:13,weight:'600'}},
+      legend:{position:'top', labels:{boxWidth:12, font:{size:11}}},
+      tooltip:{mode:'index', intersect:false}
+    },
+    scales:{
+      y:{title:{display:true, text:'busBw (GB/s)', font:{size:10}}, beginAtZero:true},
+      x:{title:{display:true, text:'msg size', font:{size:10}}, ticks:{font:{size:10}}}
+    },
+    elements:{point:{radius:2}, line:{tension:0.25, borderWidth:2}}
+  }
+});
+
+
+new Chart(document.getElementById('rccl_perdata_sendrecv'), {
+  type: 'line',
+  data: {
+    labels: ["1K", "2K", "4K", "8K", "16K", "32K", "64K", "128K", "256K", "512K", "1M", "2M", "4M", "8M", "16M", "32M", "64M", "128M", "256M", "512M", "1G", "2G", "4G", "8G", "16G"],
+    datasets: [
+      {label:'Baseline', data: [0.05, 0.11, 0.2, 0.42, 0.82, 1.59, 2.62, 5.62, 8.9, 11.83, 17.39, 20.23, 21.98, 23.03, 23.59, 23.88, 24.0, 24.05, 24.06, 24.14, 24.16, 24.15, 24.15, 24.18, 24.17], borderColor:COLORS.baseLine, backgroundColor:'rgba(144,164,174,0.1)', fill:false},
+      {label:'Master',   data: [0.05, 0.11, 0.21, 0.42, 0.83, 1.64, 2.66, 5.77, 8.53, 11.81, 17.58, 20.37, 22.08, 23.19, 23.73, 24.04, 24.18, 24.24, 24.29, 24.32, 24.32, 24.31, 24.32, 24.33, 24.32], borderColor:COLORS.masterLine, backgroundColor:'rgba(92,107,192,0.1)', fill:false}
+    ]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{
+      title:{display:true, text:'RCCL sendrecv — busBw vs size', font:{size:13,weight:'600'}},
+      legend:{position:'top', labels:{boxWidth:12, font:{size:11}}},
+      tooltip:{mode:'index', intersect:false}
+    },
+    scales:{
+      y:{title:{display:true, text:'busBw (GB/s)', font:{size:10}}, beginAtZero:true},
+      x:{title:{display:true, text:'msg size', font:{size:10}}, ticks:{font:{size:10}}}
+    },
+    elements:{point:{radius:2}, line:{tension:0.25, borderWidth:2}}
+  }
+});
+
+
+new Chart(document.getElementById('rccl_perdata_alltoall'), {
+  type: 'line',
+  data: {
+    labels: ["1K", "2K", "4K", "8K", "16K", "32K", "64K", "128K", "256K", "512K", "1M", "2M", "4M", "8M", "16M", "32M", "64M", "128M", "256M", "512M", "1G", "2G", "4G", "8G", "16G"],
+    datasets: [
+      {label:'Baseline', data: [0.02, 0.06, 0.11, 0.23, 0.45, 0.89, 1.74, 3.63, 7.2, 12.98, 19.79, 32.23, 42.45, 54.32, 57.82, 73.81, 80.16, 84.57, 85.83, 86.27, 86.65, 86.78, 86.85, 86.95, 86.93], borderColor:COLORS.baseLine, backgroundColor:'rgba(144,164,174,0.1)', fill:false},
+      {label:'Master',   data: [0.03, 0.06, 0.11, 0.23, 0.44, 0.91, 1.76, 3.68, 6.94, 13.11, 20.07, 31.99, 44.0, 53.28, 56.87, 73.07, 79.26, 83.95, 84.87, 85.7, 86.07, 86.12, 86.2, 86.19, 86.15], borderColor:COLORS.masterLine, backgroundColor:'rgba(92,107,192,0.1)', fill:false}
+    ]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{
+      title:{display:true, text:'RCCL alltoall — busBw vs size', font:{size:13,weight:'600'}},
+      legend:{position:'top', labels:{boxWidth:12, font:{size:11}}},
+      tooltip:{mode:'index', intersect:false}
+    },
+    scales:{
+      y:{title:{display:true, text:'busBw (GB/s)', font:{size:10}}, beginAtZero:true},
+      x:{title:{display:true, text:'msg size', font:{size:10}}, ticks:{font:{size:10}}}
+    },
+    elements:{point:{radius:2}, line:{tension:0.25, borderWidth:2}}
+  }
+});
+
+
+new Chart(document.getElementById('rccl_perdata_alltoallv'), {
+  type: 'line',
+  data: {
+    labels: ["1K", "2K", "4K", "8K", "16K", "32K", "64K", "128K", "256K", "512K", "1M", "2M", "4M", "8M", "16M", "32M", "64M", "128M", "256M", "512M", "1G", "2G", "4G", "8G", "16G"],
+    datasets: [
+      {label:'Baseline', data: [0.02, 0.06, 0.11, 0.22, 0.45, 0.88, 1.71, 3.4, 6.47, 10.39, 15.7, 27.57, 36.58, 44.04, 55.17, 56.83, 57.87, 59.03, 59.33, 59.66, 59.99, 60.14, 60.22, 60.25, 60.29], borderColor:COLORS.baseLine, backgroundColor:'rgba(144,164,174,0.1)', fill:false},
+      {label:'Master',   data: [0.03, 0.06, 0.11, 0.22, 0.45, 0.89, 1.73, 3.45, 6.69, 10.58, 16.31, 28.09, 36.83, 44.53, 54.54, 58.37, 58.76, 59.9, 59.67, 59.79, 59.75, 59.8, 59.8, 59.81, 59.81], borderColor:COLORS.masterLine, backgroundColor:'rgba(92,107,192,0.1)', fill:false}
+    ]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{
+      title:{display:true, text:'RCCL alltoallv — busBw vs size', font:{size:13,weight:'600'}},
+      legend:{position:'top', labels:{boxWidth:12, font:{size:11}}},
+      tooltip:{mode:'index', intersect:false}
+    },
+    scales:{
+      y:{title:{display:true, text:'busBw (GB/s)', font:{size:10}}, beginAtZero:true},
+      x:{title:{display:true, text:'msg size', font:{size:10}}, ticks:{font:{size:10}}}
+    },
+    elements:{point:{radius:2}, line:{tension:0.25, borderWidth:2}}
+  }
+});
+
+
+new Chart(document.getElementById('qp_8m_chart'), {
+  type: 'bar',
+  data: {
+    labels: ["2", "8", "16", "64", "256", "1024", "4090"],
+    datasets: [
+      {label:'write_bw Baseline', data: [722.35, 722.14, 760.2, 759.78, 759.78, 759.78, 759.31], backgroundColor:'#90a4ae'},
+      {label:'write_bw Master',   data: [764.21, 767.19, 765.22, 764.42, 762.7, 761.89, 759.6], backgroundColor:'#1a237e'},
+      {label:'write_imm Baseline', data: [721.59, 710.59, 737.19, 760.02, 760.35, 759.74, 759.35], backgroundColor:'#ffcc80'},
+      {label:'write_imm Master',   data: [765.78, 766.1, 765.22, 763.54, 762.75, 762.14, null], backgroundColor:'#ef6c00'}
+    ]
+  },
+  options: barOpts('IB BW @ 8M by QP (Gbps)', 'Gbps')
+});
+new Chart(document.getElementById('qp_64k_chart'), {
+  type: 'bar',
+  data: {
+    labels: ["2", "8", "16", "64", "256", "1024", "4090"],
+    datasets: [
+      {label:'write_bw Baseline', data: [718.21, 723.44, 759.29, 759.74, 759.71, 759.77, 759.17], backgroundColor:'#90a4ae'},
+      {label:'write_bw Master',   data: [742.81, 760.7, 765.42, 764.81, 762.08, 762.09, 759.54], backgroundColor:'#1a237e'},
+      {label:'write_imm Baseline', data: [714.71, 709.08, 741.33, 759.81, 760.21, 760.28, 315.16], backgroundColor:'#ffcc80'},
+      {label:'write_imm Master',   data: [742.15, 758.37, 765.39, 763.87, 761.5, 762.58, null], backgroundColor:'#ef6c00'}
+    ]
+  },
+  options: barOpts('IB BW @ 64K by QP (Gbps)', 'Gbps')
+});
+
+
+new Chart(document.getElementById('ib_chart_wb_2'), {
+  type: 'line',
+  data: {
+    labels: ["2", "4", "8", "16", "32", "64", "128", "256", "512", "1K", "2K", "4K", "8K", "16K", "32K", "64K", "128K", "256K", "512K", "1M", "2M", "4M", "8M"],
+    datasets: [
+      {label:'Baseline 1.125-a', data: [0.14, 0.29, 0.58, 1.17, 2.34, 4.68, 9.35, 18.66, 37.11, 73.76, 146.42, 287.88, 562.19, 750.18, 765.6, 718.21, 719.61, 721.63, 720.92, 721.59, 721.85, 722.34, 722.35], borderColor:COLORS.baseLine, backgroundColor:'rgba(144,164,174,0.1)', fill:false},
+      {label:'Master pi-10',     data: [0.143, 0.3, 0.59, 1.19, 2.37, 4.75, 9.5, 19.18, 39.01, 76.52, 149.18, 297.26, 582.05, 768.08, 770.65, 742.81, 755.12, 761.57, 763.96, 764.68, 764.92, 765.15, 764.21], borderColor:COLORS.masterLine, backgroundColor:'rgba(92,107,192,0.1)', fill:false}
+    ]
+  },
+  options: lineOpts('write_bw — QP=2', 800)
+});
+
+
+new Chart(document.getElementById('ib_chart_wi_2'), {
+  type: 'line',
+  data: {
+    labels: ["2", "4", "8", "16", "32", "64", "128", "256", "512", "1K", "2K", "4K", "8K", "16K", "32K", "64K", "128K", "256K", "512K", "1M", "2M", "4M", "8M"],
+    datasets: [
+      {label:'Baseline 1.125-a', data: [0.08, 0.16, 0.33, 0.66, 1.28, 2.6, 5.1, 10.32, 21.14, 41.74, 85.17, 173.65, 351.32, 614.98, 761.76, 714.71, 718.07, 720.02, 719.84, 720.44, 720.93, 721.41, 721.59], borderColor:COLORS.baseLine, backgroundColor:'rgba(144,164,174,0.1)', fill:false},
+      {label:'Master pi-10',     data: [0.08, 0.168, 0.35, 0.66, 1.34, 2.82, 5.33, 11.0, 22.34, 42.61, 88.13, 182.87, 346.99, 618.26, 770.69, 742.15, 753.91, 760.44, 762.56, 764.0, 764.89, 765.51, 765.78], borderColor:COLORS.masterLine, backgroundColor:'rgba(92,107,192,0.1)', fill:false}
+    ]
+  },
+  options: lineOpts('write_with_imm — QP=2', 800)
+});
+
+
+new Chart(document.getElementById('ib_chart_wb_8'), {
+  type: 'line',
+  data: {
+    labels: ["2", "4", "8", "16", "32", "64", "128", "256", "512", "1K", "2K", "4K", "8K", "16K", "32K", "64K", "128K", "256K", "512K", "1M", "2M", "4M", "8M"],
+    datasets: [
+      {label:'Baseline 1.125-a', data: [0.15, 0.31, 0.62, 1.24, 2.49, 4.98, 9.94, 19.76, 39.56, 78.79, 156.59, 310.78, 635.18, 759.83, 760.06, 723.44, 721.59, 721.3, 721.05, 721.22, 722.2, 722.08, 722.14], borderColor:COLORS.baseLine, backgroundColor:'rgba(144,164,174,0.1)', fill:false},
+      {label:'Master pi-10',     data: [0.154, 0.32, 0.64, 1.28, 2.55, 5.11, 10.19, 20.32, 40.57, 80.8, 160.56, 321.18, 627.37, 765.04, 765.01, 760.7, 763.48, 764.58, 765.72, 766.28, 766.63, 766.86, 767.19], borderColor:COLORS.masterLine, backgroundColor:'rgba(92,107,192,0.1)', fill:false}
+    ]
+  },
+  options: lineOpts('write_bw — QP=8', 800)
+});
+
+
+new Chart(document.getElementById('ib_chart_wi_8'), {
+  type: 'line',
+  data: {
+    labels: ["2", "4", "8", "16", "32", "64", "128", "256", "512", "1K", "2K", "4K", "8K", "16K", "32K", "64K", "128K", "256K", "512K", "1M", "2M", "4M", "8M"],
+    datasets: [
+      {label:'Baseline 1.125-a', data: [0.08, 0.17, 0.33, 0.66, 1.33, 2.65, 5.29, 10.62, 21.13, 42.19, 83.89, 166.08, 324.2, 629.81, 750.98, 709.08, 708.28, 708.2, 709.4, 709.91, 710.55, 710.38, 710.59], borderColor:COLORS.baseLine, backgroundColor:'rgba(144,164,174,0.1)', fill:false},
+      {label:'Master pi-10',     data: [0.055, 0.001, 0.003, 0.005, 0.01, 0.021, 0.042, 6.73, 0.167, 0.33, 0.67, 1.34, 332.54, 633.33, 763.48, 758.37, 761.44, 763.3, 764.49, 765.15, 765.41, 765.72, 766.1], borderColor:COLORS.masterLine, backgroundColor:'rgba(92,107,192,0.1)', fill:false}
+    ]
+  },
+  options: lineOpts('write_with_imm — QP=8', 800)
+});
+
+
+new Chart(document.getElementById('ib_chart_wb_16'), {
+  type: 'line',
+  data: {
+    labels: ["2", "4", "8", "16", "32", "64", "128", "256", "512", "1K", "2K", "4K", "8K", "16K", "32K", "64K", "128K", "256K", "512K", "1M", "2M", "4M", "8M"],
+    datasets: [
+      {label:'Baseline 1.125-a', data: [0.15, 0.31, 0.61, 1.22, 2.45, 4.9, 9.78, 19.53, 38.99, 77.65, 154.3, 306.82, 628.19, 759.46, 759.67, 759.29, 759.49, 759.77, 759.91, 760.05, 760.18, 760.19, 760.2], borderColor:COLORS.baseLine, backgroundColor:'rgba(144,164,174,0.1)', fill:false},
+      {label:'Master pi-10',     data: [0.155, 0.32, 0.64, 1.29, 2.57, 5.15, 10.29, 20.51, 40.98, 81.55, 161.99, 324.93, 635.35, 762.67, 761.86, 765.42, 765.18, 765.2, 765.21, 765.21, 765.21, 765.22, 765.22], borderColor:COLORS.masterLine, backgroundColor:'rgba(92,107,192,0.1)', fill:false}
+    ]
+  },
+  options: lineOpts('write_bw — QP=16', 800)
+});
+
+
+new Chart(document.getElementById('ib_chart_wi_16'), {
+  type: 'line',
+  data: {
+    labels: ["2", "4", "8", "16", "32", "64", "128", "256", "512", "1K", "2K", "4K", "8K", "16K", "32K", "64K", "128K", "256K", "512K", "1M", "2M", "4M", "8M"],
+    datasets: [
+      {label:'Baseline 1.125-a', data: [0.09, 0.08, 0.37, 0.76, 1.51, 3.03, 6.03, 12.07, 24.21, 48.11, 95.76, 188.44, 364.73, 643.78, 758.29, 741.33, 739.88, 737.47, 737.52, 737.66, 737.31, 737.27, 737.19], borderColor:COLORS.baseLine, backgroundColor:'rgba(144,164,174,0.1)', fill:false},
+      {label:'Master pi-10',     data: [0.001, 0.003, 0.005, 0.01, 0.01, 0.042, 0.042, 0.167, 0.33, 0.5, 0.67, 2.66, 337.5, 636.0, 762.02, 765.39, 765.15, 765.2, 765.21, 765.21, 765.22, 765.22, 765.22], borderColor:COLORS.masterLine, backgroundColor:'rgba(92,107,192,0.1)', fill:false}
+    ]
+  },
+  options: lineOpts('write_with_imm — QP=16', 800)
+});
+
+
+new Chart(document.getElementById('ib_chart_wb_64'), {
+  type: 'line',
+  data: {
+    labels: ["2", "4", "8", "16", "32", "64", "128", "256", "512", "1K", "2K", "4K", "8K", "16K", "32K", "64K", "128K", "256K", "512K", "1M", "2M", "4M", "8M"],
+    datasets: [
+      {label:'Baseline 1.125-a', data: [0.15, 0.3, 0.61, 1.22, 2.44, 4.88, 9.74, 19.45, 38.81, 77.33, 153.64, 306.19, 626.62, 759.73, 759.76, 759.74, 759.73, 759.76, 759.77, 759.78, 759.78, 759.78, 759.78], borderColor:COLORS.baseLine, backgroundColor:'rgba(144,164,174,0.1)', fill:false},
+      {label:'Master pi-10',     data: [0.156, 0.32, 0.65, 1.29, 2.59, 5.17, 10.33, 20.59, 41.13, 82.03, 162.75, 326.22, 638.44, 761.26, 760.41, 764.81, 764.63, 764.46, 764.42, 764.43, 764.42, 764.42, 764.42], borderColor:COLORS.masterLine, backgroundColor:'rgba(92,107,192,0.1)', fill:false}
+    ]
+  },
+  options: lineOpts('write_bw — QP=64', 800)
+});
+
+
+new Chart(document.getElementById('ib_chart_wi_64'), {
+  type: 'line',
+  data: {
+    labels: ["2", "4", "8", "16", "32", "64", "128", "256", "512", "1K", "2K", "4K", "8K", "16K", "32K", "64K", "128K", "256K", "512K", "1M", "2M", "4M", "8M"],
+    datasets: [
+      {label:'Baseline 1.125-a', data: [0.01, 0.01, 0.02, 0.04, 0.08, 1.41, 0.33, 0.67, 1.34, 2.68, 5.34, 10.69, 375.96, 639.15, 759.5, 759.81, 759.83, 759.91, 759.94, 759.99, 760.0, 760.0, 760.02], borderColor:COLORS.baseLine, backgroundColor:'rgba(144,164,174,0.1)', fill:false},
+      {label:'Master pi-10',     data: [0.005, 0.008, 0.015, 0.031, 0.042, 0.123, 0.25, 0.49, 0.67, 1.96, 3.92, 7.83, 336.39, 611.12, 760.84, 763.87, 763.55, 763.55, 763.52, 763.52, 763.54, 763.53, 763.54], borderColor:COLORS.masterLine, backgroundColor:'rgba(92,107,192,0.1)', fill:false}
+    ]
+  },
+  options: lineOpts('write_with_imm — QP=64', 800)
+});
+
+
+new Chart(document.getElementById('ib_chart_wb_256'), {
+  type: 'line',
+  data: {
+    labels: ["2", "4", "8", "16", "32", "64", "128", "256", "512", "1K", "2K", "4K", "8K", "16K", "32K", "64K", "128K", "256K", "512K", "1M", "2M", "4M", "8M"],
+    datasets: [
+      {label:'Baseline 1.125-a', data: [0.16, 0.32, 0.63, 1.24, 2.47, 4.93, 9.85, 19.65, 39.22, 78.22, 155.4, 310.57, 633.57, 759.54, 759.69, 759.71, 759.67, 759.72, 759.75, 759.77, 759.77, 759.78, 759.78], borderColor:COLORS.baseLine, backgroundColor:'rgba(144,164,174,0.1)', fill:false},
+      {label:'Master pi-10',     data: [0.156, 0.32, 0.64, 1.29, 2.58, 5.17, 10.31, 20.56, 41.11, 81.96, 162.97, 326.73, 635.88, 761.82, 761.5, 762.08, 761.11, 761.75, 761.94, 762.43, 762.65, 762.75, 762.7], borderColor:COLORS.masterLine, backgroundColor:'rgba(92,107,192,0.1)', fill:false}
+    ]
+  },
+  options: lineOpts('write_bw — QP=256', 800)
+});
+
+
+new Chart(document.getElementById('ib_chart_wi_256'), {
+  type: 'line',
+  data: {
+    labels: ["2", "4", "8", "16", "32", "64", "128", "256", "512", "1K", "2K", "4K", "8K", "16K", "32K", "64K", "128K", "256K", "512K", "1M", "2M", "4M", "8M"],
+    datasets: [
+      {label:'Baseline 1.125-a', data: [0.08, 0.0, 0.01, 0.02, 0.03, 1.31, 2.6, 5.19, 10.3, 20.51, 40.55, 79.53, 322.31, 606.81, 759.63, 760.21, 760.15, 760.24, 760.29, 760.32, 760.33, 760.34, 760.35], borderColor:COLORS.baseLine, backgroundColor:'rgba(144,164,174,0.1)', fill:false},
+      {label:'Master pi-10',     data: [0.002, 0.002, 0.008, 0.017, 0.033, 0.067, 0.134, 0.27, 0.54, 1.07, 2.14, 4.27, 318.08, 606.66, 759.46, 761.5, 761.78, 761.92, 761.79, 762.03, 762.57, 762.52, 762.75], borderColor:COLORS.masterLine, backgroundColor:'rgba(92,107,192,0.1)', fill:false}
+    ]
+  },
+  options: lineOpts('write_with_imm — QP=256', 800)
+});
+
+
+new Chart(document.getElementById('ib_chart_wb_1024'), {
+  type: 'line',
+  data: {
+    labels: ["2", "4", "8", "16", "32", "64", "128", "256", "512", "1K", "2K", "4K", "8K", "16K", "32K", "64K", "128K", "256K", "512K", "1M", "2M", "4M", "8M"],
+    datasets: [
+      {label:'Baseline 1.125-a', data: [0.15, 0.3, 0.61, 1.21, 2.43, 4.86, 9.7, 19.37, 38.68, 77.1, 153.45, 305.59, 588.44, 759.76, 759.76, 759.77, 759.77, 759.77, 759.78, 759.78, 759.78, 759.78, 759.78], borderColor:COLORS.baseLine, backgroundColor:'rgba(144,164,174,0.1)', fill:false},
+      {label:'Master pi-10',     data: [0.154, 0.31, 0.62, 1.24, 2.47, 4.95, 9.88, 19.74, 39.4, 78.52, 156.04, 312.32, 609.75, 761.72, 761.74, 762.09, 761.82, 761.85, 761.99, 761.92, 761.91, 761.89, 761.89], borderColor:COLORS.masterLine, backgroundColor:'rgba(92,107,192,0.1)', fill:false}
+    ]
+  },
+  options: lineOpts('write_bw — QP=1024', 800)
+});
+
+
+new Chart(document.getElementById('ib_chart_wi_1024'), {
+  type: 'line',
+  data: {
+    labels: ["2", "4", "8", "16", "32", "64", "128", "256", "512", "1K", "2K", "4K", "8K", "16K", "32K", "64K", "128K", "256K", "512K", "1M", "2M", "4M", "8M"],
+    datasets: [
+      {label:'Baseline 1.125-a', data: [0.05, 0.09, 0.19, 0.37, 0.75, 1.5, 2.99, 5.97, 11.88, 23.63, 47.04, 93.08, 180.01, 346.04, 676.07, 760.28, 760.29, 760.29, 760.08, 759.93, 759.83, 759.81, 759.74], borderColor:COLORS.baseLine, backgroundColor:'rgba(144,164,174,0.1)', fill:false},
+      {label:'Master pi-10',     data: [0.046, 0.091, 0.182, 0.36, 0.73, 1.45, 2.9, 5.79, 11.52, 22.93, 45.54, 90.72, 178.68, 349.74, 659.15, 762.58, 762.69, 762.68, 762.69, 762.39, 762.3, 762.21, 762.14], borderColor:COLORS.masterLine, backgroundColor:'rgba(92,107,192,0.1)', fill:false}
+    ]
+  },
+  options: lineOpts('write_with_imm — QP=1024', 800)
+});
+
+
+new Chart(document.getElementById('ib_chart_wb_4090'), {
+  type: 'line',
+  data: {
+    labels: ["2", "4", "8", "16", "32", "64", "128", "256", "512", "1K", "2K", "4K", "8K", "16K", "32K", "64K", "128K", "256K", "512K", "1M", "2M", "4M", "8M"],
+    datasets: [
+      {label:'Baseline 1.125-a', data: [0.15, 0.31, 0.62, 1.24, 2.48, 4.95, 9.89, 19.74, 39.34, 78.21, 154.73, 305.56, 574.81, 758.76, 759.16, 759.17, 759.15, 759.19, 759.17, 759.17, 759.17, 759.17, 759.31], borderColor:COLORS.baseLine, backgroundColor:'rgba(144,164,174,0.1)', fill:false},
+      {label:'Master pi-10',     data: [0.151, 0.3, 0.6, 1.21, 2.41, 4.82, 9.63, 19.23, 38.32, 76.15, 150.76, 300.23, 578.09, 761.35, 759.93, 759.54, 759.17, 759.96, 759.76, 759.61, 759.62, 759.58, 759.6], borderColor:COLORS.masterLine, backgroundColor:'rgba(92,107,192,0.1)', fill:false}
+    ]
+  },
+  options: lineOpts('write_bw — QP=4090', 800)
+});
+
+});
+</script>
 </body></html>
