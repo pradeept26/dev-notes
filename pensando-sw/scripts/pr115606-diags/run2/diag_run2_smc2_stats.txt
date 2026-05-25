@@ -1,0 +1,74 @@
+
+{
+    "nic": [
+        {
+            "id": "42424650-5232-3534-3830-303330000000",
+            "rdma_statistics": {
+                "queue_pair_create": "4",
+                "queue_pair_create_failed": "1",
+                "queue_pair_delete": "2",
+                "completion_queue_create": "10",
+                "completion_queue_delete": "6",
+                "memory_region_create": "2",
+                "memory_region_delete": "1"
+            }
+        },
+        {
+            "id": "42424650-5232-3535-3230-304237000000",
+            "rdma_statistics": {
+                "queue_pair_create_failed": "1",
+                "completion_queue_create": "2",
+                "completion_queue_delete": "2"
+            }
+        },
+        {
+            "id": "42424650-5232-3534-3830-303241000000",
+            "rdma_statistics": {
+                "queue_pair_create_failed": "1",
+                "completion_queue_create": "2",
+                "completion_queue_delete": "2"
+            }
+        },
+        {
+            "id": "42424650-5232-3535-3230-303338000000",
+            "rdma_statistics": {
+                "queue_pair_create_failed": "1",
+                "completion_queue_create": "2",
+                "completion_queue_delete": "2"
+            }
+        },
+        {
+            "id": "42424650-5232-3534-3830-303244000000",
+            "rdma_statistics": {
+                "queue_pair_create_failed": "1",
+                "completion_queue_create": "2",
+                "completion_queue_delete": "2"
+            }
+        },
+        {
+            "id": "42424650-5232-3535-3230-303437000000",
+            "rdma_statistics": {
+                "queue_pair_create_failed": "1",
+                "completion_queue_create": "2",
+                "completion_queue_delete": "2"
+            }
+        },
+        {
+            "id": "42424650-5232-3535-3230-304135000000",
+            "rdma_statistics": {
+                "queue_pair_create_failed": "1",
+                "completion_queue_create": "2",
+                "completion_queue_delete": "2"
+            }
+        },
+        {
+            "id": "42424650-5232-3535-3230-303842000000",
+            "rdma_statistics": {
+                "queue_pair_create_failed": "1",
+                "completion_queue_create": "2",
+                "completion_queue_delete": "2"
+            }
+        }
+    ]
+}
+

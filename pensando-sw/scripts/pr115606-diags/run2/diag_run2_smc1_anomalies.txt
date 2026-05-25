@@ -1,0 +1,46 @@
+
+NIC/Lif : 42424650-5232-3534-3830-303136000000 (0000:06:00.0) / 01000070-0100-0000-4242-0490818c7a50 (1)
+---------------------------------------------------------------------------------------------------------
+[SQ 0002] - queue is in erroneous state
+[SQ 0002] - requester TX error-disabled: 0x10
+[SQ 0002] - SQ ring pi: 0x68 != ci: 0x48 (WQEs pending)
+[SQ 0002] - spec_failure active - pipeline in rollback (spec_sq_cindex=75, exp_sq_cindex=72, restart_ci=72, restart_posn=0, restart_msn=1097)
+[SQ 0002] - ack_msn not advancing (ack_msn=1040, bmsn=1097, unacked_msgs=56) - messages not being acknowledged
+[Path 0000 (000) QID 0002] - cwnd_retry stuck - no ACKs in 200us (snd_una=118, snd_nxt=126, snd_max=128, cwnd=4, outstanding=8, retry_pending=2)
+[Path 0000 (000) QID 0002] - RNR fsns yet to be migrated, rnr_bitmap: 0x1f from 0234
+[Path 0001 (001) QID 0002] - timer ring pi: 0x24 != ci: 0x23
+[Path 0001 (001) QID 0002] - retransmit ring pi: 0x7f != ci: 0x77
+[Path 0001 (001) QID 0002] - snd_nxt: 0x7f != snd_una: 0x77
+[Path 0001 (001) QID 0002] - RNR fsns yet to be migrated, rnr_bitmap: 0x1f from 0232
+[Path 0002 (002) QID 0002] - cwnd_retry stuck - no ACKs in 200us (snd_una=129, snd_nxt=139, snd_max=141, cwnd=5, outstanding=10, retry_pending=2)
+[Path 0003 (003) QID 0002] - cwnd_retry stuck - no ACKs in 200us (snd_una=127, snd_nxt=139, snd_max=143, cwnd=6, outstanding=12, retry_pending=4)
+[Path 0004 (004) QID 0002] - cwnd_retry stuck - no ACKs in 200us (snd_una=132, snd_nxt=142, snd_max=143, cwnd=5, outstanding=10, retry_pending=1)
+[Path 0005 (005) QID 0002] - cwnd_retry stuck - no ACKs in 200us (snd_una=139, snd_nxt=153, snd_max=158, cwnd=7, outstanding=14, retry_pending=5)
+[Path 0006 (006) QID 0002] - timer ring pi: 0x25 != ci: 0x24
+[Path 0006 (006) QID 0002] - retransmit ring pi: 0x81 != ci: 0x79
+[Path 0006 (006) QID 0002] - snd_nxt: 0x81 != snd_una: 0x79
+[Path 0007 (007) QID 0002] - cwnd_retry stuck - no ACKs in 200us (snd_una=155, snd_nxt=167, snd_max=168, cwnd=6, outstanding=12, retry_pending=1)
+[Path 4096 (000) QID 2048] - RNR fsns yet to be migrated, rnr_bitmap: 0x1f from 0125
+[Path 4097 (001) QID 2048] - RNR fsns yet to be migrated, rnr_bitmap: 0xf from 0119
+[Path 4098 (002) QID 2048] - RNR fsns yet to be migrated, rnr_bitmap: 0xf from 0119
+[Path 4099 (003) QID 2048] - RNR fsns yet to be migrated, rnr_bitmap: 0xf from 0118
+[Path 4100 (004) QID 2048] - RNR fsns yet to be migrated, rnr_bitmap: 0x1 from 0122
+[Path 4101 (005) QID 2048] - RNR fsns yet to be migrated, rnr_bitmap: 0xf from 0117
+[Path 4102 (006) QID 2048] - RNR fsns yet to be migrated, rnr_bitmap: 0xf from 0112
+[Path 4103 (007) QID 2048] - RNR fsns yet to be migrated, rnr_bitmap: 0x1f from 0112
+[RQ 0002] - RQ ring pi: 0x3bf != ci: 0x0 (WQEs pending)
+[RQ 2048] - RQ ring pi: 0x3ac != ci: 0x0 (WQEs pending)
+
+Summary of rdma queue state analysis :
+Total no. of send queues in error state       : 1
+Total no. of receive queues in error state    : 2
+Total no. of paths in error state             : 16
+
+
+
+
+
+
+
+
+

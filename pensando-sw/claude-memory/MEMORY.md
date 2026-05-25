@@ -309,6 +309,12 @@ Located in: `~/dev-notes/pensando-sw/scripts/`
 ## Skills
 - [analyze-latency](skill-analyze-latency.md) — RDMA latency analysis via mputrace + external MAC loopback (from sanshanb)
 
+## Workflow Preferences
+- [Less prompts](feedback-less-prompts.md) — Infer pipeline/tag/profile from context, don't over-ask
+
+## Active Testbeds
+- [kenya-perf-3/4 baseline](project_kenya_perf_baseline.md) — Perf baseline & setup for path re-activation testing
+
 ## Related Documentation
 - [context.md](file:///home/pradeept/dev-notes/pensando-sw/context.md) - Full development context
 - [ib-testing-guide.md](file:///home/pradeept/dev-notes/pensando-sw/ib-testing-guide.md) - IB/RDMA testing guide

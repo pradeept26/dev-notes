@@ -1,0 +1,43 @@
+NIC : 42424650-5232-3534-3830-303136000000(0000:06:00.0)
+PB anomalies
+Total PRD drops             158           
+
+NIC : 42424650-5232-3534-3830-303136000000(0000:06:00.0)
+Interrupts
+[2026-05-12 13:27:12.000]               mm.mm.int_sc_int_pll_unlock_eth                                  1      ERROR    F/F/F                                              
+
+NIC/Lif : 42424650-5232-3534-3830-303136000000 (0000:06:00.0) / 01000070-0100-0000-4242-0490818c7a50 (1)
+---------------------------------------------------------------------------------------------------------
+[Path 0006 (006) QID 0002] - packets yet to be received fsn_bitmap: 0x0 0x0 0x0 0x1c0
+[Path 0006 (006) QID 0002] - receiver stalled - no traffic in 200us (rcv_nxt=118, max_fsn=126, gap=9)
+[Path 0006 (006) QID 0002] - receiver has data to ACK but ack ring is empty (rcv_nxt=118, max_fsn=126, gap=9, ack_ring pi=ci=0x79) - ACK generation broken
+[Path 0007 (007) QID 0002] - packets yet to be received fsn_bitmap: 0x0 0x0 0x0 0x40
+[Path 0007 (007) QID 0002] - receiver stalled - no traffic in 200us (rcv_nxt=118, max_fsn=124, gap=7)
+[Path 0007 (007) QID 0002] - receiver has data to ACK but ack ring is empty (rcv_nxt=118, max_fsn=124, gap=7, ack_ring pi=ci=0x7b) - ACK generation broken
+[Path 4098 (002) QID 2048] - packets yet to be received fsn_bitmap: 0x0 0x0 0x0 0x300
+[Path 4098 (002) QID 2048] - receiver stalled - no traffic in 200us (rcv_nxt=154, max_fsn=163, gap=10)
+[Path 4098 (002) QID 2048] - receiver has data to ACK but ack ring is empty (rcv_nxt=154, max_fsn=163, gap=10, ack_ring pi=ci=0xa5) - ACK generation broken
+[Path 4099 (003) QID 2048] - packets yet to be received fsn_bitmap: 0x0 0x0 0x0 0x300
+[Path 4099 (003) QID 2048] - receiver stalled - no traffic in 200us (rcv_nxt=154, max_fsn=163, gap=10)
+[Path 4099 (003) QID 2048] - receiver has data to ACK but ack ring is empty (rcv_nxt=154, max_fsn=163, gap=10, ack_ring pi=ci=0xa5) - ACK generation broken
+[Path 4100 (004) QID 2048] - packets yet to be received fsn_bitmap: 0x0 0x0 0x0 0x100
+[Path 4100 (004) QID 2048] - receiver stalled - no traffic in 200us (rcv_nxt=153, max_fsn=161, gap=9)
+[Path 4100 (004) QID 2048] - receiver has data to ACK but ack ring is empty (rcv_nxt=153, max_fsn=161, gap=9, ack_ring pi=ci=0xa3) - ACK generation broken
+[Path 4101 (005) QID 2048] - packets yet to be received fsn_bitmap: 0x0 0x0 0x0 0x100
+[Path 4101 (005) QID 2048] - receiver stalled - no traffic in 200us (rcv_nxt=153, max_fsn=161, gap=9)
+[Path 4101 (005) QID 2048] - receiver has data to ACK but ack ring is empty (rcv_nxt=153, max_fsn=161, gap=9, ack_ring pi=ci=0xa3) - ACK generation broken
+[Path 4102 (006) QID 2048] - packets yet to be received fsn_bitmap: 0x0 0x0 0x0 0x100
+[Path 4102 (006) QID 2048] - receiver stalled - no traffic in 200us (rcv_nxt=153, max_fsn=161, gap=9)
+[Path 4102 (006) QID 2048] - receiver has data to ACK but ack ring is empty (rcv_nxt=153, max_fsn=161, gap=9, ack_ring pi=ci=0xa2) - ACK generation broken
+[Path 4103 (007) QID 2048] - packets yet to be received fsn_bitmap: 0x0 0x0 0x0 0x100
+[Path 4103 (007) QID 2048] - receiver stalled - no traffic in 200us (rcv_nxt=153, max_fsn=161, gap=9)
+[Path 4103 (007) QID 2048] - receiver has data to ACK but ack ring is empty (rcv_nxt=153, max_fsn=161, gap=9, ack_ring pi=ci=0xa2) - ACK generation broken
+[RQ 0002] - messages yet to be completed msn_bitmap: 0x3fffff 0xc0c0c0c0c0c0f8f8
+[RQ 0002] - RQ ring pi: 0x148 != ci: 0x0 (WQEs pending)
+[RQ 2048] - messages yet to be completed msn_bitmap: 0x33f 0x0
+[RQ 2048] - RQ ring pi: 0x282 != ci: 0x0 (WQEs pending)
+
+Summary of rdma queue state analysis :
+Total no. of receive queues in error state    : 2
+Total no. of paths in error state             : 8
+

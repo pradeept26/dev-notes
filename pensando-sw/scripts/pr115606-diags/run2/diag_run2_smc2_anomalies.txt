@@ -1,0 +1,42 @@
+
+NIC/Lif : 42424650-5232-3534-3830-303330000000 (0000:06:00.0) / 01000070-0100-0000-4242-0490818c7e88 (1)
+---------------------------------------------------------------------------------------------------------
+[SQ 0003] - SQ ring pi: 0x4 != ci: 0xe9 (WQEs pending)
+[SQ 0003] - spec_failure active - pipeline in rollback (spec_sq_cindex=237, exp_sq_cindex=233, restart_ci=233, restart_posn=0, restart_msn=1002)
+[SQ 0003] - ack_msn not advancing (ack_msn=959, bmsn=1002, unacked_msgs=42) - messages not being acknowledged
+[SQ 2049] - requester TX error-disabled: 0x1
+[SQ 2049] - SQ ring pi: 0x4 != ci: 0xd7 (WQEs pending)
+[SQ 2049] - spec_failure active - pipeline in rollback (spec_sq_cindex=225, exp_sq_cindex=215, restart_ci=215, restart_posn=0, restart_msn=984)
+[SQ 2049] - ack_msn not advancing (ack_msn=940, bmsn=984, unacked_msgs=43) - messages not being acknowledged
+[Path 0000 (000) QID 0003] - cwnd_retry stuck - no ACKs in 200us (snd_una=234, snd_nxt=244, snd_max=245, cwnd=5, outstanding=10, retry_pending=1)
+[Path 0001 (001) QID 0003] - cwnd_retry stuck - no ACKs in 200us (snd_una=232, snd_nxt=242, snd_max=244, cwnd=5, outstanding=10, retry_pending=2)
+[Path 0002 (002) QID 0003] - cwnd_retry stuck - no ACKs in 200us (snd_una=141, snd_nxt=146, snd_max=147, cwnd=5, outstanding=5, retry_pending=1)
+[Path 0003 (003) QID 0003] - cwnd_retry stuck - no ACKs in 200us (snd_una=141, snd_nxt=146, snd_max=147, cwnd=5, outstanding=5, retry_pending=1)
+[Path 0004 (004) QID 0003] - cwnd_retry stuck - no ACKs in 200us (snd_una=141, snd_nxt=146, snd_max=147, cwnd=4, outstanding=5, retry_pending=1)
+[Path 0005 (005) QID 0003] - cwnd_retry stuck - no ACKs in 200us (snd_una=138, snd_nxt=142, snd_max=143, cwnd=4, outstanding=4, retry_pending=1)
+[Path 0006 (006) QID 0003] - cwnd_retry stuck - no ACKs in 200us (snd_una=141, snd_nxt=146, snd_max=147, cwnd=5, outstanding=5, retry_pending=1)
+[Path 4096 (000) QID 2049] - cwnd_retry stuck - no ACKs in 200us (snd_una=125, snd_nxt=133, snd_max=136, cwnd=5, outstanding=8, retry_pending=3)
+[Path 4097 (001) QID 2049] - cwnd_retry stuck - no ACKs in 200us (snd_una=119, snd_nxt=125, snd_max=128, cwnd=4, outstanding=6, retry_pending=3)
+[Path 4098 (002) QID 2049] - cwnd_retry stuck - no ACKs in 200us (snd_una=119, snd_nxt=125, snd_max=128, cwnd=4, outstanding=6, retry_pending=3)
+[Path 4099 (003) QID 2049] - cwnd_retry stuck - no ACKs in 200us (snd_una=118, snd_nxt=126, snd_max=127, cwnd=4, outstanding=8, retry_pending=1)
+[Path 4100 (004) QID 2049] - cwnd_retry stuck - no ACKs in 200us (snd_una=118, snd_nxt=126, snd_max=127, cwnd=4, outstanding=8, retry_pending=1)
+[Path 4101 (005) QID 2049] - cwnd_retry stuck - no ACKs in 200us (snd_una=117, snd_nxt=125, snd_max=126, cwnd=4, outstanding=8, retry_pending=1)
+[Path 4102 (006) QID 2049] - cwnd_retry stuck - no ACKs in 200us (snd_una=112, snd_nxt=118, snd_max=121, cwnd=4, outstanding=6, retry_pending=3)
+[Path 4103 (007) QID 2049] - cwnd_retry stuck - no ACKs in 200us (snd_una=112, snd_nxt=120, snd_max=124, cwnd=5, outstanding=8, retry_pending=4)
+[RQ 0003] - messages yet to be completed msn_bitmap: 0x0 0x630014242434
+[RQ 0003] - RQ ring pi: 0x210 != ci: 0x0 (WQEs pending)
+[RQ 2049] - RQ ring pi: 0x394 != ci: 0x0 (WQEs pending)
+
+Summary of rdma queue state analysis :
+Total no. of send queues in error state       : 2
+Total no. of receive queues in error state    : 2
+Total no. of paths in error state             : 15
+
+
+
+
+
+
+
+
+

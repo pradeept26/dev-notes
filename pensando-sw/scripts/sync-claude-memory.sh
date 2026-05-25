@@ -1,0 +1,1 @@
+../.claude/skills/scripts/infra/sync-claude-memory.sh

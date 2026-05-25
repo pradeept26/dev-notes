@@ -1,0 +1,64 @@
+NIC : 42424650-5232-3534-3830-303330000000(0000:06:00.0)
+Interrupts
+[2026-05-12 13:28:17.000]               su0.pics.p4invf.int_filter_read_response_err                     1      ERROR    F/F/F Debug only, when filters are armed, check tha
+[2026-05-12 13:28:17.000]               su1.pics.p4invf.int_filter_read_response_err                     1      ERROR    F/F/F Debug only, when filters are armed, check tha
+[2026-05-12 13:28:17.000]               mm.mm.int_sc_int_pll_unlock_eth                                  1      ERROR    F/F/F                                              
+
+NIC/Lif : 42424650-5232-3534-3830-303330000000 (0000:06:00.0) / 01000070-0100-0000-4242-0490818c7e88 (1)
+---------------------------------------------------------------------------------------------------------
+[SQ 0002] - ack_msn not advancing (ack_msn=842, bmsn=929, unacked_msgs=86) - messages not being acknowledged
+[SQ 2048] - ack_msn not advancing (ack_msn=1154, bmsn=1229, unacked_msgs=74) - messages not being acknowledged
+[Path 0002 (002) QID 0002] - timer_started but no timer event pending (snd_una=116, snd_nxt=124, outstanding=8, rto=75us) - loss detection broken
+[Path 0002 (002) QID 0002] - retransmit ring pi: 0x7c != ci: 0x74
+[Path 0002 (002) QID 0002] - snd_nxt: 0x7c != snd_una: 0x74
+[Path 0003 (003) QID 0002] - timer_started but no timer event pending (snd_una=116, snd_nxt=124, outstanding=8, rto=75us) - loss detection broken
+[Path 0003 (003) QID 0002] - retransmit ring pi: 0x7c != ci: 0x74
+[Path 0003 (003) QID 0002] - snd_nxt: 0x7c != snd_una: 0x74
+[Path 0004 (004) QID 0002] - timer_started but no timer event pending (snd_una=116, snd_nxt=124, outstanding=8, rto=75us) - loss detection broken
+[Path 0004 (004) QID 0002] - retransmit ring pi: 0x7c != ci: 0x74
+[Path 0004 (004) QID 0002] - snd_nxt: 0x7c != snd_una: 0x74
+[Path 0005 (005) QID 0002] - timer_started but no timer event pending (snd_una=118, snd_nxt=124, outstanding=6, rto=75us) - loss detection broken
+[Path 0005 (005) QID 0002] - retransmit ring pi: 0x7c != ci: 0x76
+[Path 0005 (005) QID 0002] - snd_nxt: 0x7c != snd_una: 0x76
+[Path 0006 (006) QID 0002] - timer_started but no timer event pending (snd_una=118, snd_nxt=127, outstanding=9, rto=75us) - loss detection broken
+[Path 0006 (006) QID 0002] - retransmit ring pi: 0x7f != ci: 0x76
+[Path 0006 (006) QID 0002] - snd_nxt: 0x7f != snd_una: 0x76
+[Path 0006 (006) QID 0002] - ACKs yet to be received fsn_bitmap: 0x0 0x0 0x0 0x1c0
+[Path 0007 (007) QID 0002] - timer_started but no timer event pending (snd_una=118, snd_nxt=125, outstanding=7, rto=75us) - loss detection broken
+[Path 0007 (007) QID 0002] - retransmit ring pi: 0x7d != ci: 0x76
+[Path 0007 (007) QID 0002] - snd_nxt: 0x7d != snd_una: 0x76
+[Path 0007 (007) QID 0002] - ACKs yet to be received fsn_bitmap: 0x0 0x0 0x0 0x40
+[Path 4096 (000) QID 2048] - timer_started but no timer event pending (snd_una=154, snd_nxt=163, outstanding=9, rto=75us) - loss detection broken
+[Path 4096 (000) QID 2048] - retransmit ring pi: 0xa3 != ci: 0x9a
+[Path 4096 (000) QID 2048] - snd_nxt: 0xa3 != snd_una: 0x9a
+[Path 4097 (001) QID 2048] - timer_started but no timer event pending (snd_una=154, snd_nxt=163, outstanding=9, rto=75us) - loss detection broken
+[Path 4097 (001) QID 2048] - retransmit ring pi: 0xa3 != ci: 0x9a
+[Path 4097 (001) QID 2048] - snd_nxt: 0xa3 != snd_una: 0x9a
+[Path 4098 (002) QID 2048] - timer_started but no timer event pending (snd_una=154, snd_nxt=164, outstanding=10, rto=75us) - loss detection broken
+[Path 4098 (002) QID 2048] - retransmit ring pi: 0xa4 != ci: 0x9a
+[Path 4098 (002) QID 2048] - snd_nxt: 0xa4 != snd_una: 0x9a
+[Path 4098 (002) QID 2048] - ACKs yet to be received fsn_bitmap: 0x0 0x0 0x0 0x300
+[Path 4099 (003) QID 2048] - retx event pending but not dispatched after 200us (rto_ring pi:0x2c79 ci:0x2c78, sack_ring pi:0x1 ci:0x1, snd_una=154, snd_nxt=164, outstanding=10, rto=75us)
+[Path 4099 (003) QID 2048] - timer_started but no timer event pending (snd_una=154, snd_nxt=164, outstanding=10, rto=75us) - loss detection broken
+[Path 4099 (003) QID 2048] - ACKs yet to be received fsn_bitmap: 0x0 0x0 0x0 0x300
+[Path 4100 (004) QID 2048] - timer_started but no timer event pending (snd_una=153, snd_nxt=162, outstanding=9, rto=75us) - loss detection broken
+[Path 4100 (004) QID 2048] - retransmit ring pi: 0xa2 != ci: 0x99
+[Path 4100 (004) QID 2048] - snd_nxt: 0xa2 != snd_una: 0x99
+[Path 4100 (004) QID 2048] - ACKs yet to be received fsn_bitmap: 0x0 0x0 0x0 0x100
+[Path 4101 (005) QID 2048] - timer_started but no timer event pending (snd_una=153, snd_nxt=162, outstanding=9, rto=75us) - loss detection broken
+[Path 4101 (005) QID 2048] - retransmit ring pi: 0xa2 != ci: 0x99
+[Path 4101 (005) QID 2048] - snd_nxt: 0xa2 != snd_una: 0x99
+[Path 4101 (005) QID 2048] - ACKs yet to be received fsn_bitmap: 0x0 0x0 0x0 0x100
+[Path 4102 (006) QID 2048] - timer_started but no timer event pending (snd_una=153, snd_nxt=162, outstanding=9, rto=75us) - loss detection broken
+[Path 4102 (006) QID 2048] - retransmit ring pi: 0xa2 != ci: 0x99
+[Path 4102 (006) QID 2048] - snd_nxt: 0xa2 != snd_una: 0x99
+[Path 4102 (006) QID 2048] - ACKs yet to be received fsn_bitmap: 0x0 0x0 0x0 0x100
+[Path 4103 (007) QID 2048] - timer_started but no timer event pending (snd_una=153, snd_nxt=162, outstanding=9, rto=75us) - loss detection broken
+[Path 4103 (007) QID 2048] - retransmit ring pi: 0xa2 != ci: 0x99
+[Path 4103 (007) QID 2048] - snd_nxt: 0xa2 != snd_una: 0x99
+[Path 4103 (007) QID 2048] - ACKs yet to be received fsn_bitmap: 0x0 0x0 0x0 0x100
+
+Summary of rdma queue state analysis :
+Total no. of send queues in error state       : 2
+Total no. of paths in error state             : 14
+

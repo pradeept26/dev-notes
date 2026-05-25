@@ -1,35 +1,79 @@
 #!/bin/bash
-# Auto-sync Claude memory changes to git
-# Called automatically by Claude after memory updates
+# Auto-sync dev-notes/pensando-sw working data to git.
+#
+# Covers:
+#   - pensando-sw/claude-memory/   (auto-memory; symlinked from ~/.claude/projects/.../memory)
+#   - pensando-sw/.claude/skills/  (project-level Claude skills, including symlinked ones)
+#   - pensando-sw/scripts/         (helper scripts)
+#   - pensando-sw/skills/          (legacy/shared skill copies)
+#
+# Designed to be run:
+#   - Manually after a non-trivial memory/skills change
+#   - Automatically from a Claude Stop hook (silent when no changes)
+#
+# Exits 0 on success or no-op; non-zero only on actual git failure.
 
 set -e
 
-MEMORY_DIR="$HOME/dev-notes/pensando-sw/claude-memory"
 DEV_NOTES_DIR="$HOME/dev-notes"
+SYNC_PATHS=(
+  "pensando-sw/claude-memory"
+  "pensando-sw/.claude/skills"
+  "pensando-sw/scripts"
+  "pensando-sw/skills"
+)
+QUIET=0
+[[ "${1:-}" == "--quiet" ]] && QUIET=1
 
+log() { [[ "$QUIET" == "1" ]] || echo "$@"; }
+
+[[ -d "$DEV_NOTES_DIR/.git" ]] || { log "❌ $DEV_NOTES_DIR is not a git repo"; exit 1; }
 cd "$DEV_NOTES_DIR"
 
-# Check if there are any changes to memory files
-if ! git diff --quiet pensando-sw/claude-memory/ 2>/dev/null || \
-   ! git diff --cached --quiet pensando-sw/claude-memory/ 2>/dev/null; then
+# Detect changes (modified, staged, or untracked) under any of the SYNC_PATHS.
+HAS_CHANGES=0
+for p in "${SYNC_PATHS[@]}"; do
+  [[ -e "$p" ]] || continue
+  if ! git diff --quiet -- "$p" 2>/dev/null \
+     || ! git diff --cached --quiet -- "$p" 2>/dev/null \
+     || [[ -n "$(git ls-files --others --exclude-standard -- "$p")" ]]; then
+    HAS_CHANGES=1
+    break
+  fi
+done
 
-    echo "📝 Memory changes detected, syncing to git..."
+if [[ "$HAS_CHANGES" == "0" ]]; then
+  log "ℹ️  No dev-notes changes to sync"
+  exit 0
+fi
 
-    # Add memory files
-    git add pensando-sw/claude-memory/
+log "📝 Syncing dev-notes changes to git..."
 
-    # Create commit with timestamp
-    TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
-    HOSTNAME=$(hostname)
+# Stage each path that exists. -A picks up modifications and untracked files,
+# while respecting .gitignore.
+for p in "${SYNC_PATHS[@]}"; do
+  [[ -e "$p" ]] && git add -A -- "$p"
+done
 
-    git commit -m "Auto-sync Claude memory from $HOSTNAME at $TIMESTAMP" \
-               -m "Updated by Claude Code automatic memory sync"
+# Bail if staging produced nothing (e.g. all changes were gitignored).
+if git diff --cached --quiet; then
+  log "ℹ️  All detected changes were gitignored — nothing to commit"
+  exit 0
+fi
 
-    # Push to remote
-    git push
+TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
+HOSTNAME=$(hostname)
 
-    echo "✅ Memory synced successfully!"
-    echo "   Changes are now available on all machines after 'git pull'"
+# Summarize what's in this commit for the message body.
+SUMMARY=$(git diff --cached --stat | tail -1 | sed 's/^ *//')
+
+git commit -m "Auto-sync dev-notes from $HOSTNAME at $TIMESTAMP" \
+           -m "$SUMMARY" \
+           -m "Updated by Claude Code Stop hook (sync-claude-memory.sh)" >/dev/null
+
+if git push >/dev/null 2>&1; then
+  log "✅ Synced and pushed to remote"
 else
-    echo "ℹ️  No memory changes to sync"
+  log "⚠️  Committed locally but push failed (network? auth?) — run 'cd $DEV_NOTES_DIR && git push' to retry"
+  exit 0
 fi
