@@ -313,3 +313,4 @@ Located in: `~/dev-notes/pensando-sw/scripts/`
 - [ib-testing-guide.md](file:///home/pradeept/dev-notes/pensando-sw/ib-testing-guide.md) - IB/RDMA testing guide
 - Hardware setups: `~/dev-notes/pensando-sw/hardware/`
 - IB testing guide: `~/dev-notes/pensando-sw/ib-testing-guide.md`
+- [asicmon env workaround](asicmon_env_workaround.md) — asicmon requires CONFIG_PATH+TMP_DIR+AXITRACE_ROOT+PAL_CARD_UUID; profile.d script missing on smc1/smc2
