@@ -1,5 +1,5 @@
 ---
-name: load-image
+name: load-image-ainic
 description: Load AINIC firmware onto a Vulcano/Salina testbed (smc, waco, gt, kenya) — official hourly builds from /vol/builds or local dev builds from the workspace. Handles bundle SCP, extraction, nicctl firmware update, card reset, host_sw_pkg install, and bringup. Use when user says load image, load firmware, deploy firmware, update firmware, deploy build, flash nic, deploy to smc.
 ---
 

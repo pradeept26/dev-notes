@@ -3,7 +3,7 @@
 # Run this on any machine after pulling dev-notes to set up skills.
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-SKILLS_SRC="$SCRIPT_DIR/../skills"
+SKILLS_SRC="$SCRIPT_DIR/../.claude/skills"
 SKILLS_DST="$HOME/.claude/skills"
 
 if [ ! -d "$SKILLS_SRC" ]; then
@@ -14,6 +14,8 @@ fi
 installed=0
 for skill_dir in "$SKILLS_SRC"/*/; do
     skill_name=$(basename "$skill_dir")
+    # Skip non-skill subdirs (e.g. helper script dirs)
+    [ -f "$skill_dir/SKILL.md" ] || continue
     mkdir -p "$SKILLS_DST/$skill_name"
     cp -v "$skill_dir"/* "$SKILLS_DST/$skill_name/"
     installed=$((installed + 1))
