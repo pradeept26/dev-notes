@@ -24,7 +24,7 @@ No arguments required. All steps run in sequence.
 Run on the host (NOT inside Docker):
 
 ```bash
-cd /ws/pradeept/ws/usr/src/github.com/pensando/sw
+cd $(git rev-parse --show-toplevel)
 git submodule update --init --recursive
 ```
 
@@ -35,9 +35,19 @@ This takes 1-2 minutes. Report when done.
 **IMPORTANT:** Each step must be a separate, simple Bash tool call — no pipe chains
 or compound commands. This ensures they match permission rules and run without prompts.
 
-**Step 1 — list containers to remove:**
+**Step 1 — list containers to remove (matching this user AND this workspace):**
+
+The workspace root is mounted as `/sw` inside the container. Only remove containers
+that belong to the current user AND mount this specific workspace.
+
 ```bash
-docker ps -a --format '{{.Names}}' | grep "$(whoami)_"
+WS_ROOT=$(git rev-parse --show-toplevel)
+docker ps -a --format '{{.Names}}' | grep "^$(whoami)_" | while read name; do
+  src=$(docker inspect "$name" --format '{{range .Mounts}}{{if eq .Destination "/sw"}}{{.Source}}{{end}}{{end}}')
+  if [ "$src" = "$WS_ROOT" ]; then
+    echo "$name"
+  fi
+done
 ```
 
 **Step 2 — for each container name returned, remove it:**
@@ -46,13 +56,13 @@ docker rm -f <CONTAINER_NAME>
 ```
 
 If step 1 returns nothing, skip step 2 — no containers to clean up.
-Only removes containers matching the user's naming pattern (`username_timestamp`).
-Does NOT touch other users' containers.
+Only removes containers matching the user's naming pattern AND this workspace.
+Does NOT touch other users' containers or the user's containers for other workspaces.
 
 ### Phase 3: Launch Fresh Docker
 
 ```bash
-cd /ws/pradeept/ws/usr/src/github.com/pensando/sw-1/nic && make docker/background-shell
+cd $(git rev-parse --show-toplevel)/nic && make docker/background-shell
 ```
 
 This is the one command that requires `cd &&` — it must run from the `nic/` directory.
@@ -76,9 +86,16 @@ docker exec <CONTAINER_NAME> git config --global --add safe.directory /sw
 
 First resolve the container name, then pull assets in background.
 
-**Step 1 — resolve container name:**
+**Step 1 — resolve container name (matching this user AND this workspace):**
 ```bash
-docker ps --format '{{.Names}}' | grep "$(whoami)_" | head -1
+WS_ROOT=$(git rev-parse --show-toplevel)
+docker ps --format '{{.Names}}' | grep "^$(whoami)_" | while read name; do
+  src=$(docker inspect "$name" --format '{{range .Mounts}}{{if eq .Destination "/sw"}}{{.Source}}{{end}}{{end}}')
+  if [ "$src" = "$WS_ROOT" ]; then
+    echo "$name"
+    break
+  fi
+done
 ```
 
 **Step 2 — pull assets (use `run_in_background=true` on the Bash tool):**

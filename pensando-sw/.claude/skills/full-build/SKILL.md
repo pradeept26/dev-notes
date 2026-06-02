@@ -48,11 +48,32 @@ If arguments are missing, ask the user. Default to `vulcano hydra` if ASIC/pipel
 
 ### Phase 1: Find Docker Container
 
+Find the container that belongs to the current user AND mounts the current workspace.
+
+**Step 1 — find containers matching the user's naming pattern (`username_*`):**
 ```bash
-CONTAINER_ID=$(docker ps --format '{{.ID}}' --filter ancestor=pensando/nic | head -1)
+docker ps --format '{{.Names}}' | grep "^$(whoami)_"
 ```
 
-If no container found, tell the user to run `/setup` first and stop.
+**Step 2 — if multiple containers match, pick the one mounting this workspace:**
+
+The workspace root (parent of `nic/`) is mounted as `/sw` inside the container.
+Derive it from the current working directory or use the known workspace path.
+
+```bash
+WS_ROOT=$(git rev-parse --show-toplevel)
+docker ps --format '{{.Names}}' | grep "^$(whoami)_" | while read name; do
+  src=$(docker inspect "$name" --format '{{range .Mounts}}{{if eq .Destination "/sw"}}{{.Source}}{{end}}{{end}}')
+  if [ "$src" = "$WS_ROOT" ]; then
+    echo "$name"
+    break
+  fi
+done
+```
+
+**Note:** Do NOT use `--filter ancestor=pensando/nic` — the image name may not resolve if the container was created from an image ID or a differently-tagged image.
+
+If no container found, tell the user to run `/dev-container` first and stop.
 
 ### Phase 2: Clean (if --clean)
 
@@ -72,7 +93,7 @@ Construct the make command from the target mapping above, then run:
 ```bash
 LOG_FILE="/tmp/build-<asic>-<pipeline>-<target>.log"
 
-nohup docker exec -u $(whoami) -w /sw "$CONTAINER_ID" \
+nohup docker exec -w /sw "$CONTAINER_ID" \
   <MAKE_COMMAND> \
   > "$LOG_FILE" 2>&1 &
 
@@ -81,7 +102,7 @@ echo "Build PID: $!"
 
 Example for vulcano hydra gtest:
 ```bash
-nohup docker exec -u $(whoami) -w /sw "$CONTAINER_ID" \
+nohup docker exec -w /sw "$CONTAINER_ID" \
   make -f Makefile.build build-rudra-vulcano-hydra-gtest \
   > /tmp/build-vulcano-hydra-gtest.log 2>&1 &
 ```
