@@ -307,6 +307,7 @@ Located in: `~/dev-notes/pensando-sw/scripts/`
 
 ## Active Testbeds
 - [kenya-perf-3/4 baseline](project_kenya_perf_baseline.md) — Perf baseline & setup for path re-activation testing
+- [kenya-perf-3/4 sweep handoff 2026-06-05](handoff_kenya_perf3_4_sweep_2026_06_05.md) — Self-contained handoff: FW 1.130.0-a-8 default profile, full -a QP sweep results (8/64/512/2048/4092), CLI corrections, open follow-ups
 
 ## Related Documentation
 - [context.md](file:///home/pradeept/dev-notes/pensando-sw/context.md) - Full development context
