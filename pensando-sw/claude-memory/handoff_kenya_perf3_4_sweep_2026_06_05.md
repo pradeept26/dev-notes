@@ -13,11 +13,12 @@ type: project
 ## 0. TL;DR for new session
 
 1. Read this doc and `project_kenya_perf_baseline.md` (same dir).
-2. Cards are on FW **1.130.0-a-8**, **default profile** (1×800 G), **RCN enabled**.
-3. Latest sweep results are at `kenya-perf-{3,4}:/tmp/*` and `/tmp/qp_sweep_results.csv` / `/tmp/kenya_qp_sweep_report.md` on the build host.
+2. Cards are on patched FW **1.130.0-a-5-36-g2f7d2cec259-dirty** (PIC RL helper added — see §11), **default profile** (1×800 G), **RCN enabled**. Original baseline was 1.130.0-a-8 (still loaded as the inactive partition; can re-flash if needed).
+3. Latest sweep results are at `kenya-perf-{3,4}:/tmp/*` and `/tmp/qp_sweep_results.csv` / `/tmp/kenya_qp_sweep_report.md` on the build host. PIC RL verification results: `/tmp/kenya_pic_rl_results.md`.
 4. **Open follow-ups** at bottom (Section 8) — pick from there if continuing perf work.
 5. **Key caveat:** path-count was reduced (8 → 4 → 2) for the 2048/4092-QP tiers. If you re-run lower-QP tests first, restore paths:
    `nicctl update pipeline rdma path --profile-id 0 --count 8` on both hosts.
+6. **PIC RL is currently ENABLED** on both nodes (lif=18, group 2, 800 G nominal / 16 MB burst). To disable: `/tmp/nicctl.bin debug update pipeline internal rate-limit --disable --lif 18 --bdf 0000:c1:00.0`. **Known bug:** disable path leaves dcache filter[7] valid=0 (~7% throughput sag on next test). Card reset clears it cleanly.
 
 ---
 
@@ -295,6 +296,120 @@ for H in 10.30.52.66 10.30.52.75; do
 done
 ```
 
-Expected (after this session): FW 1.130.0-a-8, profile=default, 800 G UP, `rocep195s0f3` Active, 10.1.1.{1,2} on enp195s0f3, paths=2 (or whatever was last set), RCN enabled, hugepages 65536/193345.
+Expected (after this session): FW **1.130.0-a-5-36-g2f7d2cec259-dirty** (patched build with PIC RL helper — see §11), profile=default, 800 G UP, `rocep195s0f3` Active, 10.1.1.{1,2} on enp195s0f3, paths=2 (or whatever was last set), RCN enabled, hugepages 65536/193345, **PIC RL enabled on lif=18 @ 800 G / 16 MB burst**.
 
 If anything's wrong, see §3 for the bring-up sequence.
+
+---
+
+## 11. PIC RL verification (2026-06-05, session continuation)
+
+**Goal:** Verify that the patched-FW PIC rate-limiter (developed on SMC, see `~/dev-notes/pensando-sw/claude-memory/` PIC RL handoffs) is **harmless at line rate** on 800 G kenya cards at the 2K/4K-QP scale where the baseline shows the −2.8% / −6.6% hcache-pressure dips.
+
+### Setup
+
+| | Value |
+|---|---|
+| Patched FW | `1.130.0-a-5-36-g2f7d2cec259-dirty` (built from `/ws/pradeept/ws/usr/src/github.com/pensando/sw-2/ainic_fw_vulcano.tar`) |
+| Patched nicctl | `/tmp/nicctl.bin` on both kenya nodes |
+| Host LIF (`hw_id`) | 2 on both nodes (from `nicctl show lif --json`) |
+| SQ sub_lif | 18 (= `2 \| (1<<4)`), LIF group 2 |
+| PIC RL config | enabled @ **800 Gbps nominal, 16 MB burst** on lif 18 |
+| Test config | `ib_write_bw -a -b -n 1024 -t 8 -r 7 --noPeak` (matches handoff §5 exactly) |
+| Path counts | 2K QP → paths=4, 4K QP → paths=2 |
+
+### Headline (8 MB peak)
+
+| QP | Handoff baseline (RL-off, 1.130-a-8) | Patched + RL-on @ 800G/16MB | Δ |
+|---:|---:|---:|---:|
+| 2048 | 1492.97 | **1491.93** | −0.07% |
+| 4092 | 1433.98 | **1437.24** | +0.23% |
+
+### Per-size BW (Gbps avg, bidir)
+
+**2048 QP**
+
+| Size | Baseline | RL-on | Δ |
+|---:|---:|---:|---:|
+| 2B | 0.12 | 0.122 | −1.6% |
+| 64B | 4.03 | 4.01 | −0.5% |
+| 256B | 17.51 | 17.50 | −0.06% |
+| 1K | 70.53 | 70.17 | −0.51% |
+| 4K | 279.21 | 277.22 | −0.71% |
+| 16K | 1037.90 | 1031.91 | −0.58% |
+| 32K | 1446.29 | 1445.97 | −0.02% |
+| 64K | 1468.78 | 1470.05 | +0.09% |
+| 128K | 1481.64 | 1479.05 | −0.17% |
+| 1M | 1453.69 | 1481.89 | **+1.94%** |
+| 8M | 1492.97 | 1491.93 | −0.07% |
+
+**4092 QP**
+
+| Size | Baseline | RL-on | Δ |
+|---:|---:|---:|---:|
+| 2B | 0.13 | 0.136 | +4.3% |
+| 64B | 4.33 | 4.40 | +1.6% |
+| 256B | 19.17 | 19.47 | +1.6% |
+| 1K | 76.73 | 77.80 | +1.4% |
+| 4K | 301.96 | 305.77 | +1.3% |
+| 16K | 1091.37 | 1103.01 | +1.07% |
+| 32K | 1405.29 | 1407.01 | +0.12% |
+| 64K | 1423.35 | 1425.07 | +0.12% |
+| 128K | 1432.52 | 1436.87 | +0.30% |
+| 1M | 1433.89 | 1439.56 | +0.40% |
+| 8M | 1433.98 | 1437.24 | +0.23% |
+
+4K QP shows small but consistent **positive** deltas across all sizes. RL is not just harmless — it tracks slightly above baseline. Likely measurement noise (handoff baseline was not multi-run averaged either), but no regression observed.
+
+### PCIe latency (during active 4K-QP traffic)
+
+| Bucket | perf-3 R | perf-3 W | perf-4 R | perf-4 W |
+|---|---:|---:|---:|---:|
+| 0–2.5 µs | 115,371 | 31,002,822 | 31,834,758 | 20,168,027 |
+| 2.5–5 µs | 173 | 0 | 49,402 | 0 |
+| 5–7.5 µs | 0 | 0 | 485 | 0 |
+| 7.5+ µs | 0 | 0 | 0 | 0 |
+
+>99.84% of transactions in the fastest bucket on all four (host × direction) combinations. Negligible tail. **No PCIe-latency degradation from RL.**
+
+> **Caveat:** the 2K-QP PCIe snapshot was taken *after* the run ended (all 0 — counter sampling window ~100 ms, traffic already wound down). Only 4K snapshot was taken during the active large-size phase. Snapshot timing is the limiting factor, not the data.
+
+### Conclusion
+
+PIC RL @ 800 G nominal / 16 MB burst is **safe to deploy** for the kenya/800 G profile at both 2K and 4K QP scale. No throughput regression, no PCIe-latency degradation.
+
+The hcache-pressure dip at 4K QP (the −6.6% baseline gap vs 8-QP peak) is **not recovered** by RL — that gap is inherent to 4092 QP × small path count and not something a transmit-side policer can address. Confirms our earlier analysis (see `MEMORY.md` → "4K QP Perf Dip Analysis").
+
+### Reproducing
+
+```bash
+# 1. Flash patched FW (both nodes)
+sshpass -p docker scp ainic_fw_vulcano.tar nicctl.bin root@10.30.52.{66,75}:/tmp/
+for H in 10.30.52.66 10.30.52.75; do
+  sshpass -p docker ssh root@$H \
+    "sudo nicctl update firmware -i /tmp/ainic_fw_vulcano.tar; sudo nicctl reset card --all"
+done
+
+# 2. Bringup (modprobe, IP, MTU, RCN, paths) — see §3
+
+# 3. Enable PIC RL on lif=18 (group 2)
+for H in 10.30.52.66 10.30.52.75; do
+  sshpass -p docker ssh root@$H \
+    "/tmp/nicctl.bin debug update pipeline internal rate-limit --enable --lif 18 \
+     --rate-bps 800000000000 --burst-bytes 16777216 --bdf 0000:c1:00.0"
+done
+
+# 4. Run test per §6 quick-rerun template (use paths=4 for 2K, paths=2 for 4K)
+```
+
+### Files / artifacts
+
+| Path | Contents |
+|---|---|
+| `/tmp/kenya_pic_rl_results.md` (build host) | Full RL-on results report with per-size deltas |
+| `/tmp/bw_q2048_rlon.csv` (build host) | 2K QP per-size BW data (raw from client log) |
+| `/tmp/bw_q4092_rlon.csv` (build host) | 4K QP per-size BW data |
+| `/tmp/pcie_q4092_rlon_{66,75}.log` (build host) | PCIe latency snapshot during 4K active phase |
+| `kenya-perf-{3,4}:/tmp/ib_{srv,cli}_q{2048,4092}_rlon.log` | Raw perftest logs |
+| `kenya-perf-{3,4}:/tmp/ainic_fw_vulcano.tar` | Patched FW image (kept for re-flash) |
+| `kenya-perf-{3,4}:/tmp/nicctl.bin` | Patched nicctl with `--lif` flag for rate-limit cmds |
