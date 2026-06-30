@@ -206,7 +206,15 @@ PIPELINE=rudra ASIC=vulcano P4_PROGRAM=hydra PCIEMGR_IF=1 DMA_MODE=uxdma PROFILE
 Located in: `~/dev-notes/pensando-sw/hardware/vulcano/`
 - **SMC1** (10.30.75.198) - Primary dev/test, 8x Vulcano NICs (ai0-ai7), Micas switch
 - **SMC2** (10.30.75.204) - Secondary dev/test, 8x Vulcano NICs (ai0-ai7), Micas switch
+- **Kenya-3655/3689** (10.30.55.43/44) - Back-to-back 1x800G, root/docker; see [kenya-3655-3689-testbed.md](kenya-3655-3689-testbed.md)
 - GT1, GT4 - 800G Leaf-Spine topology
+
+## AI-6875 SACK Regression Debug (2026-06-29)
+Key findings from this session: [ai6875-sack-regression-debugging.md](ai6875-sack-regression-debugging.md)
+- **SMC cannot reproduce back-to-back SACK bugs** (switch topology prevents CWND collapse)
+- **Build gotcha**: delete `/sw/platform/rtos-sw/external/ainic-rtos/build` before switching branches
+- **Bisect**: hourly builds at `/vol/builds/hourly/<version>/` for regression isolation
+- **ECC check**: `nicctl show card interrupts --all | grep -iE 'pics|ecc'`
 - Waco5, Waco6 - Arista Leaf-Spine setups
 
 ### Salina (Pollara) ASIC Setups
