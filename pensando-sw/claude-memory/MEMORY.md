@@ -12,6 +12,9 @@
 - See [dev-notes-complete.md](dev-notes-complete.md) for complete reference
 - See [testing-gtest.md](testing-gtest.md) for gtest workflow
 
+## Findings
+- [PHB unlimit poke has no BW effect](project_phb_unlimit_bw_finding.md) — 4000QP@8M holds 1503G across all PHB configs (even pool-exhausted); unlimit_phb is a no-op, hypothesis refuted
+
 ## Memory Sync Protocol
 **IMPORTANT: After updating this memory file, ALWAYS run:**
 ```bash
