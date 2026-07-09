@@ -13,7 +13,7 @@
 - See [testing-gtest.md](testing-gtest.md) for gtest workflow
 
 ## Findings
-- [PHB unlimit poke has no BW effect](project_phb_unlimit_bw_finding.md) — 4000QP@8M holds 1503G across all PHB configs (even pool-exhausted); unlimit_phb is a no-op, hypothesis refuted
+- [PHB poke helps 4000QP BW only from cold boot](project_phb_unlimit_bw_finding.md) — fresh reboot: default caps ~1396G, poke recovers ~1503-1531G (+9%); warm host: no-op (1503). Host-boot state is the confounder
 
 ## Memory Sync Protocol
 **IMPORTANT: After updating this memory file, ALWAYS run:**
