@@ -65,6 +65,17 @@ degrade BW. Watch far-end TXS CoS3 XOFF; if the poke drives it high, it's hurtin
 - pipeline_max is additive to total_credit: PM=max(0x3fff) with default credits let OQ3 depth
   reach ~4500-5800 (> total_credit 3056); full unlimit (big pools) reaches ~14-16K.
 
+## SWEET SPOT (best config): small PHB poke total<=0x1000 + omega=10 = line rate (perf-11/12)
+There's a sharp threshold in total_credit for the omega needed (8-QP @8M, paths=8, RCN on):
+- total<=0x1000 (4096): line rate at **omega=10**. default(0xbf0)=1522, P1(0xe00)=1524, **P2(0x1000)=1527**.
+- total>=0x1400 (5120): needs **omega=20** (P3 0x1400: om10=1382, om15=1490, om20=1522).
+- full unlimit (0x3f00): needs omega=20, and only ~1478-1516.
+**Sweet spot = P2: pipeline_max=0x400 per_cls=0x800 common=0xa00 total=0x1000, omega=10.**
+Across QP @8M: QP2=1498, QP8=1528, QP32=1529, QP64=1524 (line rate, best in study). This is a
+modest poke (~1.3x default total) that hits line rate at LOW omega — no need for the big unlimit
+pools + omega=20. (default PHB + omega=10 also reaches line rate and is simplest; P2 is marginally
+higher at 8-32 QP.) Bigger pools just force higher omega with no benefit.
+
 ## Line rate WITH unlimit PHB = raise omega to ~20 (perf-11/12, paths=8, RCN on, 8-QP)
 Unlimit PHB needs a HIGHER omega than default because its deeper staging => higher RTT =>
 QWND_max=gamma*rate*(RTT+omega*8) needs bigger omega to fill the pipe.
