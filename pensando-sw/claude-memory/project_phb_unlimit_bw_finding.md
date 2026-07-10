@@ -36,6 +36,16 @@ degrade BW. Watch far-end TXS CoS3 XOFF; if the poke drives it high, it's hurtin
   not card-reset. So the high-QP ceiling is path-dependent (~1500 direct perf-3/4, ~1350-1400
   switched perf-11/12) and its cause at 4000QP is still open (switch headroom / QP sched / CC).
 - RCN helps here more than perf-3/4: 4000-QP default 1083 (RCN off) -> 1395 (RCN on), +29%.
+- **10-bit PCIe tags don't change it**: with tags ON, C0 default=1395.76, C1 unlimit=913 (poke
+  still hurts -35%, TXS XOFF high both ends). 10-bit tags reset off by any reboot/card-reset;
+  re-enable via /root/nbatchu/10bit_tags_hydra.py (setpci -s c3:00.3 CAP_EXP+28.w=1000).
+- common.sh QoS also HURTS 4000QP here: min-rto 1000 = -23% (dominant), DSCP classification
+  = -8% extra. Both degrade; default (PCP, min-rto 75) is best. DSCP classification is sticky
+  (survives card reset); min-rto resets to default 75 on card reset.
+- These Kenya perf nodes have unreliable PCIe link-training after reboot/BMC-reset (perf-11
+  came up Gen5 once, perf-12 came up Gen1 once -> ~42G) and perf-11 has a persistent ACPI
+  gpe1F storm (mask via: echo disable > /sys/firmware/acpi/interrupts/gpe1F). 4000QP load
+  hard-crashed perf-12 (host+BMC) once. Verify Gen6 (lspci c3:00.3 LnkSta 64GT/s) before tests.
 
 ---
 # perf-3/4 (direct path): PHB poke helps from cold, no-op when warm
