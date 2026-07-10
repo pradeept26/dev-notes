@@ -39,6 +39,9 @@ degrade BW. Watch far-end TXS CoS3 XOFF; if the poke drives it high, it's hurtin
 - **10-bit PCIe tags don't change it**: with tags ON, C0 default=1395.76, C1 unlimit=913 (poke
   still hurts -35%, TXS XOFF high both ends). 10-bit tags reset off by any reboot/card-reset;
   re-enable via /root/nbatchu/10bit_tags_hydra.py (setpci -s c3:00.3 CAP_EXP+28.w=1000).
+- **Full 2x2 matrix (tags on, 4000QP@8M):** RCN-on/default=1395.8 (BEST); RCN-on/unlimit=913;
+  RCN-off/default=1073.7; RCN-off/unlimit=858.9 (WORST). RCN helps in both cases (+~30%/+6%);
+  poke hurts in both cases (-35%/-20%). Best is always plain default + RCN.
 - common.sh QoS also HURTS 4000QP here: min-rto 1000 = -23% (dominant), DSCP classification
   = -8% extra. Both degrade; default (PCP, min-rto 75) is best. DSCP classification is sticky
   (survives card reset); min-rto resets to default 75 on card reset.
