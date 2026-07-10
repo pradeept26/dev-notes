@@ -13,7 +13,7 @@
 - See [testing-gtest.md](testing-gtest.md) for gtest workflow
 
 ## Findings
-- [PHB poke is boot-state AND path dependent](project_phb_unlimit_bw_finding.md) — cold perf-3/4 (direct): +9%; cold perf-11/12 (switched N2-N3): -31% via TXS backpressure; warm: no-op. NOT a universal win
+- [Low-QP BW dip fix = omega, not PHB poke](project_phb_unlimit_bw_finding.md) — omega 5->10 recovers line rate at 8QP (1378->1522 +10.5%, no downside at 64QP); unlimit PHB poke HURTS on perf-11/12 (switched path). Effect of poke is boot-state+path dependent
 
 ## Memory Sync Protocol
 **IMPORTANT: After updating this memory file, ALWAYS run:**

@@ -65,6 +65,19 @@ degrade BW. Watch far-end TXS CoS3 XOFF; if the poke drives it high, it's hurtin
 - pipeline_max is additive to total_credit: PM=max(0x3fff) with default credits let OQ3 depth
   reach ~4500-5800 (> total_credit 3056); full unlimit (big pools) reaches ~14-16K.
 
+## THE REAL FIX for the low-QP dip: omega (CC window), NOT PHB (perf-11/12, paths=8, RCN on)
+`nicctl update pipeline rdma congestion-control profile --profile-id 0 --omega <v>` (not
+persistent; reapply after reboot). QWND_max = gamma*TargetRate*(RTT + omega*8) — higher omega =
+bigger CC window = more in-flight. Profile default was omega=5; nicmgr code default is 10.
+- **8-QP bidir @8M/1M, default PHB:** omega 5->7->10 = **1378 -> 1432 -> 1522 G (+10.5%, line
+  rate!)**, plateaus at 10 (10/12/15/20 all ~1522). CWND ~50 (om5) -> ~87 (om10); ECN/CNP=0;
+  max RTT 55->85us (more in-flight, NOT congestion). The low-QP dip was the CC window cap, not PHB.
+- omega=10 also holds line rate at 32/64 QP (1523/1520) — no downside on this 2-node pair (no
+  ECN storm; that only bites large-fabric N×N per the ref). So omega=10 gives line rate across
+  ALL QP counts 8-64 here, vs omega=5 which only reached it at 32-64.
+- **Recommendation: omega=10** for this few-flow/ring-like workload (ref: mixed=7, alltoall=5,
+  allreduce=10). This is the lever to use, NOT the unlimit PHB poke (which hurts, see below).
+
 ## Path-count dependence (8-QP bidir @8M, RCN on) — multipath fixes the unlimit degradation
 - **paths=2:** default ~1450 -> unlimit **1246 (-14%)**; unlimit max RTT 68us, 25-50us bucket 1.5%.
 - **paths=8:** default 1373 -> unlimit **1366 (~equal)**; unlimit max RTT 55us, 25-50us bucket 0.11%.
