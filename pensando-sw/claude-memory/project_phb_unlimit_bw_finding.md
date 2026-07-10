@@ -1,10 +1,34 @@
 ---
-name: PHB poke improves 4000QP BW only from a fresh host reboot
-description: TX-scheduler PHB tuning (unlimit_phb / pipeline_max / credit pools) improves 4000QP@8M IB-write BW on Kenya 800G ONLY from a cold host reboot (~+9%); on a warm/primed host it is a no-op. Host-boot state is the confounder.
+name: PHB poke effect is boot-state AND path dependent (helps perf-3/4, hurts perf-11/12)
+description: TX-scheduler PHB tuning (unlimit_phb / pipeline_max / credit pools) at 4000QP@8M on Kenya 800G is NOT a universal win. Cold perf-3/4 (direct path) it recovers +9%; cold perf-11/12 (switched N2-N3 path) it DEGRADES -31% via TXS backpressure. On a warm host it's a no-op.
 type: project
 originSessionId: 27c799a2-3e3f-471f-9b4a-8a63ed2c12ac
 ---
-# PHB tuning improves 4000QP BW — but ONLY from a fresh host reboot (Kenya perf-3/4, 800G, 1.130-a)
+# PHB poke: boot-state AND path dependent — NOT a universal win (Kenya 800G, 1.130-a)
+
+## 2nd node pair (perf-11/12, switched N2<->N3 path) — 2026-07-10: poke HURTS
+Freshly booted (cold), FW 1.130.2-a-3, RCN on, paths=2, hugepages=65536. 4000QP bidir @8M.
+capview uses `-c` (not `-x`) on these nodes. UUIDs: perf-11 ...384143..., perf-12 ...384130...
+(perf-12 RDMA dev is `ionic_0`, perf-11 `rocep195s0f3`).
+
+| Cfg | PM | pools | BW | total_used | perf-12 TXS CoS3 XOFF |
+|-----|----|-------|----|-----------|-----------------------|
+| C0 default | 0x0 | 7d0/640/bf0 | **1395.8** | ~1150 | **0%** |
+| C3 PM-only | 0x2100 | default | 1073.6 | ~1900 | 9-14% |
+| C1 unlimit | 0x2100 | big | ~960 (953/970) | ~8800 | 74-87% |
+| C2 credits-only | 0x0 | big | 912.9 | ~6470 | 85-88% |
+
+**Monotonic: deeper PHB occupancy -> more perf-12 TXS backpressure -> lower BW.** Default is
+best; credit pools hurt most (-31%), pipeline_max hurts less. On the switched perf-11/12 path,
+filling the NIC PHB deep overruns the path and the scheduler XOFFs, throttling. This is the
+OPPOSITE of perf-3/4 (direct path) where deeper PHB fed the port and helped.
+
+**=> The poke's sign depends on the path/topology.** Direct/short path (perf-3/4): can help
+from cold. Switched/longer path (perf-11/12): hurts. Do NOT apply unlimit_phb blindly — it can
+degrade BW. Watch far-end TXS CoS3 XOFF; if the poke drives it high, it's hurting.
+
+---
+# perf-3/4 (direct path): PHB poke helps from cold, no-op when warm
 
 **Bottom line (corrected 2026-07-09):** Whether the PHB poke helps depends on **host boot
 state**, which is why results looked contradictory:

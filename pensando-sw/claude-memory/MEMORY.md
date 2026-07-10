@@ -13,7 +13,7 @@
 - See [testing-gtest.md](testing-gtest.md) for gtest workflow
 
 ## Findings
-- [PHB poke helps 4000QP BW only from cold boot](project_phb_unlimit_bw_finding.md) — fresh reboot: default caps ~1396G, poke recovers ~1503-1531G (+9%); warm host: no-op (1503). Host-boot state is the confounder
+- [PHB poke is boot-state AND path dependent](project_phb_unlimit_bw_finding.md) — cold perf-3/4 (direct): +9%; cold perf-11/12 (switched N2-N3): -31% via TXS backpressure; warm: no-op. NOT a universal win
 
 ## Memory Sync Protocol
 **IMPORTANT: After updating this memory file, ALWAYS run:**
