@@ -27,6 +27,16 @@ OPPOSITE of perf-3/4 (direct path) where deeper PHB fed the port and helped.
 from cold. Switched/longer path (perf-11/12): hurts. Do NOT apply unlimit_phb blindly — it can
 degrade BW. Watch far-end TXS CoS3 XOFF; if the poke drives it high, it's hurting.
 
+### perf-11/12 extra facts (2026-07-10)
+- **8-QP bidir @8M = ~1510 G (near line rate); 4000-QP default = ~1342-1395 G** — a real ~11%
+  high-QP dip on this switched path, NOT a PHB problem (poke makes it worse). Same current state,
+  only QP count differs.
+- **Card reset does NOT lift the 4000-QP number** (1342 post-card-reset vs 1395 before — flat).
+  Earlier hunch "card reset = the fix" was WRONG: the 8-QP=1510 vs 4000-QP=1342 gap is QP-scaling,
+  not card-reset. So the high-QP ceiling is path-dependent (~1500 direct perf-3/4, ~1350-1400
+  switched perf-11/12) and its cause at 4000QP is still open (switch headroom / QP sched / CC).
+- RCN helps here more than perf-3/4: 4000-QP default 1083 (RCN off) -> 1395 (RCN on), +29%.
+
 ---
 # perf-3/4 (direct path): PHB poke helps from cold, no-op when warm
 
