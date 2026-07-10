@@ -50,6 +50,21 @@ degrade BW. Watch far-end TXS CoS3 XOFF; if the poke drives it high, it's hurtin
   gpe1F storm (mask via: echo disable > /sys/firmware/acpi/interrupts/gpe1F). 4000QP load
   hard-crashed perf-12 (host+BMC) once. Verify Gen6 (lspci c3:00.3 LnkSta 64GT/s) before tests.
 
+## Mechanism: unlimit deepens PHB -> inflates PCIe + network latency (why it hurts)
+- **PCIe read latency** (nicctl show pcie internal latency-bucket -r): at default perf-12's
+  5-7.5us bucket = 0; with deep PHB (unlimit or pipeline_max=max) it lights up (569K-892K on
+  4000QP; 27K on 8QP). Only perf-12 (client) shows it; perf-11 (server) stays <2.5us. => the
+  5-7.5us bucket is a good early "perf degrading" indicator; perf-12 host/PCIe is the weak side.
+- **Network RTT** (nicctl show rdma queue-pair path statistics -> RTT buckets 0-25/25-50/50-75/
+  >75us + Min/Max RTT; 8QP bidir, RCN on): default min4/max~55us, ~0.28% in 25-50us bucket;
+  unlimit min4/max~68us, ~1.5% in 25-50us (~5x). So unlimit modestly inflates RTT (deeper
+  queueing/bufferbloat).
+- **BUT RCN does NOT react**: ECN=0, CNP=0, QP CWND ~50, congestion state "aimd" in BOTH configs
+  on 8QP. The RTT rise is too small to trigger CC; CWND unchanged. So the added latency just
+  costs BW with no CC compensation: 8QP bidir default ~1450 -> unlimit 1246.
+- pipeline_max is additive to total_credit: PM=max(0x3fff) with default credits let OQ3 depth
+  reach ~4500-5800 (> total_credit 3056); full unlimit (big pools) reaches ~14-16K.
+
 ---
 # perf-3/4 (direct path): PHB poke helps from cold, no-op when warm
 
