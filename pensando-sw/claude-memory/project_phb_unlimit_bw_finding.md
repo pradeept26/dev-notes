@@ -65,6 +65,13 @@ degrade BW. Watch far-end TXS CoS3 XOFF; if the poke drives it high, it's hurtin
 - pipeline_max is additive to total_credit: PM=max(0x3fff) with default credits let OQ3 depth
   reach ~4500-5800 (> total_credit 3056); full unlimit (big pools) reaches ~14-16K.
 
+## Path-count dependence (8-QP bidir @8M, RCN on) — multipath fixes the unlimit degradation
+- **paths=2:** default ~1450 -> unlimit **1246 (-14%)**; unlimit max RTT 68us, 25-50us bucket 1.5%.
+- **paths=8:** default 1373 -> unlimit **1366 (~equal)**; unlimit max RTT 55us, 25-50us bucket 0.11%.
+- => unlimit's harm is path-count dependent: at low path count deep staging concentrates on few
+  paths -> per-path queueing/RTT inflation -> BW loss. At 8 paths the load spreads, per-path
+  queueing stays shallow, RTT stays tight, and unlimit is benign. Multipath is the real mitigation.
+
 ---
 # perf-3/4 (direct path): PHB poke helps from cold, no-op when warm
 
