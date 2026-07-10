@@ -65,6 +65,16 @@ degrade BW. Watch far-end TXS CoS3 XOFF; if the poke drives it high, it's hurtin
 - pipeline_max is additive to total_credit: PM=max(0x3fff) with default credits let OQ3 depth
   reach ~4500-5800 (> total_credit 3056); full unlimit (big pools) reaches ~14-16K.
 
+## Line rate WITH unlimit PHB = raise omega to ~20 (perf-11/12, paths=8, RCN on, 8-QP)
+Unlimit PHB needs a HIGHER omega than default because its deeper staging => higher RTT =>
+QWND_max=gamma*rate*(RTT+omega*8) needs bigger omega to fill the pipe.
+- unlimit PHB, omega sweep (8-QP bidir, -n5000): 5=1362/1373, 7=1393/1399, 10=1399/1404,
+  15=1395/1403, **20=1478(8M)/1516(1M)** <- breakthrough. omega 5-15 plateau ~1360-1404; ω=20
+  jumps to ~line rate. At ω=20: CWND ~111, ECN/CNP=0, max RTT 78us. 8M ~1450-1478 (near line
+  rate; may need ω~22-25 for full 1520). Contrast: DEFAULT PHB reaches line rate at only ω=10.
+- So "line rate with unlimit" IS achievable by omega alone (~20), no other field needed — the
+  user was right. Default PHB + ω=10 is still simpler/cleaner for the same line rate.
+
 ## THE REAL FIX for the low-QP dip: omega (CC window), NOT PHB (perf-11/12, paths=8, RCN on)
 `nicctl update pipeline rdma congestion-control profile --profile-id 0 --omega <v>` (not
 persistent; reapply after reboot). QWND_max = gamma*TargetRate*(RTT + omega*8) — higher omega =
