@@ -20,3 +20,15 @@ implement TXS-for-hydra without a fresh, different motivation (e.g. a future
 requirement to run auto-clear OFF on Vulcano). Study/design is captured in
 `~/dev-notes/pensando-sw/reference/HYDRA-TXS-DESIGN.md` (open questions O1/O2/O3
 already resolved there if it's ever revived) and `PULSAR-TXS-BEHAVIOR.md`.
+
+**Path scheduler checked too (also parked):** hydra's schedulable path queues
+(ACK/retx/cwnd/timer rings on path_cb0 — no pulsar equivalent) have a real
+spurious-scheduling inefficiency in the **auto-clear-OFF** branch: the
+"unused paths scheduler bit set" fix (commit da193a2f734, #101030) throttles
+re-eval with `if (__random_number()[4:0]==0)`. txs_cmd would cleanly replace that
+hack, BUT it only occurs auto-clear-OFF, which is Salina-only, and txs_cmd is
+Vulcano-only — so the inefficiency's habitat can't use txs and Vulcano (txs
+capable) never hits it (auto-clear ON). Net: no path ring needs txs today.
+If Vulcano ever runs path queues auto-clear-OFF, ACK ring (cosA) is the
+highest-value target and there cosA≠cosB so per-ring cos matters (see design doc
+section 6b).
