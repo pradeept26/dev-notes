@@ -32,3 +32,12 @@ capable) never hits it (auto-clear ON). Net: no path ring needs txs today.
 If Vulcano ever runs path queues auto-clear-OFF, ACK ring (cosA) is the
 highest-value target and there cosA≠cosB so per-ring cos matters (see design doc
 section 6b).
+
+**Key safety constraint (design doc 6b.3):** TXS must NOT be applied to the
+cwnd-retry ring (or any ring whose stop rides a `set_cindex`/`set_pindex`). Its
+stop is `_path_cwnd_retry_process` (S3) doing `set_cindex + sched_eval`, which
+advances ci AND is the mechanism that closes the producer(S7 set_pindex+eval)/
+consumer race. A bare txs disable flips the scheduler off without the
+reconciling eval → lost-wakeup/QP stall. Only the already-drained S0 empty-ring
+stops (s0:318 ACK, s0:347 cosB, both `no_upd+eval`) are TXS-safe. The whole
+scheme relies on the invariant "every pi-advance is paired with sched_eval."
