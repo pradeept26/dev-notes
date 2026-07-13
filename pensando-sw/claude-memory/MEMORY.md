@@ -15,6 +15,9 @@
 ## Findings
 - [Low-QP BW dip fix = omega, not PHB poke](project_phb_unlimit_bw_finding.md) — omega 5->10 recovers line rate at 8QP (1378->1522 +10.5%, no downside at 64QP); unlimit PHB poke HURTS on perf-11/12 (switched path). Effect of poke is boot-state+path dependent
 
+## P4+ Conventions
+- [P4+ PHV fields are zero by default](feedback_p4plus_phv_zero_default.md) — don't add defensive zero-init for PHV flags; a set-only-to-1 flag reads 0 on other paths automatically
+
 ## Memory Sync Protocol
 **IMPORTANT: After updating this memory file, ALWAYS run:**
 ```bash
