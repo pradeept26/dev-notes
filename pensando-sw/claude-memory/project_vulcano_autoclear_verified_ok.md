@@ -33,11 +33,14 @@ If Vulcano ever runs path queues auto-clear-OFF, ACK ring (cosA) is the
 highest-value target and there cosA≠cosB so per-ring cos matters (see design doc
 section 6b).
 
-**Key safety constraint (design doc 6b.3):** TXS must NOT be applied to the
-cwnd-retry ring (or any ring whose stop rides a `set_cindex`/`set_pindex`). Its
-stop is `_path_cwnd_retry_process` (S3) doing `set_cindex + sched_eval`, which
-advances ci AND is the mechanism that closes the producer(S7 set_pindex+eval)/
-consumer race. A bare txs disable flips the scheduler off without the
-reconciling eval → lost-wakeup/QP stall. Only the already-drained S0 empty-ring
-stops (s0:318 ACK, s0:347 cosB, both `no_upd+eval`) are TXS-safe. The whole
-scheme relies on the invariant "every pi-advance is paired with sched_eval."
+**Path dropped from TXS scope entirely (design doc 6b.4):** txs disable is
+neither needed nor safe for ANY path ring. (1) No benefit — Vulcano autoclear-ON
+already stops path rings cleanly via eval-on-drain. (2) Unsafe by construction —
+every path ring has an async producer (ACK←RX S5 set_pindex+eval; cwnd←S7
+set_pindex+eval; retx←S3 RTO incr_pindex+enable; timer←HW), so every stop MUST
+be a reconciling sched_eval, never a bare disable; a txs disable races the arm →
+lost-wakeup/QP stall. This kills even the "already-drained" S0 empty-ring stops
+(s0:318/s0:347). (3) No speculative gap like the SQ (which is fast-disable@S0 +
+mandatory reconcile-eval@S2). The scheme relies on the invariant "every
+pi-advance is paired with sched_eval," which a bare txs disable breaks. TXS is
+an SQ-only concept for hydra (and even SQ is parked).
