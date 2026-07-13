@@ -17,6 +17,7 @@
 
 ## P4+ Conventions
 - [P4+ PHV fields are zero by default](feedback_p4plus_phv_zero_default.md) — don't add defensive zero-init for PHV flags; a set-only-to-1 flag reads 0 on other paths automatically
+- [Always-on auto-clear verified fine on Vulcano; TXS-for-hydra parked](project_vulcano_autoclear_verified_ok.md) — no fairness/perf pain, so pulsar TXS port to hydra is not being pursued
 
 ## Memory Sync Protocol
 **IMPORTANT: After updating this memory file, ALWAYS run:**
