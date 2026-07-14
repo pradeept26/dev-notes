@@ -1,10 +1,23 @@
 # Hydra Autoclear Behavior
 
+> **STATUS (verified 2026-07-13): the dynamic scale-based autoclear-disable is
+> now SALINA-ONLY.** The whole scale-config machinery is wrapped in
+> `#if defined(SALINA)` (`admincmd_handler.c:291-376`, plus all threshold-crossing
+> and RCCL-trigger call sites). **On Vulcano, autoclear is enabled at init and
+> stays ON for all QPs at all scales, including RCCL** — see the explicit comment
+> at `admincmd_handler.c:991`. The "two modes / all platforms" description below
+> was accurate as of 2026-02-25 but now applies to **Salina only**. Read the
+> per-section notes for the current Vulcano behavior.
+
 ## Overview
 
-Hydra implements dynamic autoclear optimization that adapts based on workload scale to balance performance and resource efficiency.
+Hydra implements dynamic autoclear optimization that adapts based on workload
+scale. **This dynamic adaptation is Salina-only today; Vulcano keeps autoclear
+always on** (see status banner above).
 
-**Source:** `nic/rudra/src/hydra/nicmgr/plugin/rdma/admincmd_handler.c:167-272`
+**Source:** `nic/rudra/src/hydra/nicmgr/plugin/rdma/admincmd_handler.c` — scale
+config block `:291-376` (Salina-gated), per-QP autoclear `:1056-1058` (SQ),
+`:1134-1136` (RQ), Vulcano init-only comment `:991`.
 
 ## What is Autoclear?
 
@@ -17,7 +30,10 @@ Hydra implements dynamic autoclear optimization that adapts based on workload sc
 
 ## Scale-Based Behavior
 
-Hydra uses **two modes**:
+> **Applies to SALINA only.** On Vulcano there are no modes — autoclear is
+> always on.
+
+Salina uses **two modes**:
 
 ### Low-Scale Mode
 **Triggers:**
@@ -51,23 +67,28 @@ Hydra uses **two modes**:
 
 ---
 
-## Why Disable Autoclear for RCCL?
+## Why Disable Autoclear for RCCL? (SALINA only)
 
-**Problem Observed:**
+> **This RCCL-specific handling is Salina-only today.** On Vulcano, RCCL QPs get
+> autoclear on the same terms as any other QP (CoS-driven), and the per-QP
+> `is_rccl` exclusion has been **removed** — see "Per-QP Autoclear Settings"
+> below for the current code.
+
+**Problem Observed (Salina):**
 ```
-Comment from code (lines 167-172):
+Comment from code:
 "With RCCL CTS and data QP in different qos group, and with auto-clear
 disabled, we are seeing degradation in performance. On CTS QPs, we see
 its eating up into data QPs scheduling with auto clear disable."
 ```
 
-**Solution:**
+**Salina solution:**
 - **Global autoclear:** DISABLED for high-scale/RCCL
-- **Per-QP autoclear:** Only enabled for non-RCCL data QPs
-- **RCCL QPs:** Autoclear explicitly disabled (sched_auto_clear = 0)
+- **Per-QP autoclear:** driven by CoS config (see current code below)
 
-**Implementation:**
+**Historical implementation (pre-refactor — no longer in tree):**
 ```c
+// OLD: per-QP autoclear was gated on is_rccl
 if ((is_rccl == false) && eth_lif_sched_cos_info(lif, cos)->auto_clear) {
     p_cb0->sched_auto_clear = 1;  // Enable only for non-RCCL QPs
 }
@@ -141,27 +162,28 @@ hydra_scale_down_config():
 
 ## Per-QP Autoclear Settings
 
-### Non-RCCL QPs
+> **Current code (verified 2026-07-13): the `is_rccl` gate is gone on both
+> platforms.** Per-QP autoclear is now driven purely by the CoS `auto_clear`
+> config. RCCL QPs are treated like any other QP at the per-QP level.
+
+**Current implementation** (`admincmd_handler.c` — SQ `:1056-1058`, RQ
+`:1134-1136`; QP-modify `:3134-3139`):
 ```c
-if (!is_rccl) {
-    if (eth_lif_sched_cos_info(lif, cos)->auto_clear) {
-        p_sqcb0->sched_auto_clear = 1;  // Enable per-QP autoclear
-        p_rqcb0->sched_auto_clear = 1;
-    }
+// SQ CB — set if EITHER cosA or cosB has auto_clear (no is_rccl check)
+if (eth_lif_sched_cos_info(lif, cosA)->auto_clear ||
+    eth_lif_sched_cos_info(lif, cosB)->auto_clear) {
+    p_sqcb0->sched_auto_clear = 1;
 }
+// RQ CB — same pattern
+// QP modify — set/clear both SQ and RQ based on cos auto_clear
 ```
 
-**Behavior:** Autoclear controlled by CoS (Class of Service) configuration
-
-### RCCL QPs
-```c
-if (is_rccl) {
-    // Auto-clear explicitly NOT set for RCCL QPs
-    // Relies on global autoclear being disabled
-}
-```
-
-**Behavior:** Always has autoclear disabled, regardless of global setting
+**Behavior:**
+- **Vulcano:** per-QP autoclear reflects CoS config and stays on (no global
+  scale-disable overrides it).
+- **Salina:** per-QP CoS config still interacts with the global scale-based
+  disable (`configure_global_autoclear`), so effective autoclear can be turned
+  off globally at high scale even if the CoS enables it per-QP.
 
 ## CoS-Specific Autoclear
 
@@ -281,17 +303,27 @@ show status
 
 ## Summary
 
-Hydra's autoclear is **adaptive**:
-- **Low-scale:** Autoclear ON (optimize latency)
-- **High-scale/RCCL:** Autoclear OFF (optimize throughput, prevent scheduling conflicts)
-- **Transitions:** Carefully ordered with memory barriers
-- **Per-QP:** RCCL QPs never use autoclear, non-RCCL can use it
-- **CoS-aware:** Different behavior for data vs control traffic
+**Current (2026-07-13):**
+- **Vulcano:** autoclear **always ON** (enabled at init, never scale-disabled).
+  Per-QP autoclear is CoS-driven; no `is_rccl` gate; no global scale-disable.
+- **Salina:** autoclear is **adaptive** (the behavior this doc originally
+  described):
+  - Low-scale: ON (optimize latency)
+  - High-scale/RCCL (≥64 qstates or any RCCL QP): OFF (throughput, avoid
+    CTS-vs-data scheduling conflicts)
+  - Transitions carefully ordered with memory barriers (`configure_global_autoclear`)
 
-This optimization allows Hydra to perform well across different workload characteristics without manual tuning.
+**On Vulcano always-on auto-clear:** empirically **verified NOT to be a problem**
+(2026-07-13) — no fairness/perf pain at scale or RCCL. So Vulcano intentionally
+keeps auto-clear on and has no need for the pulsar-style `txs_cmd` fast-path.
+The `HYDRA-TXS-DESIGN.md` port is therefore **parked** (kept as reference only,
+for the hypothetical case where Vulcano ever needs auto-clear off).
 
 ---
 **File:** `nic/rudra/src/hydra/nicmgr/plugin/rdma/admincmd_handler.c`
-**Key Lines:** 167-272 (scale config), 503-505, 574-576, 789-792, 859-862 (per-QP settings)
-**Threshold:** 64 active qstates
-**Last Updated:** 2026-02-25
+**Key Lines (current):** `291-376` scale config (Salina-gated), `980-991`
+RCCL trigger + Vulcano no-op comment, `1056-1058`/`1134-1136` per-QP SQ/RQ
+autoclear, `3134-3139` QP-modify
+**Threshold:** 64 active qstates (Salina only)
+**Last Updated:** 2026-07-13 (was 2026-02-25; corrected to reflect Salina-only
+scale-disable + Vulcano always-on)

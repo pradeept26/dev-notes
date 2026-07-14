@@ -1,5 +1,18 @@
 # Vulcano Autoclear Changes - Analysis
 
+> **STATUS: IMPLEMENTED (verified 2026-07-13). This document is now historical.**
+> The changes proposed below have landed. In the current tree the entire
+> scale-based autoclear-disable machinery is `#if defined(SALINA)`
+> (`admincmd_handler.c:291-376` and all threshold-crossing / RCCL-trigger call
+> sites), and Vulcano keeps autoclear enabled at init with no scale-disable
+> (explicit comment at `admincmd_handler.c:991`). Note the implementation went
+> **further** than proposed: the per-QP `is_rccl` gate was removed entirely
+> (per-QP autoclear is now purely CoS-driven on both platforms — SQ `:1056-1058`,
+> RQ `:1134-1136`), rather than being wrapped in `#if defined(VULCANO)/SALINA`
+> as sketched in "Change 3" below. Line numbers cited in this doc are from the
+> 2026-02-25 tree and no longer match. See `HYDRA-AUTOCLEAR-BEHAVIOR.md` for
+> current behavior and `HYDRA-TXS-DESIGN.md` for the pulsar-style alternative.
+
 ## Requirement
 Disable dynamic autoclear optimization and RCCL-specific autoclear disabling **for Vulcano only**.
 Keep current behavior for Salina.
@@ -328,7 +341,8 @@ Create separate codepaths:
 ---
 
 **Created:** 2026-02-25
-**File to Modify:** nic/rudra/src/hydra/nicmgr/plugin/rdma/admincmd_handler.c
+**Status:** IMPLEMENTED (verified 2026-07-13) — this doc is historical; see banner at top
+**File Modified:** nic/rudra/src/hydra/nicmgr/plugin/rdma/admincmd_handler.c
 **Changes:** 8 code blocks across 5 logical changes
 **Risk:** Low (platform-guarded)
 **Testing:** Required on both Vulcano and Salina
