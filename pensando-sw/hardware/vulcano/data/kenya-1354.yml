@@ -53,10 +53,10 @@ nics:
     consoles:
       vulcano:
         host: 10.30.52.56
-        port: 2003  # NOTE: Ports are swapped - Vulcano is on port 2003
+        port: 2002
       suc:
         host: 10.30.52.56
-        port: 2002  # NOTE: Ports are swapped - SuC is on port 2002
+        port: 2003
 
 ownership:
   owners:
