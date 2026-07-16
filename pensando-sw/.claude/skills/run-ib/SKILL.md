@@ -7,6 +7,9 @@ description: Run IB bandwidth/latency perftests (write_bw, write_with_imm, read_
 
 Run IB bandwidth/latency tests on a dual-node Vulcano testbed. Handles setup, execution, result parsing, and multi-NIC parallel runs.
 
+> **Single-NIC loopback latency?** For NIC-pipeline latency on ONE card (no peer) — PCS/port loopback
+> with macvlan namespaces + `ud_loopback=0` verification — use the **`/analyze-latency`** skill instead.
+
 ## Usage Examples
 
 - "run ib write_bw on smc with 8 QPs"

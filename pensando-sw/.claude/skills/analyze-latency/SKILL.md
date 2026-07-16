@@ -1,6 +1,6 @@
 ---
 name: analyze-latency
-description: End-to-end RDMA latency analysis using MPU trace. Supports single-node MAC loopback (isolates NIC pipeline) and 2-node mode (mputrace on both NICs, decomposes full RTT into initiator NIC + network + peer NIC). Configures mputrace, runs ib_write_lat, collects and decodes traces, then analyzes per-stage pipeline timing breakdown.
+description: End-to-end RDMA latency analysis using MPU trace. Supports single-node PCS-loopback (isolates NIC pipeline) and 2-node mode (mputrace on both NICs, decomposes full RTT into initiator NIC + network + peer NIC). Configures mputrace, runs ib_write_lat, collects and decodes traces, then analyzes per-stage pipeline timing breakdown.
 ---
 
 ## Usage
@@ -10,7 +10,7 @@ description: End-to-end RDMA latency analysis using MPU trace. Supports single-n
 ```
 
 **Mode selection:**
-- One node → **loopback mode**: sets up macvlan namespaces with MAC loopback on a single NIC
+- One node → **loopback mode**: sets up macvlan namespaces with PCS port loopback on a single NIC
 - Two nodes → **2-node mode**: mputrace on both NICs, decomposes full RTT
 
 ## Arguments
@@ -42,11 +42,17 @@ description: End-to-end RDMA latency analysis using MPU trace. Supports single-n
 
 ### Loopback Mode (single node)
 
-Performs an **external loopback** latency analysis using macvlan namespaces with MAC
-loopback. Packets traverse the full NIC path (UDMA → pDMA → PB → TFP → MAC → TID → PB → UDMA)
+Performs an **external loopback** latency analysis using macvlan namespaces with **PCS port
+loopback**. Packets traverse the full NIC path (UDMA → pDMA → PB → TFP → MAC → TID → PB → UDMA)
 while keeping both req_tx and resp_rx on the same NIC for a single mputrace capture.
 
 **Turnaround measures:** NIC-only pipeline time (no network, no remote NIC).
+
+> **Loopback mode names (verify per build):** on 1.130.x hydra the port modes are
+> `phy, pcs, xcvr-host-input, xcvr-host-output, xcvr-media-input, xcvr-media-output, none`.
+> There is **no `mac` mode** — use `pcs` (loops at PCS, just below the MAC). True XRMAC "mac"
+> loopback is only reachable via the `loopbackctl` devcmd with the ionic driver unloaded
+> (`nic/rudra/src/hydra/nicmgr/tools/loopbackctl`).
 
 ### 2-Node Mode
 
@@ -76,10 +82,11 @@ See `~/.claude/docs/debugging/mputrace-workflow.md` (collection) and
 
 ### Loopback mode only
 
-2. **Enable MAC loopback** on the port:
+2. **Enable port loopback (PCS)** on the port:
    ```bash
-   nicctl update port -p <port_uuid> --loopback-mode mac
+   nicctl update port -p <port_uuid> --loopback-mode pcs
    ```
+   (`mac` is not a valid mode on 1.130.x hydra — see the note above.)
 
 3. **Create macvlan namespaces**:
    ```bash
@@ -149,8 +156,8 @@ See `~/.claude/docs/debugging/mputrace-workflow.md` (collection) and
 ### Run the latency test
 
 7. **Loopback mode:**
-   - Server: `ip netns exec ns2 ib_write_lat -d <device> -i 1 -s <size> -n <iterations> -F -x <gid_idx_ns2> -p <port>`
-   - Client: `ip netns exec ns1 ib_write_lat -d <device> -i 1 -s <size> -n <iterations> -F -x <gid_idx_ns1> -p <port> 10.0.0.2`
+   - Server: `ip netns exec ns2 numactl --cpunodebind=<numa> ib_write_lat -d <device> -i 1 -s <size> -n <iterations> -F -x <gid_idx_ns2> -p <port>`
+   - Client: `ip netns exec ns1 numactl --cpunodebind=<numa> ib_write_lat -d <device> -i 1 -s <size> -n <iterations> -F -x <gid_idx_ns1> -p <port> 10.0.0.2`
 
    **2-node mode:**
    - Server (on peer): `ib_write_lat -d <device> -i 1 -s <size> -n <iterations> -F -x <gid_idx> -p <port>`
@@ -158,11 +165,36 @@ See `~/.claude/docs/debugging/mputrace-workflow.md` (collection) and
 
    Record the app-reported latency.
 
-8. **Verify `sqcb0.loopback`** (loopback mode only):
-   ```bash
-   sudo nicctl show rdma queue-pair --raw -c <card_uuid> | grep loopback
-   ```
-   If `loopback = 1`, the firmware is bypassing TFP/MAC/TID — the turnaround measurement won't include those components.
+   Notes (loopback mode):
+   - **Separate netns are mandatory** — same-netns endpoints get delivered locally and firmware sets
+     `ud_loopback=1` (P4 internal shortcut), so frames never reach the port/PCS loop.
+   - `numactl --cpunodebind=<numa>` (the NIC's NUMA node) — `netdev:<name>` won't resolve inside a netns.
+   - **GPU memory:** add `--use_rocm=<gpu>` (GPU paired to the NIC by PCIe locality) to BOTH ends.
+     Needs a ROCm-enabled perftest — stock `/usr/bin/ib_write_lat` has none; use
+     `/mnt/clusterfs/visampath/ib_write_lat` (v6.25).
+   - **write-with-imm:** add `--write_with_imm` (SYMMETRIC — pass on BOTH server and client).
+   - Wrap the perftest command in `stdbuf -oL` so the `local address: ... QPN 0x..` line flushes to the
+     log during the run (needed to get `<qid>` for the verification in step 8).
+
+8. **Verify the packet took the port/PCS path** (loopback mode only) — i.e. `ud_loopback=0`, not the
+   firmware internal shortcut. Two ways:
+   - **Ground truth (works even under host-tools↔FW version skew):**
+     ```bash
+     PAL_CARD_UUID=<card_uuid> eth_dbgtool rdma_qstate <lif> 3 <qid> | grep ud_loopback
+     ```
+     `qtype 3` = SQ; `<qid>` = perftest's local QPN (the `QPN 0x..` line — needs `stdbuf -oL`, step 7);
+     `<lif>` = the NIC's internal RDMA lif (benic1p1 = 18; enumerate with `--active-qps` if unknown).
+     Want `sqcb0.ud_loopback 0`. Stale/empty QPs read as `ud_loopback 1 / path_qid_base ffff` — ignore those.
+     (`nicctl show rdma queue-pair --raw | grep loopback` also works, but returns "lif not found" when
+     host-tools don't match the card FW.)
+   - **Robust fallback (no lif/qid needed) — MAC frame counters:**
+     ```bash
+     nicctl show port statistics -p <port_uuid> | grep -E 'FRAMES_(TX|RX)_OK'   # before and after a run
+     ```
+     `TX_OK ≈ RX_OK` (equal, nonzero delta) → frames looped through the MAC/PCS; `≈0` → internal shortcut.
+
+   If `ud_loopback = 1`, the firmware is bypassing TFP/MAC/TID (check you used **separate netns**) — the
+   turnaround won't include those components.
 
 ### Dump traces
 
@@ -367,7 +399,7 @@ INITIATOR resp_rx per-stage (inbound ACK):
 
 ### Loopback mode only
 
-20. **Remove namespaces and disable MAC loopback**:
+20. **Remove namespaces and disable port loopback**:
     ```bash
     ip netns del ns1 && ip netns del ns2
     nicctl update port -p <port_uuid> --loopback-mode none
