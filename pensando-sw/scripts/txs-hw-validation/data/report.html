@@ -1,0 +1,338 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>txs SQ fast-disable — HW validation (Vulcano/hydra)</title>
+<style>
+:root{--bg:#0f1220;--card:#181c2e;--ink:#e8eaf2;--mut:#9aa3b2;--line:#2a3050;--good:#2ecc71;--warn:#f1c40f;--accent:#5b9dff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,Segoe UI,Roboto,Arial,sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:30px 20px 80px}
+h1{font-size:26px;margin:0 0 4px}h2{font-size:19px;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font-size:14px;color:var(--accent);margin:18px 0 6px}.sub{color:var(--mut);margin:0 0 16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin:14px 0}
+table{border-collapse:collapse;width:100%;margin:6px 0;font-size:13px}
+th,td{border:1px solid var(--line);padding:6px 9px;text-align:right}th:first-child,td:first-child{text-align:left}
+thead th{background:#20263f;color:#cfd6e6;position:sticky;top:0}tbody tr:nth-child(even){background:#1c2136}
+.good{color:var(--good);font-weight:600}.mut{color:var(--mut)}
+.b1{border-left:3px solid #7f8ca6}.b2{border-left:3px solid #f1c40f}.f{border-left:3px solid #2ecc71}
+.kpi{display:flex;gap:12px;flex-wrap:wrap;margin:8px 0}.kpi .b{flex:1;min-width:170px;background:#20263f;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.kpi .b .n{font-size:20px;font-weight:700}.kpi .b .l{color:var(--mut);font-size:12px}
+code{background:#20263f;padding:1px 6px;border-radius:5px;font-size:12px}
+.pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:12px;font-weight:600;background:rgba(46,204,113,.15);color:var(--good);border:1px solid rgba(46,204,113,.4)}
+.tabnote{color:var(--mut);font-size:12px;margin:2px 0 12px}.foot{color:var(--mut);font-size:12px;margin-top:30px;border-top:1px solid var(--line);padding-top:12px}
+.toc a{color:var(--accent);text-decoration:none;margin-right:14px;font-size:13px}
+</style></head><body><div class="wrap">
+<h1>txs SQ fast-disable — HW validation</h1>
+<p class="sub">Meta-RoCE / hydra on Vulcano · SMC1↔SMC2 · per-card images · reset-method asicmon · FW <code>1.130.0-a-51-dirty</code> · 2026-07-15</p>
+<p class="toc"><a href="#s1">Spurious PHVs (drain)</a><a href="#s2">Full asicmon</a><a href="#s3">Saturated</a><a href="#s4">Latency</a><a href="#s5">BW sweep</a><a href="#s6">Correctness</a> · <a href="spurious.csv">raw csv</a></p>
+<div class="card"><h3>Setup</h3><div class="kpi">
+<div class="b"><div class="n">B1</div><div class="l">AC-on, no-txs · benic1p1</div></div>
+<div class="b"><div class="n">B2</div><div class="l">AC-off, no-txs (shipping) · benic2p1</div></div>
+<div class="b"><div class="n">F</div><div class="l">AC-off + txs (feature) · benic3p1</div></div>
+</div><p class="mut">Primary metric <code>phb_drops</code> = spurious PHVs (= NPV_phv − PSP_phv). All 3 images coexist on separate cards (no full-host reflash). Reset method: <code>asicmon -r</code>→<code>-v</code>. 8 paths, GID idx 2.</p></div>
+<div class="card" style="border-color:rgba(46,204,113,.5)"><h3>Bottom line</h3><p><b class="good">txs cuts B2's spurious end-of-SQ PHVs ~50% at QP 2–16</b> under draining workloads (tapering to ~16–27% at QP 32/64), with <b>zero BW cost</b> (~753 Gb/s), <b>zero latency cost</b>, and <b>zero packet drops</b>. Benefit is drain-specific — under backlogged throughput the SQ never empties, so F≈B2 (no regression).</p></div>
+<h2 id="s1">1 · Spurious PHVs — multi-QP DRAINING (ib_write_bw -t1, 512B)</h2>
+<h3>RCN off</h3><table><thead><tr><th>QP</th><th>B1 phb_drops</th><th>B2</th><th>F</th><th>F vs B2</th></tr></thead><tbody>
+<tr><td>2</td><td>85M</td><td>285M</td><td>143M</td><td class="good">-50%</td></tr>
+<tr><td>4</td><td>139M</td><td>565M</td><td>285M</td><td class="good">-50%</td></tr>
+<tr><td>8</td><td>280M</td><td>1121M</td><td>558M</td><td class="good">-50%</td></tr>
+<tr><td>16</td><td>487M</td><td>1764M</td><td>906M</td><td class="good">-49%</td></tr>
+<tr><td>32</td><td>724M</td><td>2005M</td><td>1470M</td><td class="good">-27%</td></tr>
+<tr><td>64</td><td>833M</td><td>1305M</td><td>1102M</td><td class="good">-16%</td></tr>
+</tbody></table>
+<h3>RCN on</h3><table><thead><tr><th>QP</th><th>B1 phb_drops</th><th>B2</th><th>F</th><th>F vs B2</th></tr></thead><tbody>
+<tr><td>2</td><td>89M</td><td>285M</td><td>143M</td><td class="good">-50%</td></tr>
+<tr><td>4</td><td>169M</td><td>569M</td><td>286M</td><td class="good">-50%</td></tr>
+<tr><td>8</td><td>280M</td><td>1111M</td><td>563M</td><td class="good">-49%</td></tr>
+<tr><td>16</td><td>482M</td><td>1801M</td><td>916M</td><td class="good">-49%</td></tr>
+<tr><td>32</td><td>716M</td><td>2006M</td><td>1481M</td><td class="good">-26%</td></tr>
+<tr><td>64</td><td>813M</td><td>1297M</td><td>1110M</td><td class="good">-14%</td></tr>
+</tbody></table>
+<h2 id="s2">2 · Full asicmon metrics — DRAIN workload (RCN off): B1 vs B2 vs F</h2>
+<p class="tabnote">One table per counter, QP down the side, images across — so each signal is directly comparable. All counters are since the <code>asicmon -r</code> reset.</p>
+<h3>2.1 · Spurious PHVs — <code>phb_drops</code> (≈ NPV−PSP)</h3>
+<p class="tabnote">The feature target — lower is better. F halves B2 up to QP16.</p>
+<table><thead><tr><th>QP</th><th>B1 (AC-on)</th><th>B2 (AC-off)</th><th>F (AC-off+txs)</th><th>F vs B2</th></tr></thead><tbody>
+<tr><td>2</td><td class="b1">85M</td><td class="b2">285M</td><td class="f">143M</td><td class="good">-50%</td></tr>
+<tr><td>4</td><td class="b1">139M</td><td class="b2">565M</td><td class="f">285M</td><td class="good">-50%</td></tr>
+<tr><td>8</td><td class="b1">280M</td><td class="b2">1121M</td><td class="f">558M</td><td class="good">-50%</td></tr>
+<tr><td>16</td><td class="b1">487M</td><td class="b2">1764M</td><td class="f">906M</td><td class="good">-49%</td></tr>
+<tr><td>32</td><td class="b1">724M</td><td class="b2">2005M</td><td class="f">1470M</td><td class="good">-27%</td></tr>
+<tr><td>64</td><td class="b1">833M</td><td class="b2">1305M</td><td class="f">1102M</td><td class="good">-16%</td></tr>
+</tbody></table>
+<h3>2.2 · NPV total PHVs into pipeline</h3>
+<p class="tabnote">Independent corroboration of phb_drops (spurious = NPV − PSP; PSP ≈ real packets).</p>
+<table><thead><tr><th>QP</th><th>B1 (AC-on)</th><th>B2 (AC-off)</th><th>F (AC-off+txs)</th><th>F vs B2</th></tr></thead><tbody>
+<tr><td>2</td><td class="b1">93M</td><td class="b2">293M</td><td class="f">151M</td><td class="good">-48%</td></tr>
+<tr><td>4</td><td class="b1">154M</td><td class="b2">581M</td><td class="f">301M</td><td class="good">-48%</td></tr>
+<tr><td>8</td><td class="b1">310M</td><td class="b2">1152M</td><td class="f">589M</td><td class="good">-49%</td></tr>
+<tr><td>16</td><td class="b1">545M</td><td class="b2">1823M</td><td class="f">964M</td><td class="good">-47%</td></tr>
+<tr><td>32</td><td class="b1">829M</td><td class="b2">2110M</td><td class="f">1574M</td><td class="good">-25%</td></tr>
+<tr><td>64</td><td class="b1">958M</td><td class="b2">1433M</td><td class="f">1228M</td><td class="good">-14%</td></tr>
+</tbody></table>
+<h3>2.3 · Doorbell Sched0 — SQ scheduler wake-ups</h3>
+<p class="tabnote">B1 (AC-on) high from auto-clear re-arm; F is a few M above B2 = the txs stop+re-eval cost.</p>
+<table><thead><tr><th>QP</th><th>B1 (AC-on)</th><th>B2 (AC-off)</th><th>F (AC-off+txs)</th></tr></thead><tbody>
+<tr><td>2</td><td class="b1">108M</td><td class="b2">16M</td><td class="f">23M</td></tr>
+<tr><td>4</td><td class="b1">183M</td><td class="b2">31M</td><td class="f">46M</td></tr>
+<tr><td>8</td><td class="b1">376M</td><td class="b2">62M</td><td class="f">93M</td></tr>
+<tr><td>16</td><td class="b1">670M</td><td class="b2">118M</td><td class="f">177M</td></tr>
+<tr><td>32</td><td class="b1">1008M</td><td class="b2">211M</td><td class="f">318M</td></tr>
+<tr><td>64</td><td class="b1">1120M</td><td class="b2">263M</td><td class="f">378M</td></tr>
+</tbody></table>
+<h3>2.4 · TXs0 Clear — scheduler-stop events</h3>
+<p class="tabnote">F > B2 by the extra txs SQ-scheduler stops — the mechanism firing.</p>
+<table><thead><tr><th>QP</th><th>B1 (AC-on)</th><th>B2 (AC-off)</th><th>F (AC-off+txs)</th></tr></thead><tbody>
+<tr><td>2</td><td class="b1">428M</td><td class="b2">40M</td><td class="f">76M</td></tr>
+<tr><td>4</td><td class="b1">519M</td><td class="b2">55M</td><td class="f">107M</td></tr>
+<tr><td>8</td><td class="b1">707M</td><td class="b2">86M</td><td class="f">169M</td></tr>
+<tr><td>16</td><td class="b1">1026M</td><td class="b2">144M</td><td class="f">286M</td></tr>
+<tr><td>32</td><td class="b1">1482M</td><td class="b2">249M</td><td class="f">497M</td></tr>
+<tr><td>64</td><td class="b1">1985M</td><td class="b2">380M</td><td class="f">749M</td></tr>
+</tbody></table>
+<h3>2.5 · hcache read hit %</h3>
+<p class="tabnote">Doorbell-cache health — F not worse (~99.8%).</p>
+<table><thead><tr><th>QP</th><th>B1 (AC-on)</th><th>B2 (AC-off)</th><th>F (AC-off+txs)</th></tr></thead><tbody>
+<tr><td>2</td><td class="b1">99.9%</td><td class="b2">99.8%</td><td class="f">99.8%</td></tr>
+<tr><td>4</td><td class="b1">99.9%</td><td class="b2">99.8%</td><td class="f">99.8%</td></tr>
+<tr><td>8</td><td class="b1">99.9%</td><td class="b2">99.8%</td><td class="f">99.8%</td></tr>
+<tr><td>16</td><td class="b1">99.9%</td><td class="b2">99.8%</td><td class="f">99.8%</td></tr>
+<tr><td>32</td><td class="b1">99.9%</td><td class="b2">99.8%</td><td class="f">99.8%</td></tr>
+<tr><td>64</td><td class="b1">99.9%</td><td class="b2">99.8%</td><td class="f">99.8%</td></tr>
+</tbody></table>
+<p class="tabnote"><b>Correctness signals (every drain run, all images):</b> XOFF = 0% on all 16 cos · phv_drop = 0 · real PRD drops = 0.</p>
+<h3>1-QP latency drain anchor (ib_write_lat) — full asicmon</h3>
+<table><thead><tr><th>RCN·img</th><th>phb_drops</th><th>spurious</th><th>Sched0</th><th>TXs0 Clear</th><th>hcache rd%</th><th>real drops</th></tr></thead><tbody>
+<tr class="b1"><td>off B1</td><td>75M</td><td>75M</td><td>44M</td><td>40M</td><td>99.7</td><td>0</td></tr>
+<tr class="b2"><td>off B2</td><td>223M</td><td>223M</td><td>6M</td><td>8M</td><td>99.3</td><td>0</td></tr>
+<tr class="f"><td>off F</td><td>110M</td><td>110M</td><td>9M</td><td>17M</td><td>99.4</td><td>0</td></tr>
+<tr class="b1"><td>on B1</td><td>75M</td><td>75M</td><td>47M</td><td>222M</td><td>99.7</td><td>0</td></tr>
+<tr class="b2"><td>on B2</td><td>224M</td><td>224M</td><td>6M</td><td>21M</td><td>99.3</td><td>0</td></tr>
+<tr class="f"><td>on F</td><td>113M</td><td>113M</td><td>9M</td><td>41M</td><td>99.4</td><td>0</td></tr>
+</tbody></table>
+<h2 id="s3">3 · Saturated controls — spurious PHVs (ib_write_bw -t128) <span class="pill">no regression</span></h2>
+<h3>512B, RCN off (SQ stays backlogged → txs dormant)</h3><table><thead><tr><th>QP</th><th>B1</th><th>B2</th><th>F</th><th>F vs B2</th></tr></thead><tbody>
+<tr><td>2</td><td>586M</td><td>959M</td><td>939M</td><td class="mut">-2%</td></tr>
+<tr><td>4</td><td>606M</td><td>965M</td><td>936M</td><td class="mut">-3%</td></tr>
+<tr><td>8</td><td>565M</td><td>964M</td><td>938M</td><td class="mut">-3%</td></tr>
+<tr><td>16</td><td>569M</td><td>969M</td><td>938M</td><td class="mut">-3%</td></tr>
+<tr><td>32</td><td>527M</td><td>937M</td><td>917M</td><td class="mut">-2%</td></tr>
+<tr><td>64</td><td>535M</td><td>927M</td><td>898M</td><td class="mut">-3%</td></tr>
+</tbody></table>
+<h3>1M, RCN off (SQ stays backlogged → txs dormant)</h3><table><thead><tr><th>QP</th><th>B1</th><th>B2</th><th>F</th><th>F vs B2</th></tr></thead><tbody>
+<tr><td>2</td><td>606M</td><td>617M</td><td>614M</td><td class="mut">-0%</td></tr>
+<tr><td>4</td><td>624M</td><td>621M</td><td>615M</td><td class="mut">-1%</td></tr>
+<tr><td>8</td><td>619M</td><td>619M</td><td>627M</td><td class="mut">+1%</td></tr>
+<tr><td>16</td><td>651M</td><td>648M</td><td>646M</td><td class="mut">-0%</td></tr>
+<tr><td>32</td><td>696M</td><td>682M</td><td>681M</td><td class="mut">-0%</td></tr>
+<tr><td>64</td><td>694M</td><td>719M</td><td>717M</td><td class="mut">-0%</td></tr>
+</tbody></table>
+<h2 id="s4">4 · Latency size-sweep (ib_write_lat, QP1) <span class="pill">no regression</span></h2>
+<h3>RCN off — t_avg (µs) &nbsp;/&nbsp; p99 (µs)</h3><table><thead><tr><th>size (B)</th><th>B1 avg</th><th>B2 avg</th><th>F avg</th><th>B1 p99</th><th>B2 p99</th><th>F p99</th></tr></thead><tbody>
+<tr><td>2</td><td>4.87</td><td>4.89</td><td>4.87</td><td>4.97</td><td>4.98</td><td>4.96</td></tr>
+<tr><td>4</td><td>4.87</td><td>4.88</td><td>4.87</td><td>4.93</td><td>4.94</td><td>4.95</td></tr>
+<tr><td>8</td><td>4.87</td><td>4.88</td><td>4.87</td><td>4.92</td><td>4.95</td><td>4.95</td></tr>
+<tr><td>16</td><td>4.87</td><td>4.88</td><td>4.87</td><td>4.95</td><td>4.95</td><td>4.95</td></tr>
+<tr><td>32</td><td>4.87</td><td>4.88</td><td>4.87</td><td>4.96</td><td>4.94</td><td>4.96</td></tr>
+<tr><td>64</td><td>4.84</td><td>4.84</td><td>4.84</td><td>4.94</td><td>4.93</td><td>4.92</td></tr>
+<tr><td>128</td><td>4.86</td><td>4.86</td><td>4.85</td><td>4.96</td><td>4.96</td><td>4.95</td></tr>
+<tr><td>256</td><td>5.08</td><td>5.08</td><td>5.07</td><td>5.17</td><td>5.18</td><td>5.17</td></tr>
+<tr><td>512</td><td>5.13</td><td>5.13</td><td>5.12</td><td>5.24</td><td>5.25</td><td>5.21</td></tr>
+<tr><td>1024</td><td>5.22</td><td>5.21</td><td>5.20</td><td>5.34</td><td>5.31</td><td>5.32</td></tr>
+<tr><td>2048</td><td>5.36</td><td>5.37</td><td>5.35</td><td>5.42</td><td>5.42</td><td>5.43</td></tr>
+<tr><td>4096</td><td>5.57</td><td>5.57</td><td>5.58</td><td>5.67</td><td>5.67</td><td>5.67</td></tr>
+<tr><td>8192</td><td>5.69</td><td>5.66</td><td>5.65</td><td>5.84</td><td>5.77</td><td>5.79</td></tr>
+<tr><td>16384</td><td>5.85</td><td>5.86</td><td>5.84</td><td>5.93</td><td>5.97</td><td>5.92</td></tr>
+<tr><td>32768</td><td>6.23</td><td>6.25</td><td>6.23</td><td>6.33</td><td>6.37</td><td>6.42</td></tr>
+<tr><td>65536</td><td>7.02</td><td>7.01</td><td>7.02</td><td>12.73</td><td>12.69</td><td>12.73</td></tr>
+<tr><td>131072</td><td>8.83</td><td>8.79</td><td>8.81</td><td>14.36</td><td>14.16</td><td>14.38</td></tr>
+<tr><td>262144</td><td>10.94</td><td>10.89</td><td>10.92</td><td>12.18</td><td>12.07</td><td>12.16</td></tr>
+<tr><td>524288</td><td>16.37</td><td>16.39</td><td>16.44</td><td>19.20</td><td>17.80</td><td>20.04</td></tr>
+<tr><td>1048576</td><td>27.24</td><td>27.28</td><td>27.24</td><td>27.36</td><td>27.42</td><td>27.34</td></tr>
+<tr><td>2097152</td><td>48.85</td><td>48.94</td><td>48.85</td><td>49.09</td><td>49.13</td><td>49.31</td></tr>
+<tr><td>4194304</td><td>92.04</td><td>92.21</td><td>92.01</td><td>92.53</td><td>92.53</td><td>92.75</td></tr>
+<tr><td>8388608</td><td>178.71</td><td>178.92</td><td>178.52</td><td>178.94</td><td>179.41</td><td>178.94</td></tr>
+</tbody></table>
+<h3>RCN on — t_avg (µs) &nbsp;/&nbsp; p99 (µs)</h3><table><thead><tr><th>size (B)</th><th>B1 avg</th><th>B2 avg</th><th>F avg</th><th>B1 p99</th><th>B2 p99</th><th>F p99</th></tr></thead><tbody>
+<tr><td>2</td><td>4.87</td><td>4.87</td><td>4.88</td><td>4.96</td><td>4.99</td><td>5.00</td></tr>
+<tr><td>4</td><td>4.87</td><td>4.87</td><td>4.87</td><td>4.95</td><td>4.95</td><td>4.95</td></tr>
+<tr><td>8</td><td>4.87</td><td>4.87</td><td>4.88</td><td>4.95</td><td>4.94</td><td>4.96</td></tr>
+<tr><td>16</td><td>4.87</td><td>4.87</td><td>4.87</td><td>4.96</td><td>4.93</td><td>4.95</td></tr>
+<tr><td>32</td><td>4.87</td><td>4.87</td><td>4.87</td><td>4.95</td><td>4.95</td><td>4.95</td></tr>
+<tr><td>64</td><td>4.84</td><td>4.85</td><td>4.84</td><td>4.94</td><td>4.95</td><td>4.92</td></tr>
+<tr><td>128</td><td>4.86</td><td>4.86</td><td>4.86</td><td>4.96</td><td>4.96</td><td>4.96</td></tr>
+<tr><td>256</td><td>5.07</td><td>5.07</td><td>5.06</td><td>5.17</td><td>5.17</td><td>5.15</td></tr>
+<tr><td>512</td><td>5.12</td><td>5.12</td><td>5.12</td><td>5.23</td><td>5.21</td><td>5.21</td></tr>
+<tr><td>1024</td><td>5.20</td><td>5.20</td><td>5.20</td><td>5.33</td><td>5.32</td><td>5.30</td></tr>
+<tr><td>2048</td><td>5.36</td><td>5.35</td><td>5.36</td><td>5.43</td><td>5.41</td><td>5.42</td></tr>
+<tr><td>4096</td><td>5.60</td><td>5.58</td><td>5.56</td><td>5.67</td><td>5.68</td><td>5.66</td></tr>
+<tr><td>8192</td><td>5.67</td><td>5.61</td><td>5.65</td><td>5.80</td><td>5.75</td><td>5.79</td></tr>
+<tr><td>16384</td><td>5.84</td><td>5.84</td><td>5.84</td><td>5.91</td><td>5.92</td><td>5.92</td></tr>
+<tr><td>32768</td><td>6.21</td><td>6.21</td><td>6.22</td><td>6.32</td><td>6.34</td><td>6.33</td></tr>
+<tr><td>65536</td><td>7.02</td><td>7.01</td><td>6.98</td><td>12.84</td><td>12.79</td><td>12.78</td></tr>
+<tr><td>131072</td><td>8.86</td><td>8.79</td><td>8.84</td><td>14.57</td><td>14.26</td><td>14.55</td></tr>
+<tr><td>262144</td><td>10.86</td><td>10.84</td><td>10.85</td><td>12.12</td><td>12.78</td><td>12.30</td></tr>
+<tr><td>524288</td><td>16.56</td><td>16.50</td><td>16.50</td><td>23.07</td><td>22.82</td><td>23.21</td></tr>
+<tr><td>1048576</td><td>27.25</td><td>27.21</td><td>27.23</td><td>27.38</td><td>27.36</td><td>27.38</td></tr>
+<tr><td>2097152</td><td>48.71</td><td>48.71</td><td>48.73</td><td>51.08</td><td>51.51</td><td>50.75</td></tr>
+<tr><td>4194304</td><td>92.07</td><td>91.72</td><td>91.80</td><td>93.12</td><td>94.40</td><td>94.78</td></tr>
+<tr><td>8388608</td><td>178.70</td><td>178.41</td><td>178.44</td><td>179.91</td><td>181.06</td><td>181.28</td></tr>
+</tbody></table>
+<h2 id="s5">5 · BW size-sweep (ib_write_bw -a -n 10000, bidir) <span class="pill">no regression</span></h2>
+<p class="tabnote">bidir BW avg (Gb/s) vs message size, per QP, RCN off. B1/B2/F overlay within run-to-run noise at every size.</p>
+<h3>QP 2</h3><table><thead><tr><th>size (B)</th><th>B1</th><th>B2</th><th>F</th></tr></thead><tbody>
+<tr><td>2</td><td>0.1</td><td>0.1</td><td>0.1</td></tr>
+<tr><td>4</td><td>0.3</td><td>0.3</td><td>0.3</td></tr>
+<tr><td>8</td><td>0.6</td><td>0.6</td><td>0.6</td></tr>
+<tr><td>16</td><td>1.2</td><td>1.2</td><td>1.2</td></tr>
+<tr><td>32</td><td>2.4</td><td>2.3</td><td>2.4</td></tr>
+<tr><td>64</td><td>4.7</td><td>4.7</td><td>4.7</td></tr>
+<tr><td>128</td><td>9.4</td><td>9.3</td><td>9.4</td></tr>
+<tr><td>256</td><td>18.8</td><td>18.6</td><td>18.9</td></tr>
+<tr><td>512</td><td>37.3</td><td>37.2</td><td>37.5</td></tr>
+<tr><td>1024</td><td>74.6</td><td>73.9</td><td>74.6</td></tr>
+<tr><td>2048</td><td>147.7</td><td>147.4</td><td>148.7</td></tr>
+<tr><td>4096</td><td>293.1</td><td>291.2</td><td>294.8</td></tr>
+<tr><td>8192</td><td>542.4</td><td>584.7</td><td>576.2</td></tr>
+<tr><td>16384</td><td>735.9</td><td>742.2</td><td>740.8</td></tr>
+<tr><td>32768</td><td>759.0</td><td>759.7</td><td>759.9</td></tr>
+<tr><td>65536</td><td>755.4</td><td>757.0</td><td>756.9</td></tr>
+<tr><td>131072</td><td>752.7</td><td>753.7</td><td>753.9</td></tr>
+<tr><td>262144</td><td>752.6</td><td>753.6</td><td>753.6</td></tr>
+<tr><td>524288</td><td>752.7</td><td>753.5</td><td>753.7</td></tr>
+<tr><td>1048576</td><td>752.7</td><td>753.4</td><td>753.6</td></tr>
+<tr><td>2097152</td><td>752.7</td><td>753.6</td><td>753.6</td></tr>
+<tr><td>4194304</td><td>752.7</td><td>753.6</td><td>753.5</td></tr>
+<tr><td>8388608</td><td>752.7</td><td>753.6</td><td>753.5</td></tr>
+</tbody></table>
+<h3>QP 4</h3><table><thead><tr><th>size (B)</th><th>B1</th><th>B2</th><th>F</th></tr></thead><tbody>
+<tr><td>2</td><td>0.2</td><td>0.1</td><td>0.2</td></tr>
+<tr><td>4</td><td>0.3</td><td>0.3</td><td>0.3</td></tr>
+<tr><td>8</td><td>0.6</td><td>0.6</td><td>0.6</td></tr>
+<tr><td>16</td><td>1.2</td><td>1.2</td><td>1.2</td></tr>
+<tr><td>32</td><td>2.5</td><td>2.5</td><td>2.5</td></tr>
+<tr><td>64</td><td>5.0</td><td>4.9</td><td>5.0</td></tr>
+<tr><td>128</td><td>9.9</td><td>9.8</td><td>9.9</td></tr>
+<tr><td>256</td><td>19.8</td><td>19.6</td><td>19.8</td></tr>
+<tr><td>512</td><td>39.4</td><td>39.2</td><td>39.5</td></tr>
+<tr><td>1024</td><td>78.5</td><td>78.2</td><td>78.9</td></tr>
+<tr><td>2048</td><td>155.3</td><td>155.7</td><td>157.2</td></tr>
+<tr><td>4096</td><td>308.9</td><td>312.6</td><td>314.4</td></tr>
+<tr><td>8192</td><td>620.7</td><td>633.4</td><td>638.1</td></tr>
+<tr><td>16384</td><td>753.2</td><td>753.9</td><td>753.6</td></tr>
+<tr><td>32768</td><td>753.9</td><td>753.5</td><td>753.3</td></tr>
+<tr><td>65536</td><td>753.4</td><td>753.2</td><td>753.4</td></tr>
+<tr><td>131072</td><td>753.3</td><td>753.3</td><td>753.3</td></tr>
+<tr><td>262144</td><td>753.3</td><td>753.3</td><td>753.3</td></tr>
+<tr><td>524288</td><td>753.4</td><td>753.4</td><td>753.3</td></tr>
+<tr><td>1048576</td><td>753.4</td><td>753.4</td><td>753.4</td></tr>
+<tr><td>2097152</td><td>753.4</td><td>753.4</td><td>753.4</td></tr>
+<tr><td>4194304</td><td>753.4</td><td>753.4</td><td>753.4</td></tr>
+<tr><td>8388608</td><td>753.4</td><td>753.4</td><td>753.4</td></tr>
+</tbody></table>
+<h3>QP 8</h3><table><thead><tr><th>size (B)</th><th>B1</th><th>B2</th><th>F</th></tr></thead><tbody>
+<tr><td>2</td><td>0.2</td><td>0.2</td><td>0.2</td></tr>
+<tr><td>4</td><td>0.3</td><td>0.3</td><td>0.3</td></tr>
+<tr><td>8</td><td>0.6</td><td>0.6</td><td>0.6</td></tr>
+<tr><td>16</td><td>1.3</td><td>1.3</td><td>1.2</td></tr>
+<tr><td>32</td><td>2.5</td><td>2.5</td><td>2.5</td></tr>
+<tr><td>64</td><td>5.1</td><td>5.0</td><td>5.0</td></tr>
+<tr><td>128</td><td>10.1</td><td>10.1</td><td>10.0</td></tr>
+<tr><td>256</td><td>20.2</td><td>20.1</td><td>19.9</td></tr>
+<tr><td>512</td><td>40.4</td><td>40.3</td><td>39.9</td></tr>
+<tr><td>1024</td><td>80.5</td><td>80.4</td><td>79.5</td></tr>
+<tr><td>2048</td><td>159.5</td><td>160.2</td><td>158.6</td></tr>
+<tr><td>4096</td><td>318.0</td><td>320.2</td><td>318.3</td></tr>
+<tr><td>8192</td><td>633.7</td><td>652.4</td><td>649.2</td></tr>
+<tr><td>16384</td><td>752.1</td><td>752.7</td><td>752.9</td></tr>
+<tr><td>32768</td><td>752.2</td><td>753.1</td><td>753.1</td></tr>
+<tr><td>65536</td><td>752.4</td><td>753.3</td><td>753.2</td></tr>
+<tr><td>131072</td><td>752.4</td><td>753.3</td><td>753.3</td></tr>
+<tr><td>262144</td><td>752.5</td><td>753.3</td><td>753.3</td></tr>
+<tr><td>524288</td><td>752.5</td><td>753.4</td><td>753.4</td></tr>
+<tr><td>1048576</td><td>752.5</td><td>753.4</td><td>753.4</td></tr>
+<tr><td>2097152</td><td>752.5</td><td>753.4</td><td>753.4</td></tr>
+<tr><td>4194304</td><td>752.5</td><td>753.4</td><td>753.4</td></tr>
+<tr><td>8388608</td><td>752.5</td><td>753.4</td><td>753.4</td></tr>
+</tbody></table>
+<h3>QP 16</h3><table><thead><tr><th>size (B)</th><th>B1</th><th>B2</th><th>F</th></tr></thead><tbody>
+<tr><td>2</td><td>0.2</td><td>0.2</td><td>0.1</td></tr>
+<tr><td>4</td><td>0.3</td><td>0.3</td><td>0.3</td></tr>
+<tr><td>8</td><td>0.7</td><td>0.6</td><td>0.6</td></tr>
+<tr><td>16</td><td>1.3</td><td>1.3</td><td>1.2</td></tr>
+<tr><td>32</td><td>2.6</td><td>2.5</td><td>2.4</td></tr>
+<tr><td>64</td><td>5.2</td><td>5.0</td><td>4.9</td></tr>
+<tr><td>128</td><td>10.4</td><td>10.1</td><td>9.7</td></tr>
+<tr><td>256</td><td>20.8</td><td>20.2</td><td>19.4</td></tr>
+<tr><td>512</td><td>41.3</td><td>40.4</td><td>38.9</td></tr>
+<tr><td>1024</td><td>82.6</td><td>81.0</td><td>77.5</td></tr>
+<tr><td>2048</td><td>163.9</td><td>161.4</td><td>154.4</td></tr>
+<tr><td>4096</td><td>326.0</td><td>324.1</td><td>309.7</td></tr>
+<tr><td>8192</td><td>650.7</td><td>659.8</td><td>635.6</td></tr>
+<tr><td>16384</td><td>753.2</td><td>753.1</td><td>753.2</td></tr>
+<tr><td>32768</td><td>753.3</td><td>753.2</td><td>753.2</td></tr>
+<tr><td>65536</td><td>753.3</td><td>753.3</td><td>753.3</td></tr>
+<tr><td>131072</td><td>753.3</td><td>753.3</td><td>753.3</td></tr>
+<tr><td>262144</td><td>753.4</td><td>753.4</td><td>753.4</td></tr>
+<tr><td>524288</td><td>753.4</td><td>753.4</td><td>753.4</td></tr>
+<tr><td>1048576</td><td>753.4</td><td>753.4</td><td>753.4</td></tr>
+<tr><td>2097152</td><td>753.4</td><td>753.4</td><td>753.4</td></tr>
+<tr><td>4194304</td><td>753.4</td><td>753.4</td><td>753.4</td></tr>
+<tr><td>8388608</td><td>753.4</td><td>753.4</td><td>753.4</td></tr>
+</tbody></table>
+<h3>QP 32</h3><table><thead><tr><th>size (B)</th><th>B1</th><th>B2</th><th>F</th></tr></thead><tbody>
+<tr><td>2</td><td>0.2</td><td>0.1</td><td>0.1</td></tr>
+<tr><td>4</td><td>0.3</td><td>0.3</td><td>0.3</td></tr>
+<tr><td>8</td><td>0.6</td><td>0.6</td><td>0.6</td></tr>
+<tr><td>16</td><td>1.3</td><td>1.2</td><td>1.2</td></tr>
+<tr><td>32</td><td>2.5</td><td>2.5</td><td>2.4</td></tr>
+<tr><td>64</td><td>5.0</td><td>4.9</td><td>4.9</td></tr>
+<tr><td>128</td><td>10.1</td><td>9.8</td><td>9.7</td></tr>
+<tr><td>256</td><td>20.1</td><td>19.5</td><td>19.4</td></tr>
+<tr><td>512</td><td>40.1</td><td>39.1</td><td>38.8</td></tr>
+<tr><td>1024</td><td>79.7</td><td>78.0</td><td>77.4</td></tr>
+<tr><td>2048</td><td>158.0</td><td>155.3</td><td>154.2</td></tr>
+<tr><td>4096</td><td>315.2</td><td>311.6</td><td>310.5</td></tr>
+<tr><td>8192</td><td>622.8</td><td>638.2</td><td>635.5</td></tr>
+<tr><td>16384</td><td>753.2</td><td>753.3</td><td>753.3</td></tr>
+<tr><td>32768</td><td>753.3</td><td>753.3</td><td>753.3</td></tr>
+<tr><td>65536</td><td>753.3</td><td>753.3</td><td>753.3</td></tr>
+<tr><td>131072</td><td>753.4</td><td>753.4</td><td>753.4</td></tr>
+<tr><td>262144</td><td>753.4</td><td>753.4</td><td>753.4</td></tr>
+<tr><td>524288</td><td>753.4</td><td>753.4</td><td>753.4</td></tr>
+<tr><td>1048576</td><td>753.4</td><td>753.4</td><td>753.4</td></tr>
+<tr><td>2097152</td><td>753.4</td><td>753.4</td><td>753.4</td></tr>
+<tr><td>4194304</td><td>753.4</td><td>753.4</td><td>753.4</td></tr>
+<tr><td>8388608</td><td>753.4</td><td>753.4</td><td>753.4</td></tr>
+</tbody></table>
+<h3>QP 64</h3><table><thead><tr><th>size (B)</th><th>B1</th><th>B2</th><th>F</th></tr></thead><tbody>
+<tr><td>2</td><td>0.2</td><td>0.2</td><td>0.2</td></tr>
+<tr><td>4</td><td>0.3</td><td>0.3</td><td>0.3</td></tr>
+<tr><td>8</td><td>0.7</td><td>0.6</td><td>0.6</td></tr>
+<tr><td>16</td><td>1.3</td><td>1.2</td><td>1.2</td></tr>
+<tr><td>32</td><td>2.6</td><td>2.5</td><td>2.5</td></tr>
+<tr><td>64</td><td>5.2</td><td>5.0</td><td>5.0</td></tr>
+<tr><td>128</td><td>10.3</td><td>9.9</td><td>10.0</td></tr>
+<tr><td>256</td><td>20.6</td><td>19.8</td><td>20.0</td></tr>
+<tr><td>512</td><td>41.2</td><td>39.6</td><td>39.9</td></tr>
+<tr><td>1024</td><td>82.1</td><td>79.1</td><td>79.6</td></tr>
+<tr><td>2048</td><td>162.7</td><td>157.6</td><td>158.6</td></tr>
+<tr><td>4096</td><td>324.4</td><td>316.6</td><td>318.4</td></tr>
+<tr><td>8192</td><td>637.4</td><td>647.1</td><td>648.7</td></tr>
+<tr><td>16384</td><td>752.5</td><td>752.5</td><td>753.3</td></tr>
+<tr><td>32768</td><td>752.5</td><td>752.5</td><td>753.3</td></tr>
+<tr><td>65536</td><td>752.5</td><td>752.5</td><td>753.4</td></tr>
+<tr><td>131072</td><td>752.5</td><td>752.5</td><td>753.4</td></tr>
+<tr><td>262144</td><td>752.5</td><td>752.5</td><td>753.4</td></tr>
+<tr><td>524288</td><td>752.5</td><td>752.5</td><td>753.4</td></tr>
+<tr><td>1048576</td><td>752.5</td><td>752.5</td><td>753.4</td></tr>
+<tr><td>2097152</td><td>752.5</td><td>752.5</td><td>753.4</td></tr>
+<tr><td>4194304</td><td>752.5</td><td>752.5</td><td>753.4</td></tr>
+<tr><td>8388608</td><td>752.5</td><td>752.5</td><td>753.4</td></tr>
+</tbody></table>
+<h2 id="s6">6 · Correctness</h2><ul>
+<li><code>nicctl packet-buffer drop</code> (authoritative): <b class="good">0</b> on all 3 cards, all ports.</li>
+<li>rdma anomalies <b class="good">clean</b> pre/post every run; no SQ hang.</li>
+<li>phv_drop=0, XOFF=0% on every run (see §2); real PRD drops ~1e-4 (negligible).</li>
+<li><code>phb_drops == NPV_phv − PSP_phv</code> — two independent spurious-PHV measures agree.</li>
+<li><code>phb_drops</code> is a free-running per-op spurious-PHV counter, not packet loss.</li></ul>
+<div class="foot">txs_cmd HW validation · Vulcano/hydra Meta-RoCE · sw-dev2.pensando.io:8891 · raw: <a href="spurious.csv">spurious.csv</a>, <a href="bwsweep/">bwsweep/</a>, <a href="latsweep/">latsweep/</a>, <a href="REPORT2.md">REPORT2.md</a></div>
+</div></body></html>
