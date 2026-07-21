@@ -263,3 +263,26 @@ RCCL keeps the SQ backlogged so the txs fast-disable never fires; this is a pure
 confirmation at the real collective level**. B2 matches the 2026-07-21 official baseline (all_reduce
 ~141.8 avg / ~362 @16G). Report: http://sw-dev2.pensando.io:8891/smc-rccl/ . Raw archives:
 `results_smc_rccl_{B2,F,B1}.tar.gz`. Testbed restored to official `1.130.2-a-6` after the runs.
+
+### Phase 4b — A-B-C-A confound test (all_reduce + alltoall, 5 runs each)
+
+The first sweep showed B2 nominally highest in all 6 collectives (F/B1 lower by ≤0.9%), at the edge of
+run-to-run noise. To rule out a measurement-order/reflash confound, ran an **A-B-C-A** on the two
+collectives of interest: `B2_a → F_b → B1_b → B2_c`, each on a fresh reflash+bringup, B2 bracketed to
+detect drift. Harness-avg (GB/s):
+
+| coll | B2_a | F_b | B1_b | B2_c | F vs B2 | B1 vs B2 | B2 drift |
+|---|---|---|---|---|---|---|---|
+| all_reduce | 141.735 | 141.440 | 141.582 | 141.641 | −0.17% | −0.07% | −0.07% |
+| alltoall | 43.412 | 43.246 | 42.881 | 43.408 | −0.38% | −1.22% | −0.01% |
+
+**B2 is stable across the two brackets (drift ≤0.07%), so the confound is ruled out** — the small gaps
+are real, not order/warmup artifacts. On `alltoall` all three bands are cleanly separated:
+**AC-off (B2) > txs (F) > AC-on (B1)**. On `all_reduce` the effect is negligible (B2 vs F barely
+separated ~0.17%; B1 overlaps).
+
+**Corrected conclusion:** it is *not* pure noise — there is a genuine, tiny throughput ordering
+**AC-off ≥ txs ≥ AC-on**. AC-on (B1) is actually the *slowest* (up to ~1.2% on alltoall), consistent
+with auto-clear's much higher SQ scheduler doorbell churn (~230× under saturation per the IB data);
+txs (F) adds only a sliver of S2 re-eval overhead (≤0.4% under B2). Still comfortably **no regression**
+for the feature (F within 0.4% of shipping B2). Data: `results_smc_rccl_aba/` + `ABA_summary.txt`.

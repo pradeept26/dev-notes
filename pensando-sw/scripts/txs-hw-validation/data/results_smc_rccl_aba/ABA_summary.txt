@@ -1,0 +1,12 @@
+A-B-C-A confound test (2026-07-21) — all_reduce + alltoall, 5 runs each, order B2_a → F_b → B1_b → B2_c
+(each leg on a fresh reflash+bringup; B2 bracketed to detect drift). Harness whole-sweep avg (GB/s):
+
+all_reduce: B2_a 141.735 | F_b 141.440 | B1_b 141.582 | B2_c 141.641
+  pooled B2 141.69; F -0.17% (band separated); B1 -0.07% (band overlaps). B2 drift a->c -0.07%.
+alltoall:   B2_a 43.412 | F_b 43.246 | B1_b 42.881 | B2_c 43.408
+  pooled B2 43.41; F -0.38%; B1 -1.22%. ALL bands separated (B2>F>B1). B2 drift a->c -0.01%.
+
+Verdict: confound ruled out (B2 stable across brackets). Real but tiny ordering AC-off(B2) >= txs(F) >= AC-on(B1).
+F within <=0.4% of shipping B2 (no regression); AC-on is the slowest (~1.2% on alltoall) due to auto-clear
+scheduler doorbell churn; txs adds a sliver of S2 re-eval overhead. Effect is collective-dependent
+(clear on alltoall, negligible on all_reduce).

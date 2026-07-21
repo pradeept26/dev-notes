@@ -5,9 +5,19 @@ type: project
 originSessionId: 5c1791ad-e9cb-4ac7-ad27-4732167068b9
 ---
 Always-on scheduler **auto-clear is verified NOT to be a problem on Vulcano**
-(empirically confirmed by the team, 2026-07-13) — no fairness or perf pain at
-scale or with RCCL, unlike the ~61% inter-queue asymmetry pulsar saw that
+(empirically confirmed by the team, 2026-07-13) — no fairness or meaningful perf
+pain at scale or with RCCL, unlike the ~61% inter-queue asymmetry pulsar saw that
 motivated pulsar's `txs_cmd`.
+
+**Refinement (2026-07-21, A-B-C-A RCCL test on SMC 16-GPU):** there IS a *tiny*
+real collective-throughput ordering **AC-off ≥ AC-off+txs ≥ AC-on** — i.e.
+always-on auto-clear (the Vulcano default = B1) is actually the *slowest* of the
+three, by up to ~1.2% on `alltoall` (negligible on `all_reduce`). Confirmed real,
+not noise (B2 bracketed, drift <0.1%; bands separated on alltoall). Attributed to
+auto-clear's much higher SQ scheduler doorbell churn (~230× under saturation).
+Still far too small to change the "auto-clear-ON is fine / TXS-for-hydra parked"
+call, but "no perf pain" is more precisely "≤~1.2%, collective-dependent." Data:
+handoff Phase 4b + `txs-hw-validation/data/results_smc_rccl_aba/`.
 
 **Why:** Vulcano hydra intentionally keeps auto-clear ON for all QPs at all
 scales (the scale-based auto-clear-disable is Salina-only). Testing confirmed
