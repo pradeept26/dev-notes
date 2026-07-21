@@ -1,0 +1,204 @@
+<!DOCTYPE html><html><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1">
+<title>txs — SMC 3-way RCCL (B2/F/B1)</title><style>
+:root{--bg:#0f1220;--card:#181c2e;--ink:#e8eaf2;--mut:#9aa3b2;--line:#2a3050;--good:#2ecc71;--bad:#e74c3c;--accent:#5b9dff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,Segoe UI,Roboto,Arial,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:30px 20px 80px}h1{font-size:25px;margin:0 0 4px}
+h2{font-size:19px;margin:32px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}h3{font-size:14px;color:var(--accent);margin:16px 0 6px}
+.sub{color:var(--mut);margin:0 0 16px}.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin:12px 0}
+table{border-collapse:collapse;width:100%;margin:6px 0;font-size:13px}th,td{border:1px solid var(--line);padding:6px 9px;text-align:right}
+th:first-child,td:first-child{text-align:left}thead th{background:#20263f}tbody tr:nth-child(even){background:#1c2136}
+.good{color:var(--good);font-weight:600}.bad{color:var(--bad);font-weight:700}.mut{color:var(--mut)}
+code{background:#20263f;padding:1px 6px;border-radius:5px;font-size:12px}
+.pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:12px;font-weight:600;background:rgba(46,204,113,.15);color:var(--good);border:1px solid rgba(46,204,113,.4)}
+.kpi{display:flex;gap:12px;flex-wrap:wrap;margin:8px 0}.kpi .b{flex:1;min-width:200px;background:#20263f;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.kpi .n{font-size:19px;font-weight:700}.kpi .l{color:var(--mut);font-size:12px}.foot{color:var(--mut);font-size:12px;margin-top:26px;border-top:1px solid var(--line);padding-top:12px}
+</style></head><body><div class=wrap>
+<h1>txs SQ fast-disable — SMC 3-way RCCL collectives (16 GPU)</h1>
+<p class=sub>Vulcano/hydra Meta-RoCE · SMC1+SMC2 2-node × 8 MI300X (16 ranks) · FW <code>1.130.2-a</code> · ANP CTS-disable · 1K–16G, n20 w5, qps1 · 3-run avg · 2026-07-21</p>
+<div class=card><h3>Configs</h3><div class=kpi>
+<div class=b><div class=n>B2</div><div class=l>AC-off, no-txs (official 1.130.2-a-6, shipping)</div></div>
+<div class=b><div class=n>F</div><div class=l>AC-off + txs (feature)</div></div>
+<div class=b><div class=n>B1</div><div class=l>AC-on, no-txs</div></div>
+</div><p class=mut>B2 = currently-loaded official build (shipping AC-off). F/B1 fw-only reflashed from the txs branch (host RCCL stack unchanged). RCCL saturates the SQ → txs dormant → expect parity.</p></div>
+<div class=card style='border-color:rgba(46,204,113,.5)'><h3>Bottom line</h3>
+<p><b class=good>PASS — no regression.</b> Across all 6 collectives the txs (F) and AC-on (B1) images track the shipping AC-off (B2) RCCL busBw within run-to-run noise. Largest peak@16G deviation: <b>-1.5%</b> (B1 alltoall). As expected — RCCL keeps the SQ backlogged, so the txs fast-disable never fires; it is a pure no-regression confirmation at the real collective level.</p></div>
+<h2>all_reduce</h2>
+<p class=mut>Harness whole-sweep avg (GB/s, 3-run mean): B2 <b>141.68</b> · F <b>141.44</b> (<span class=mut>-0.2%</span>) · B1 <b>141.65</b> (<span class=mut>-0.0%</span>)</p>
+<table><thead><tr><th>size (B)</th><th>B2</th><th>F</th><th>B1</th><th>F vs B2</th><th>B1 vs B2</th></tr></thead><tbody>
+<tr><td>1,024</td><td>0.05</td><td>0.04</td><td>0.05</td><td class=bad>-13.3%</td><td class=mut>+0.0%</td></tr>
+<tr><td>2,048</td><td>0.10</td><td>0.08</td><td>0.10</td><td class=bad>-20.0%</td><td class=mut>+0.0%</td></tr>
+<tr><td>4,096</td><td>0.20</td><td>0.20</td><td>0.20</td><td class=mut>+0.0%</td><td class=mut>+1.7%</td></tr>
+<tr><td>8,192</td><td>0.40</td><td>0.41</td><td>0.40</td><td class=mut>+2.5%</td><td class=mut>+0.0%</td></tr>
+<tr><td>16,384</td><td>0.79</td><td>0.79</td><td>0.78</td><td class=mut>+0.4%</td><td class=mut>-0.4%</td></tr>
+<tr><td>32,768</td><td>1.56</td><td>1.56</td><td>1.56</td><td class=mut>+0.0%</td><td class=mut>-0.2%</td></tr>
+<tr><td>65,536</td><td>2.91</td><td>2.95</td><td>2.91</td><td class=mut>+1.6%</td><td class=mut>+0.2%</td></tr>
+<tr><td>131,072</td><td>5.43</td><td>4.58</td><td>5.45</td><td class=bad>-15.7%</td><td class=mut>+0.4%</td></tr>
+<tr><td>262,144</td><td>9.58</td><td>9.64</td><td>9.60</td><td class=mut>+0.7%</td><td class=mut>+0.2%</td></tr>
+<tr><td>524,288</td><td>15.14</td><td>14.81</td><td>15.24</td><td class=mut>-2.1%</td><td class=mut>+0.7%</td></tr>
+<tr><td>1,048,576</td><td>32.40</td><td>31.50</td><td>31.76</td><td class=mut>-2.8%</td><td class=mut>-2.0%</td></tr>
+<tr><td>2,097,152</td><td>53.36</td><td>53.86</td><td>54.08</td><td class=mut>+0.9%</td><td class=mut>+1.4%</td></tr>
+<tr><td>4,194,304</td><td>98.34</td><td>99.47</td><td>99.53</td><td class=mut>+1.1%</td><td class=mut>+1.2%</td></tr>
+<tr><td>8,388,608</td><td>84.33</td><td>84.68</td><td>84.26</td><td class=mut>+0.4%</td><td class=mut>-0.1%</td></tr>
+<tr><td>16,777,216</td><td>124.30</td><td>123.41</td><td>124.17</td><td class=mut>-0.7%</td><td class=mut>-0.1%</td></tr>
+<tr><td>33,554,432</td><td>161.32</td><td>161.63</td><td>161.82</td><td class=mut>+0.2%</td><td class=mut>+0.3%</td></tr>
+<tr><td>67,108,864</td><td>211.26</td><td>211.18</td><td>210.92</td><td class=mut>-0.0%</td><td class=mut>-0.2%</td></tr>
+<tr><td>134,217,728</td><td>264.10</td><td>264.82</td><td>264.81</td><td class=mut>+0.3%</td><td class=mut>+0.3%</td></tr>
+<tr><td>268,435,456</td><td>336.36</td><td>333.37</td><td>340.34</td><td class=mut>-0.9%</td><td class=mut>+1.2%</td></tr>
+<tr><td>536,870,912</td><td>352.30</td><td>352.08</td><td>352.16</td><td class=mut>-0.1%</td><td class=mut>-0.0%</td></tr>
+<tr><td>1,073,741,824</td><td>354.95</td><td>354.03</td><td>353.32</td><td class=mut>-0.3%</td><td class=mut>-0.5%</td></tr>
+<tr><td>2,147,483,648</td><td>356.58</td><td>355.44</td><td>354.82</td><td class=mut>-0.3%</td><td class=mut>-0.5%</td></tr>
+<tr><td>4,294,967,296</td><td>357.60</td><td>356.98</td><td>355.96</td><td class=mut>-0.2%</td><td class=mut>-0.5%</td></tr>
+<tr><td>8,589,934,592</td><td>359.26</td><td>358.71</td><td>358.06</td><td class=mut>-0.2%</td><td class=mut>-0.3%</td></tr>
+<tr><td>17,179,869,184</td><td>360.48</td><td>360.15</td><td>358.96</td><td class=mut>-0.1%</td><td class=mut>-0.4%</td></tr>
+</tbody></table>
+<h2>alltoall</h2>
+<p class=mut>Harness whole-sweep avg (GB/s, 3-run mean): B2 <b>43.43</b> · F <b>43.38</b> (<span class=mut>-0.1%</span>) · B1 <b>43.06</b> (<span class=mut>-0.9%</span>)</p>
+<table><thead><tr><th>size (B)</th><th>B2</th><th>F</th><th>B1</th><th>F vs B2</th><th>B1 vs B2</th></tr></thead><tbody>
+<tr><td>1,024</td><td>0.02</td><td>0.02</td><td>0.02</td><td class=mut>+0.0%</td><td class=mut>+0.0%</td></tr>
+<tr><td>2,048</td><td>0.05</td><td>0.05</td><td>0.05</td><td class=bad>-6.7%</td><td class=mut>+0.0%</td></tr>
+<tr><td>4,096</td><td>0.10</td><td>0.10</td><td>0.10</td><td class=mut>+0.0%</td><td class=mut>+0.0%</td></tr>
+<tr><td>8,192</td><td>0.20</td><td>0.20</td><td>0.19</td><td class=good>+3.4%</td><td class=mut>-1.7%</td></tr>
+<tr><td>16,384</td><td>0.40</td><td>0.40</td><td>0.40</td><td class=mut>+0.8%</td><td class=mut>+0.8%</td></tr>
+<tr><td>32,768</td><td>0.78</td><td>0.79</td><td>0.81</td><td class=mut>+0.9%</td><td class=good>+3.4%</td></tr>
+<tr><td>65,536</td><td>1.56</td><td>1.56</td><td>1.59</td><td class=mut>+0.0%</td><td class=mut>+1.5%</td></tr>
+<tr><td>131,072</td><td>3.19</td><td>3.22</td><td>3.11</td><td class=mut>+1.2%</td><td class=mut>-2.4%</td></tr>
+<tr><td>262,144</td><td>6.35</td><td>6.25</td><td>6.19</td><td class=mut>-1.5%</td><td class=mut>-2.5%</td></tr>
+<tr><td>524,288</td><td>11.93</td><td>11.99</td><td>12.13</td><td class=mut>+0.5%</td><td class=mut>+1.7%</td></tr>
+<tr><td>1,048,576</td><td>18.70</td><td>18.82</td><td>19.07</td><td class=mut>+0.6%</td><td class=mut>+2.0%</td></tr>
+<tr><td>2,097,152</td><td>29.14</td><td>29.12</td><td>29.14</td><td class=mut>-0.1%</td><td class=mut>+0.0%</td></tr>
+<tr><td>4,194,304</td><td>41.35</td><td>41.57</td><td>40.83</td><td class=mut>+0.5%</td><td class=mut>-1.3%</td></tr>
+<tr><td>8,388,608</td><td>53.73</td><td>53.28</td><td>52.84</td><td class=mut>-0.8%</td><td class=mut>-1.7%</td></tr>
+<tr><td>16,777,216</td><td>66.20</td><td>66.76</td><td>66.47</td><td class=mut>+0.8%</td><td class=mut>+0.4%</td></tr>
+<tr><td>33,554,432</td><td>74.36</td><td>74.95</td><td>74.68</td><td class=mut>+0.8%</td><td class=mut>+0.4%</td></tr>
+<tr><td>67,108,864</td><td>80.75</td><td>80.92</td><td>80.64</td><td class=mut>+0.2%</td><td class=mut>-0.1%</td></tr>
+<tr><td>134,217,728</td><td>84.96</td><td>85.08</td><td>84.87</td><td class=mut>+0.1%</td><td class=mut>-0.1%</td></tr>
+<tr><td>268,435,456</td><td>86.35</td><td>86.22</td><td>85.14</td><td class=mut>-0.2%</td><td class=mut>-1.4%</td></tr>
+<tr><td>536,870,912</td><td>87.18</td><td>86.89</td><td>86.13</td><td class=mut>-0.3%</td><td class=mut>-1.2%</td></tr>
+<tr><td>1,073,741,824</td><td>87.58</td><td>87.21</td><td>86.25</td><td class=mut>-0.4%</td><td class=mut>-1.5%</td></tr>
+<tr><td>2,147,483,648</td><td>87.60</td><td>87.26</td><td>86.32</td><td class=mut>-0.4%</td><td class=mut>-1.5%</td></tr>
+<tr><td>4,294,967,296</td><td>87.70</td><td>87.38</td><td>86.43</td><td class=mut>-0.4%</td><td class=mut>-1.4%</td></tr>
+<tr><td>8,589,934,592</td><td>87.74</td><td>87.43</td><td>86.48</td><td class=mut>-0.4%</td><td class=mut>-1.4%</td></tr>
+<tr><td>17,179,869,184</td><td>87.77</td><td>87.47</td><td>86.49</td><td class=mut>-0.3%</td><td class=mut>-1.5%</td></tr>
+</tbody></table>
+<h2>alltoallv</h2>
+<p class=mut>Harness whole-sweep avg (GB/s, 3-run mean): B2 <b>31.79</b> · F <b>31.68</b> (<span class=mut>-0.3%</span>) · B1 <b>31.58</b> (<span class=mut>-0.7%</span>)</p>
+<table><thead><tr><th>size (B)</th><th>B2</th><th>F</th><th>B1</th><th>F vs B2</th><th>B1 vs B2</th></tr></thead><tbody>
+<tr><td>1,024</td><td>0.02</td><td>0.02</td><td>0.02</td><td class=mut>+0.0%</td><td class=mut>+0.0%</td></tr>
+<tr><td>2,048</td><td>0.05</td><td>0.05</td><td>0.05</td><td class=mut>+0.0%</td><td class=mut>+0.0%</td></tr>
+<tr><td>4,096</td><td>0.10</td><td>0.09</td><td>0.10</td><td class=bad>-3.4%</td><td class=good>+3.4%</td></tr>
+<tr><td>8,192</td><td>0.19</td><td>0.19</td><td>0.20</td><td class=mut>+0.0%</td><td class=mut>+1.7%</td></tr>
+<tr><td>16,384</td><td>0.40</td><td>0.39</td><td>0.39</td><td class=mut>-2.5%</td><td class=bad>-3.3%</td></tr>
+<tr><td>32,768</td><td>0.78</td><td>0.78</td><td>0.77</td><td class=mut>-0.9%</td><td class=mut>-2.1%</td></tr>
+<tr><td>65,536</td><td>1.54</td><td>1.55</td><td>1.56</td><td class=mut>+1.1%</td><td class=mut>+1.3%</td></tr>
+<tr><td>131,072</td><td>3.08</td><td>3.11</td><td>3.04</td><td class=mut>+1.0%</td><td class=mut>-1.3%</td></tr>
+<tr><td>262,144</td><td>5.99</td><td>5.99</td><td>5.74</td><td class=mut>+0.1%</td><td class=bad>-4.1%</td></tr>
+<tr><td>524,288</td><td>9.88</td><td>9.92</td><td>9.76</td><td class=mut>+0.4%</td><td class=mut>-1.2%</td></tr>
+<tr><td>1,048,576</td><td>14.42</td><td>14.50</td><td>14.37</td><td class=mut>+0.6%</td><td class=mut>-0.3%</td></tr>
+<tr><td>2,097,152</td><td>25.26</td><td>25.28</td><td>24.86</td><td class=mut>+0.1%</td><td class=mut>-1.6%</td></tr>
+<tr><td>4,194,304</td><td>34.88</td><td>35.89</td><td>33.47</td><td class=mut>+2.9%</td><td class=bad>-4.0%</td></tr>
+<tr><td>8,388,608</td><td>43.02</td><td>43.18</td><td>43.64</td><td class=mut>+0.4%</td><td class=mut>+1.4%</td></tr>
+<tr><td>16,777,216</td><td>55.06</td><td>55.48</td><td>55.85</td><td class=mut>+0.8%</td><td class=mut>+1.4%</td></tr>
+<tr><td>33,554,432</td><td>57.56</td><td>56.95</td><td>57.58</td><td class=mut>-1.1%</td><td class=mut>+0.0%</td></tr>
+<tr><td>67,108,864</td><td>58.80</td><td>57.54</td><td>57.80</td><td class=mut>-2.1%</td><td class=mut>-1.7%</td></tr>
+<tr><td>134,217,728</td><td>59.79</td><td>59.21</td><td>59.48</td><td class=mut>-1.0%</td><td class=mut>-0.5%</td></tr>
+<tr><td>268,435,456</td><td>60.08</td><td>59.56</td><td>59.58</td><td class=mut>-0.9%</td><td class=mut>-0.8%</td></tr>
+<tr><td>536,870,912</td><td>60.35</td><td>60.06</td><td>59.95</td><td class=mut>-0.5%</td><td class=mut>-0.7%</td></tr>
+<tr><td>1,073,741,824</td><td>60.62</td><td>60.28</td><td>60.07</td><td class=mut>-0.6%</td><td class=mut>-0.9%</td></tr>
+<tr><td>2,147,483,648</td><td>60.64</td><td>60.37</td><td>60.06</td><td class=mut>-0.4%</td><td class=mut>-1.0%</td></tr>
+<tr><td>4,294,967,296</td><td>60.69</td><td>60.44</td><td>60.04</td><td class=mut>-0.4%</td><td class=mut>-1.1%</td></tr>
+<tr><td>8,589,934,592</td><td>60.74</td><td>60.48</td><td>60.04</td><td class=mut>-0.4%</td><td class=mut>-1.2%</td></tr>
+<tr><td>17,179,869,184</td><td>60.76</td><td>60.48</td><td>60.04</td><td class=mut>-0.5%</td><td class=mut>-1.2%</td></tr>
+</tbody></table>
+<h2>broadcast</h2>
+<p class=mut>Harness whole-sweep avg (GB/s, 3-run mean): B2 <b>125.00</b> · F <b>124.87</b> (<span class=mut>-0.1%</span>) · B1 <b>124.98</b> (<span class=mut>-0.0%</span>)</p>
+<table><thead><tr><th>size (B)</th><th>B2</th><th>F</th><th>B1</th><th>F vs B2</th><th>B1 vs B2</th></tr></thead><tbody>
+<tr><td>1,024</td><td>0.05</td><td>0.05</td><td>0.05</td><td class=mut>+0.0%</td><td class=mut>+0.0%</td></tr>
+<tr><td>2,048</td><td>0.14</td><td>0.13</td><td>0.14</td><td class=mut>-2.4%</td><td class=mut>+0.0%</td></tr>
+<tr><td>4,096</td><td>0.27</td><td>0.27</td><td>0.26</td><td class=mut>+1.3%</td><td class=mut>-1.2%</td></tr>
+<tr><td>8,192</td><td>0.50</td><td>0.49</td><td>0.49</td><td class=mut>-2.0%</td><td class=bad>-3.3%</td></tr>
+<tr><td>16,384</td><td>0.86</td><td>0.88</td><td>0.88</td><td class=mut>+1.9%</td><td class=mut>+1.9%</td></tr>
+<tr><td>32,768</td><td>1.32</td><td>1.32</td><td>1.30</td><td class=mut>-0.3%</td><td class=mut>-1.3%</td></tr>
+<tr><td>65,536</td><td>1.59</td><td>1.58</td><td>1.59</td><td class=mut>-0.8%</td><td class=mut>-0.4%</td></tr>
+<tr><td>131,072</td><td>2.22</td><td>2.23</td><td>2.22</td><td class=mut>+0.3%</td><td class=mut>+0.2%</td></tr>
+<tr><td>262,144</td><td>5.25</td><td>5.26</td><td>5.27</td><td class=mut>+0.2%</td><td class=mut>+0.3%</td></tr>
+<tr><td>524,288</td><td>10.26</td><td>10.25</td><td>10.24</td><td class=mut>-0.0%</td><td class=mut>-0.1%</td></tr>
+<tr><td>1,048,576</td><td>18.65</td><td>19.04</td><td>18.66</td><td class=mut>+2.1%</td><td class=mut>+0.1%</td></tr>
+<tr><td>2,097,152</td><td>29.69</td><td>29.79</td><td>29.72</td><td class=mut>+0.3%</td><td class=mut>+0.1%</td></tr>
+<tr><td>4,194,304</td><td>49.58</td><td>49.53</td><td>49.68</td><td class=mut>-0.1%</td><td class=mut>+0.2%</td></tr>
+<tr><td>8,388,608</td><td>82.08</td><td>81.76</td><td>81.74</td><td class=mut>-0.4%</td><td class=mut>-0.4%</td></tr>
+<tr><td>16,777,216</td><td>124.44</td><td>124.68</td><td>124.39</td><td class=mut>+0.2%</td><td class=mut>-0.0%</td></tr>
+<tr><td>33,554,432</td><td>170.29</td><td>169.77</td><td>170.28</td><td class=mut>-0.3%</td><td class=mut>-0.0%</td></tr>
+<tr><td>67,108,864</td><td>213.32</td><td>213.66</td><td>213.99</td><td class=mut>+0.2%</td><td class=mut>+0.3%</td></tr>
+<tr><td>134,217,728</td><td>244.76</td><td>245.41</td><td>245.37</td><td class=mut>+0.3%</td><td class=mut>+0.3%</td></tr>
+<tr><td>268,435,456</td><td>264.83</td><td>264.74</td><td>265.32</td><td class=mut>-0.0%</td><td class=mut>+0.2%</td></tr>
+<tr><td>536,870,912</td><td>276.73</td><td>276.54</td><td>276.38</td><td class=mut>-0.1%</td><td class=mut>-0.1%</td></tr>
+<tr><td>1,073,741,824</td><td>297.92</td><td>296.73</td><td>298.14</td><td class=mut>-0.4%</td><td class=mut>+0.1%</td></tr>
+<tr><td>2,147,483,648</td><td>303.33</td><td>302.39</td><td>303.03</td><td class=mut>-0.3%</td><td class=mut>-0.1%</td></tr>
+<tr><td>4,294,967,296</td><td>329.59</td><td>328.84</td><td>329.36</td><td class=mut>-0.2%</td><td class=mut>-0.1%</td></tr>
+<tr><td>8,589,934,592</td><td>344.19</td><td>343.51</td><td>343.94</td><td class=mut>-0.2%</td><td class=mut>-0.1%</td></tr>
+<tr><td>17,179,869,184</td><td>352.56</td><td>352.23</td><td>351.78</td><td class=mut>-0.1%</td><td class=mut>-0.2%</td></tr>
+</tbody></table>
+<h2>reduce_scatter</h2>
+<p class=mut>Harness whole-sweep avg (GB/s, 3-run mean): B2 <b>135.38</b> · F <b>134.21</b> (<span class=mut>-0.9%</span>) · B1 <b>135.00</b> (<span class=mut>-0.3%</span>)</p>
+<table><thead><tr><th>size (B)</th><th>B2</th><th>F</th><th>B1</th><th>F vs B2</th><th>B1 vs B2</th></tr></thead><tbody>
+<tr><td>1,024</td><td>0.02</td><td>0.02</td><td>0.02</td><td class=good>+16.7%</td><td class=mut>+0.0%</td></tr>
+<tr><td>2,048</td><td>0.05</td><td>0.05</td><td>0.05</td><td class=mut>+0.0%</td><td class=mut>+0.0%</td></tr>
+<tr><td>4,096</td><td>0.10</td><td>0.08</td><td>0.10</td><td class=bad>-16.7%</td><td class=mut>+0.0%</td></tr>
+<tr><td>8,192</td><td>0.20</td><td>0.20</td><td>0.20</td><td class=mut>+1.7%</td><td class=mut>+1.7%</td></tr>
+<tr><td>16,384</td><td>0.39</td><td>0.40</td><td>0.40</td><td class=mut>+0.8%</td><td class=mut>+0.8%</td></tr>
+<tr><td>32,768</td><td>0.76</td><td>0.76</td><td>0.76</td><td class=mut>-0.4%</td><td class=mut>+0.0%</td></tr>
+<tr><td>65,536</td><td>1.31</td><td>1.31</td><td>1.30</td><td class=mut>+0.0%</td><td class=mut>-1.0%</td></tr>
+<tr><td>131,072</td><td>2.56</td><td>2.53</td><td>2.55</td><td class=mut>-1.0%</td><td class=mut>-0.5%</td></tr>
+<tr><td>262,144</td><td>4.60</td><td>4.53</td><td>4.55</td><td class=mut>-1.5%</td><td class=mut>-1.2%</td></tr>
+<tr><td>524,288</td><td>8.42</td><td>8.51</td><td>8.44</td><td class=mut>+1.1%</td><td class=mut>+0.3%</td></tr>
+<tr><td>1,048,576</td><td>13.94</td><td>14.14</td><td>14.09</td><td class=mut>+1.4%</td><td class=mut>+1.1%</td></tr>
+<tr><td>2,097,152</td><td>15.65</td><td>15.66</td><td>15.75</td><td class=mut>+0.1%</td><td class=mut>+0.6%</td></tr>
+<tr><td>4,194,304</td><td>50.94</td><td>51.34</td><td>51.37</td><td class=mut>+0.8%</td><td class=mut>+0.8%</td></tr>
+<tr><td>8,388,608</td><td>95.47</td><td>95.43</td><td>95.11</td><td class=mut>-0.0%</td><td class=mut>-0.4%</td></tr>
+<tr><td>16,777,216</td><td>113.92</td><td>113.91</td><td>114.43</td><td class=mut>-0.0%</td><td class=mut>+0.4%</td></tr>
+<tr><td>33,554,432</td><td>206.39</td><td>189.23</td><td>206.14</td><td class=bad>-8.3%</td><td class=mut>-0.1%</td></tr>
+<tr><td>67,108,864</td><td>145.51</td><td>145.88</td><td>145.58</td><td class=mut>+0.3%</td><td class=mut>+0.0%</td></tr>
+<tr><td>134,217,728</td><td>255.47</td><td>256.66</td><td>256.68</td><td class=mut>+0.5%</td><td class=mut>+0.5%</td></tr>
+<tr><td>268,435,456</td><td>321.72</td><td>318.19</td><td>325.97</td><td class=mut>-1.1%</td><td class=mut>+1.3%</td></tr>
+<tr><td>536,870,912</td><td>344.25</td><td>342.43</td><td>343.66</td><td class=mut>-0.5%</td><td class=mut>-0.2%</td></tr>
+<tr><td>1,073,741,824</td><td>350.13</td><td>348.48</td><td>349.09</td><td class=mut>-0.5%</td><td class=mut>-0.3%</td></tr>
+<tr><td>2,147,483,648</td><td>352.29</td><td>351.75</td><td>352.02</td><td class=mut>-0.2%</td><td class=mut>-0.1%</td></tr>
+<tr><td>4,294,967,296</td><td>355.31</td><td>355.16</td><td>355.22</td><td class=mut>-0.0%</td><td class=mut>-0.0%</td></tr>
+<tr><td>8,589,934,592</td><td>356.77</td><td>357.73</td><td>357.32</td><td class=mut>+0.3%</td><td class=mut>+0.2%</td></tr>
+<tr><td>17,179,869,184</td><td>358.50</td><td>358.49</td><td>359.09</td><td class=mut>-0.0%</td><td class=mut>+0.2%</td></tr>
+</tbody></table>
+<h2>all_gather</h2>
+<p class=mut>Harness whole-sweep avg (GB/s, 3-run mean): B2 <b>137.76</b> · F <b>137.63</b> (<span class=mut>-0.1%</span>) · B1 <b>137.63</b> (<span class=mut>-0.1%</span>)</p>
+<table><thead><tr><th>size (B)</th><th>B2</th><th>F</th><th>B1</th><th>F vs B2</th><th>B1 vs B2</th></tr></thead><tbody>
+<tr><td>1,024</td><td>0.02</td><td>0.02</td><td>0.02</td><td class=mut>+0.0%</td><td class=mut>+0.0%</td></tr>
+<tr><td>2,048</td><td>0.05</td><td>0.05</td><td>0.04</td><td class=good>+7.1%</td><td class=bad>-14.3%</td></tr>
+<tr><td>4,096</td><td>0.10</td><td>0.10</td><td>0.10</td><td class=good>+3.4%</td><td class=good>+3.4%</td></tr>
+<tr><td>8,192</td><td>0.19</td><td>0.19</td><td>0.19</td><td class=mut>-1.7%</td><td class=mut>-1.7%</td></tr>
+<tr><td>16,384</td><td>0.40</td><td>0.39</td><td>0.40</td><td class=mut>-0.8%</td><td class=mut>+0.8%</td></tr>
+<tr><td>32,768</td><td>0.78</td><td>0.78</td><td>0.79</td><td class=mut>+0.0%</td><td class=mut>+0.9%</td></tr>
+<tr><td>65,536</td><td>1.58</td><td>1.57</td><td>1.60</td><td class=mut>-0.4%</td><td class=mut>+1.5%</td></tr>
+<tr><td>131,072</td><td>3.17</td><td>3.18</td><td>3.16</td><td class=mut>+0.3%</td><td class=mut>-0.5%</td></tr>
+<tr><td>262,144</td><td>6.34</td><td>6.19</td><td>6.44</td><td class=mut>-2.4%</td><td class=mut>+1.5%</td></tr>
+<tr><td>524,288</td><td>11.28</td><td>11.30</td><td>11.22</td><td class=mut>+0.2%</td><td class=mut>-0.5%</td></tr>
+<tr><td>1,048,576</td><td>18.29</td><td>18.29</td><td>18.11</td><td class=mut>+0.0%</td><td class=mut>-1.0%</td></tr>
+<tr><td>2,097,152</td><td>23.83</td><td>29.13</td><td>29.53</td><td class=good>+22.2%</td><td class=good>+23.9%</td></tr>
+<tr><td>4,194,304</td><td>42.31</td><td>42.46</td><td>36.46</td><td class=mut>+0.4%</td><td class=bad>-13.8%</td></tr>
+<tr><td>8,388,608</td><td>93.22</td><td>92.87</td><td>93.08</td><td class=mut>-0.4%</td><td class=mut>-0.2%</td></tr>
+<tr><td>16,777,216</td><td>114.24</td><td>113.38</td><td>114.52</td><td class=mut>-0.7%</td><td class=mut>+0.2%</td></tr>
+<tr><td>33,554,432</td><td>205.63</td><td>208.00</td><td>205.91</td><td class=mut>+1.2%</td><td class=mut>+0.1%</td></tr>
+<tr><td>67,108,864</td><td>214.93</td><td>215.21</td><td>214.88</td><td class=mut>+0.1%</td><td class=mut>-0.0%</td></tr>
+<tr><td>134,217,728</td><td>260.29</td><td>258.04</td><td>259.55</td><td class=mut>-0.9%</td><td class=mut>-0.3%</td></tr>
+<tr><td>268,435,456</td><td>323.98</td><td>320.58</td><td>319.28</td><td class=mut>-1.1%</td><td class=mut>-1.5%</td></tr>
+<tr><td>536,870,912</td><td>343.36</td><td>342.25</td><td>342.58</td><td class=mut>-0.3%</td><td class=mut>-0.2%</td></tr>
+<tr><td>1,073,741,824</td><td>347.95</td><td>347.67</td><td>347.56</td><td class=mut>-0.1%</td><td class=mut>-0.1%</td></tr>
+<tr><td>2,147,483,648</td><td>350.70</td><td>349.91</td><td>349.44</td><td class=mut>-0.2%</td><td class=mut>-0.4%</td></tr>
+<tr><td>4,294,967,296</td><td>354.98</td><td>354.09</td><td>353.69</td><td class=mut>-0.3%</td><td class=mut>-0.4%</td></tr>
+<tr><td>8,589,934,592</td><td>357.61</td><td>357.23</td><td>356.98</td><td class=mut>-0.1%</td><td class=mut>-0.2%</td></tr>
+<tr><td>17,179,869,184</td><td>359.82</td><td>359.53</td><td>359.19</td><td class=mut>-0.1%</td><td class=mut>-0.2%</td></tr>
+</tbody></table>
+<h2>Correctness</h2><ul>
+<li>All runs use <code>-c 1</code> (built-in validation) → every size/run reported <code>#wrong 0</code> and <code>Out of bounds values : 0 OK</code>.</li>
+<li>rdma anomalies clean + <code>packet-buffer drop = 0</code> per image (pre/post).</li>
+<li>F/B1 image identity confirmed by the 1-QP drain spurious-PHV self-check before each sweep.</li></ul>
+<div class=foot>SMC1 10.30.75.198 / SMC2 10.30.75.204 · raw: results_smc_rccl_{B2,F,B1}.tar.gz · IB microbench reports at ../ (SMC 400G) and ../kenya/ (800G)</div>
+</div></body></html>

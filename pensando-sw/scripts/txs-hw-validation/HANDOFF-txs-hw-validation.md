@@ -227,3 +227,39 @@ Same shape as SMC 400G (≈50% cut at low QP, tapering at high QP); AC-off penal
 800G. No regression: BW ~1517–1534 Gb/s bidir (800G line rate) across B1/B2/F all QP; latency ~4µs
 identical; zero packet drops; anomalies clean. Report: http://sw-dev2.pensando.io:8891/kenya/ .
 Raw archives: `results_kenya_{B1,B2,F}.tar.gz` (data/ or the report dir).
+
+---
+
+## Phase 4 — SMC 3-way RCCL collectives (2026-07-21)
+
+Closed the previously-blocked RCCL gap (the post-reboot MPI bootstrap issue is resolved — official
+`1.130.2-a-6` RCCL baseline collected same day). Ran a **3-way collective sweep on SMC1+SMC2, 2-node
+× 8 MI300X = 16 ranks**, meta-RoCE + ANP CTS-disable plugin, harness
+`/mnt/clusterfs/karthik/vulcano/hydra_rccl_scripts/run-rccl.sh <coll> 1K 16G 20 5 1`, launched from
+smc1 (root, `OMPI_ALLOW_RUN_AS_ROOT{,_CONFIRM}=1`). **Full 6 collectives × 3 runs** each.
+
+- **B2** = the currently-loaded official `1.130.2-a-6` (functionally AC-off shipping) — no reflash.
+- **F** and **B1** = fw-only reflash of the 1.130.2-a rebased txs-branch tars (`d7960d67471`) on **all
+  8 NICs both nodes** (`nicctl update firmware -i` + `reset card --all` + bringup; same 1×400 breakout →
+  **no host reboot**). Host RCCL stack unchanged, so any busBw delta is purely firmware.
+
+**Image identity** (all 3 share the SOC-OS build string; B1 additionally shows `-dirty` from the cos3
+json edit) was proven behaviorally by the 1-QP `ib_write_lat` drain self-check on benic1p1 before each
+sweep — spurious-PHV ladder **B1 ~75M < F ~113M < B2 ~223M** (matches the SMC 400G signature).
+
+**Result — no RCCL regression (harness whole-sweep avg, GB/s, 3-run mean):**
+| collective | B2 | F | B1 | F vs B2 | B1 vs B2 |
+|---|---|---|---|---|---|
+| all_reduce | 141.68 | 141.44 | 141.65 | −0.17% | −0.02% |
+| alltoall | 43.43 | 43.38 | 43.06 | −0.13% | −0.87% |
+| alltoallv | 31.79 | 31.68 | 31.58 | −0.33% | −0.67% |
+| broadcast | 125.00 | 124.87 | 124.98 | −0.10% | −0.01% |
+| reduce_scatter | 135.38 | 134.21 | 135.00 | −0.86% | −0.28% |
+| all_gather | 137.76 | 137.63 | 137.63 | −0.10% | −0.10% |
+
+all_reduce peak@16G 360.5/360.2/359.0 (B2/F/B1); largest peak deviation −1.5% (B1 alltoall). All within
+run-to-run noise, `#wrong 0` on every size/run, anomalies clean, packet-buffer drop=0. As expected —
+RCCL keeps the SQ backlogged so the txs fast-disable never fires; this is a pure **no-regression
+confirmation at the real collective level**. B2 matches the 2026-07-21 official baseline (all_reduce
+~141.8 avg / ~362 @16G). Report: http://sw-dev2.pensando.io:8891/smc-rccl/ . Raw archives:
+`results_smc_rccl_{B2,F,B1}.tar.gz`. Testbed restored to official `1.130.2-a-6` after the runs.
