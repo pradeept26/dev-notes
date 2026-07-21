@@ -200,3 +200,30 @@ sudo numactl --cpunodebind=netdev:benic1p1 $BIN -d roce_benic1p1 -x 2 --use_rocm
 - Latency-sweep HTML column labeled t_avg is actually t_typical (parser offset) — conclusion unaffected.
 - Report `http.server` is not reboot-persistent; SMC1 required a BMC/APC power-cycle recovery once
   (NIC FW-down + ionic crash) — see incident notes if it recurs.
+
+---
+
+## Phase 3 — kenya-perf-3/4 800G reproduction (2026-07-21)
+
+Reproduced the validation at **800G** (kenya-perf-3 10.30.52.66 / perf-4 10.30.52.75, single Vulcano
+each, 1×800G `default` profile). Images rebuilt off `origin/1.130.2-a` (matches kenya's FW line),
+branch rebased (`d7960d67471`). Full reflash per config (single NIC → no per-card trick); switching
+from the stale 4×200G breakout to 1×800G needed `nicctl update card profile --profile default --image
+<tar>` + **host reboot** (card reset alone is not enough for breakout change; a same-breakout firmware
+swap only needs card reset). dev `rocep195s0f3`, IPv4 19.0.0.2/.3 same /24, **GID idx 1**, 8 paths.
+Same one-pass suite (A–E × RCN off/on) + completeness gate; all 3 gated PASS.
+
+**Drain spurious PHVs (ib_write_bw -t1, 512B, RCN off) — feature reproduces at 800G:**
+| QP | B1 (AC-on) | B2 (AC-off) | F (txs) | F vs B2 |
+|----|-----------|-------------|---------|---------|
+| 2  | 85M  | 367M  | 175M  | −52% |
+| 4  | 157M | 732M  | 350M  | −52% |
+| 8  | 277M | 1169M | 662M  | −43% |
+| 16 | 505M | 1290M | 960M  | −26% |
+| 32 | 659M | 1712M | 1303M | −24% |
+| 64 | 748M | 1215M | 1093M | −10% |
+
+Same shape as SMC 400G (≈50% cut at low QP, tapering at high QP); AC-off penalty is even larger at
+800G. No regression: BW ~1517–1534 Gb/s bidir (800G line rate) across B1/B2/F all QP; latency ~4µs
+identical; zero packet drops; anomalies clean. Report: http://sw-dev2.pensando.io:8891/kenya/ .
+Raw archives: `results_kenya_{B1,B2,F}.tar.gz` (data/ or the report dir).
