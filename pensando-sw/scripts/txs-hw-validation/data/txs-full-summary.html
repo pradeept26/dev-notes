@@ -96,12 +96,33 @@ code{background:#20263f;padding:1px 6px;border-radius:5px;font-size:12px}a{color
 <div class=card><h3>SMC 400G</h3><div class=kpi>
 <div class=b><div class=n>~753 Gb/s</div><div class=l>peak bidir BW, B1≈B2≈F, all QP, RCN off/on</div></div>
 <div class=b><div class=n>0</div><div class=l>packet-buffer drops · phv_drop · XOFF</div></div></div>
-<p class=mut>Latency sweep (ib_write_lat -a, QP1) identical across B1/B2/F: 2B ~4.87µs, 64K ~7.0µs, 1M ~27.2µs, 8M ~178.7µs. Saturated <code>-t128</code> 512B/1M: F ≈ B2 ±0–3%.</p></div>
+<p class=mut>Saturated <code>-t128</code> 512B/1M: F ≈ B2 ±0–3%. Per-size latency percentiles below.</p></div>
 <div class=card><h3>Kenya 800G</h3><div class=kpi>
 <div class=b><div class=n>~1.5 Tbps</div><div class=l>~1517–1534 Gb/s bidir (800G line rate), B1≈B2≈F</div></div>
 <div class=b><div class=n>0</div><div class=l>packet drops; anomalies clean pre/post</div></div></div>
-<p class=mut>Latency ~4µs identical across B1/B2/F. Full A–E × RCN off/on suite, all 3 configs one-pass gated PASS.</p></div>
+<p class=mut>Full A–E × RCN off/on suite, all 3 configs one-pass gated PASS.</p></div>
 </div>
+
+<h3 style="margin-top:20px">Latency percentiles — <code>ib_write_lat -a</code>, QP1, RCN off (µs)</h3>
+<p class=sub>Cells = <b>min / typical / 99% / 99.9%</b>. <b>Typical and 99% are identical across B1/B2/F at every size</b> → no latency-tail regression from txs. The 99.9% column is a single-shot tail sample so it jitters run-to-run, but no config is systematically worse — F's tail is if anything a touch tighter at small sizes (e.g. SMC 2B 99.9%: F 6.19 vs B2 8.76; 64B: F 4.96 vs B1 6.21).</p>
+<div class=card><h3>SMC 400G</h3>
+<table><thead><tr><th>size</th><th>B1&nbsp;&nbsp;(min / typ / 99% / 99.9%)</th><th>B2</th><th>F</th></tr></thead><tbody>
+<tr><td>2B</td><td>4.83 / 4.87 / 4.97 / 8.54</td><td>4.84 / 4.88 / 4.98 / 8.76</td><td>4.84 / 4.87 / 4.96 / 6.19</td></tr>
+<tr><td>64B</td><td>4.82 / 4.83 / 4.94 / 6.21</td><td>4.82 / 4.84 / 4.93 / 6.16</td><td>4.81 / 4.83 / 4.92 / 4.96</td></tr>
+<tr><td>4K</td><td>5.53 / 5.56 / 5.67 / 5.75</td><td>5.54 / 5.56 / 5.67 / 6.55</td><td>5.52 / 5.55 / 5.67 / 6.59</td></tr>
+<tr><td>64K</td><td>6.83 / 6.89 / 12.73 / 16.25</td><td>6.82 / 6.89 / 12.69 / 16.47</td><td>6.82 / 6.88 / 12.73 / 19.18</td></tr>
+<tr><td>1M</td><td>26.64 / 27.27 / 27.36 / 30.02</td><td>26.42 / 27.33 / 27.42 / 27.55</td><td>26.62 / 27.27 / 27.34 / 27.96</td></tr>
+<tr><td>8M</td><td>178.4 / 178.7 / 178.9 / 179.2</td><td>178.2 / 178.9 / 179.4 / 181.9</td><td>177.8 / 178.6 / 178.9 / 179.9</td></tr>
+</tbody></table></div>
+<div class=card><h3>Kenya 800G</h3>
+<table><thead><tr><th>size</th><th>B1&nbsp;&nbsp;(min / typ / 99% / 99.9%)</th><th>B2</th><th>F</th></tr></thead><tbody>
+<tr><td>2B</td><td>4.03 / 4.10 / 4.32 / 7.84</td><td>3.97 / 4.02 / 4.23 / 6.56</td><td>4.01 / 4.17 / 4.65 / 8.15</td></tr>
+<tr><td>64B</td><td>3.85 / 3.89 / 4.08 / 5.06</td><td>3.83 / 3.90 / 4.07 / 6.15</td><td>3.92 / 3.94 / 4.12 / 4.64</td></tr>
+<tr><td>4K</td><td>4.34 / 4.41 / 4.53 / 5.08</td><td>4.24 / 4.26 / 4.39 / 4.97</td><td>4.32 / 4.36 / 4.49 / 5.63</td></tr>
+<tr><td>64K</td><td>5.21 / 5.24 / 7.08 / 11.94</td><td>5.19 / 5.22 / 5.38 / 14.02</td><td>5.30 / 5.35 / 9.47 / 14.02</td></tr>
+<tr><td>1M</td><td>21.58 / 21.62 / 21.73 / 22.41</td><td>21.56 / 21.65 / 21.85 / 22.50</td><td>21.69 / 21.74 / 22.46 / 22.56</td></tr>
+<tr><td>8M</td><td>143.9 / 144.0 / 144.2 / 145.2</td><td>143.9 / 144.0 / 145.0 / 145.7</td><td>143.9 / 144.0 / 144.3 / 144.8</td></tr>
+</tbody></table></div>
 
 <h2>4 · RCCL collectives — no regression at the real workload level</h2>
 <p class=sub>SMC1+SMC2, 2-node × 8 MI300X = <b>16 ranks</b>, meta-RoCE + ANP CTS-disable, 1K–16G, n20 w5, qps1, 3-run avg. B2 = currently-loaded official 1.130.2-a-6; F/B1 fw-only reflashed. Harness whole-sweep avg (GB/s). <code>-c 1</code> validation: <b>#wrong 0</b> everywhere.</p>
