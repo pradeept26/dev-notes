@@ -14,7 +14,7 @@ th:first-child,td:first-child{text-align:left}thead th{background:#20263f}tbody 
 code{background:#20263f;padding:1px 6px;border-radius:5px;font-size:12px}a{color:var(--accent)}
 .pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:12px;font-weight:600;background:rgba(46,204,113,.15);color:var(--good);border:1px solid rgba(46,204,113,.4)}
 .kpi{display:flex;gap:12px;flex-wrap:wrap;margin:8px 0}.kpi .b{flex:1;min-width:150px;background:#20263f;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
-.kpi .n{font-size:20px;font-weight:700}.kpi .l{color:var(--mut);font-size:12px}
+.kpi .n{font-size:18px;font-weight:700}.kpi .l{color:var(--mut);font-size:12px}
 .links a{display:inline-block;margin:4px 10px 4px 0;padding:6px 12px;background:#20263f;border:1px solid var(--line);border-radius:8px}
 .foot{color:var(--mut);font-size:12px;margin-top:30px;border-top:1px solid var(--line);padding-top:12px}
 </style></head><body><div class=wrap>
@@ -25,30 +25,30 @@ code{background:#20263f;padding:1px 6px;border-radius:5px;font-size:12px}a{color
 <div class=card>
 <h3>What the feature is</h3>
 <p><code>txs_cmd</code> is a Vulcano-only SPR fast-path (<code>__mtspr(__SPRID_TXS_CMD,…)</code>) that <b>stops the data SQ TX scheduler in one instruction when the SQ drains</b>, so it stops emitting spurious "end-of-SQ" PHVs; a race-free <code>sched_eval</code> in S2 restarts it when new work arrives. It lets the SQ run <b>auto-clear OFF</b> (wanted for fairness at scale) <i>without</i> the spurious-PHV churn that auto-clear-off otherwise creates on drain.</p>
-<h3>The three images (2 knobs, same tree)</h3>
+<h3>The three configs (2 knobs, same tree)</h3>
 <div class=kpi>
-<div class=b><div class=n>B1</div><div class=l>AC-on, no-txs — auto-clear ON</div></div>
-<div class=b><div class=n>B2</div><div class=l>AC-off, no-txs — <b>current shipping</b></div></div>
-<div class=b><div class=n>F</div><div class=l>AC-off + txs — the feature</div></div>
+<div class=b><div class=n>AC-on</div><div class=l>auto-clear ON, no txs</div></div>
+<div class=b><div class=n>AC-off</div><div class=l>auto-clear OFF, no txs — <b>current shipping</b></div></div>
+<div class=b><div class=n>TXS</div><div class=l>auto-clear OFF + txs SQ fast-disable — <b>the feature</b></div></div>
 </div>
-<p class=mut>Knobs: <code>RDMA_USE_TXS_CMD</code> (rdma.h) and cos3 <code>tx_scheduler3.auto_clear</code> (device-pf2 json). Primary metric <code>phb_drops</code> = spurious PHVs (== NPV−PSP). Image identity proven per-run by the 1-QP drain self-check ladder <b>B1 ≈75M &lt; F ≈113M &lt; B2 ≈223M</b>.</p>
+<p class=mut>Knobs: <code>RDMA_USE_TXS_CMD</code> (rdma.h) and cos3 <code>tx_scheduler3.auto_clear</code> (device-pf2 json). Primary metric <code>phb_drops</code> = spurious PHVs (== NPV−PSP). Image identity proven per-run by the 1-QP drain self-check ladder <b>AC-on ≈75M &lt; TXS ≈113M &lt; AC-off ≈223M</b>. <i>Naming: these map to <code>B1/B2/F</code> in the detailed reports &amp; raw archives — <b>AC-on = B1, AC-off = B2, TXS = F</b>.</i></p>
 </div>
 
 <div class=card style="border-color:rgba(46,204,113,.5)">
 <h3>Bottom line</h3>
 <p><span class=pill>PASS</span> <b>The feature works and carries no regression, at 400G and 800G, on IB microbenchmarks and on real RCCL collectives.</b></p>
 <ul>
-<li><b>Benefit (drain):</b> under a draining SQ, txs (F) cuts the shipping AC-off (B2) spurious end-of-SQ PHVs <b class=good>~50% at low QP</b> (tapering at high QP), at 400G <i>and</i> 800G.</li>
+<li><b>Benefit (drain):</b> under a draining SQ, TXS cuts the shipping AC-off spurious end-of-SQ PHVs <b class=good>~50% at low QP</b> (tapering at high QP), at 400G <i>and</i> 800G.</li>
 <li><b>No regression (saturated):</b> zero BW / latency / packet-drop cost — SMC ~753 Gb/s, Kenya ~1.5 Tbps (800G line rate); RCCL busBw within &lt;1% of shipping across all 6 collectives.</li>
-<li><b>Nuance (RCCL A-B-C-A):</b> a genuine but tiny throughput ordering <b>AC-off (B2) ≥ txs (F) ≥ AC-on (B1)</b> — AC-on is the <i>slowest</i> (up to ~1.2% on alltoall); F within ≤0.4% of B2.</li>
+<li><b>Nuance (RCCL A-B-C-A):</b> a genuine but tiny throughput ordering <b>AC-off ≥ TXS ≥ AC-on</b> — AC-on is the <i>slowest</i> (up to ~1.2% on alltoall); TXS within ≤0.4% of AC-off.</li>
 </ul>
 </div>
 
 <h2>1 · Benefit — drain spurious PHVs cut ~50% (headline)</h2>
-<p class=sub><code>ib_write_bw -t1</code> (1 outstanding/QP → SQ drains), 512B, bidir, RCN off. Metric = spurious PHVs (max PRD engine). Lower is better; <b>F vs B2</b> = the feature's reduction.</p>
+<p class=sub><code>ib_write_bw -t1</code> (1 outstanding/QP → SQ drains), 512B, bidir, RCN off. Metric = spurious PHVs (max PRD engine). Lower is better; <b>TXS vs AC-off</b> = the feature's reduction.</p>
 <div class=grid>
 <div class=card><h3>SMC — 400G (8-NIC, per-card images)</h3>
-<table><thead><tr><th>QP</th><th>B1</th><th>B2</th><th>F</th><th>F vs B2</th></tr></thead><tbody>
+<table><thead><tr><th>QP</th><th>AC-on</th><th>AC-off</th><th>TXS</th><th>TXS vs AC-off</th></tr></thead><tbody>
 <tr><td>2</td><td>85M</td><td>285M</td><td>143M</td><td class=good>−50%</td></tr>
 <tr><td>4</td><td>139M</td><td>565M</td><td>285M</td><td class=good>−50%</td></tr>
 <tr><td>8</td><td>280M</td><td>1121M</td><td>558M</td><td class=good>−50%</td></tr>
@@ -57,7 +57,7 @@ code{background:#20263f;padding:1px 6px;border-radius:5px;font-size:12px}a{color
 <tr><td>64</td><td>833M</td><td>1305M</td><td>1102M</td><td class=mut>−16%</td></tr>
 </tbody></table></div>
 <div class=card><h3>Kenya — 800G (single-Vulcano back-to-back)</h3>
-<table><thead><tr><th>QP</th><th>B1</th><th>B2</th><th>F</th><th>F vs B2</th></tr></thead><tbody>
+<table><thead><tr><th>QP</th><th>AC-on</th><th>AC-off</th><th>TXS</th><th>TXS vs AC-off</th></tr></thead><tbody>
 <tr><td>2</td><td>85M</td><td>367M</td><td>175M</td><td class=good>−52%</td></tr>
 <tr><td>4</td><td>157M</td><td>732M</td><td>350M</td><td class=good>−52%</td></tr>
 <tr><td>8</td><td>277M</td><td>1169M</td><td>662M</td><td class=good>−43%</td></tr>
@@ -66,13 +66,13 @@ code{background:#20263f;padding:1px 6px;border-radius:5px;font-size:12px}a{color
 <tr><td>64</td><td>748M</td><td>1215M</td><td>1093M</td><td class=mut>−10%</td></tr>
 </tbody></table></div>
 </div>
-<p class=mut>Same shape at both speeds: ~50% cut at low QP, tapering at high QP (SQ stays busier → drains less). AC-off (B2) itself ~triples–quadruples spurious PHVs vs AC-on (B1); txs recovers ~half of that. 1-QP <code>ib_write_lat</code> anchor: B2 223M → F ~112M (−51%).</p>
+<p class=mut>Same shape at both speeds: ~50% cut at low QP, tapering at high QP (SQ stays busier → drains less). AC-off itself ~triples–quadruples spurious PHVs vs AC-on; TXS recovers ~half of that. 1-QP <code>ib_write_lat</code> anchor: AC-off 223M → TXS ~112M (−51%).</p>
 
 <h2>2 · Mechanism &amp; cost — asicmon scheduler events <span class=pill>drain, RCN off</span></h2>
-<p class=sub>How each config trades scheduler activity for spurious PHVs. <b>Doorbell Sched0</b> = SQ scheduler wake-ups; <b>TXs0 Clear</b> = scheduler-stop events. B2 (AC-off) runs the scheduler lean but leaks spurious PHVs; B1 (AC-on) suppresses them via constant scheduler churn; <b>F (txs) removes ~half the spurious PHVs with a small, targeted amount of extra scheduler work.</b> Values in millions (M); pair with the spurious-PHV counts in §1.</p>
+<p class=sub>How each config trades scheduler activity for spurious PHVs. <b>Doorbell Sched0</b> = SQ scheduler wake-ups; <b>TXs0 Clear</b> = scheduler-stop events. AC-off runs the scheduler lean but leaks spurious PHVs; AC-on suppresses them via constant scheduler churn; <b>TXS removes ~half the spurious PHVs with a small, targeted amount of extra scheduler work.</b> Values in millions (M); pair with the spurious-PHV counts in §1.</p>
 <div class=grid>
 <div class=card><h3>SMC 400G — drain, 512B</h3>
-<table><thead><tr><th>QP</th><th>Sched0 (B1/B2/F)</th><th>TXs0 Clear (B1/B2/F)</th></tr></thead><tbody>
+<table><thead><tr><th>QP</th><th>Sched0 (AC-on/AC-off/TXS)</th><th>TXs0 Clear (AC-on/AC-off/TXS)</th></tr></thead><tbody>
 <tr><td>2</td><td>108 / 15.5 / 23.2</td><td>428 / 39.7 / 76.1</td></tr>
 <tr><td>4</td><td>183 / 31.0 / 46.4</td><td>519 / 55.1 / 107.0</td></tr>
 <tr><td>8</td><td>376 / 61.9 / 92.8</td><td>707 / 85.9 / 168.6</td></tr>
@@ -81,7 +81,7 @@ code{background:#20263f;padding:1px 6px;border-radius:5px;font-size:12px}a{color
 <tr><td>64</td><td>1120 / 263.0 / 378.1</td><td>1985 / 380.2 / 749.2</td></tr>
 </tbody></table></div>
 <div class=card><h3>Kenya 800G — drain, 512B</h3>
-<table><thead><tr><th>QP</th><th>Sched0 (B1/B2/F)</th><th>TXs0 Clear (B1/B2/F)</th></tr></thead><tbody>
+<table><thead><tr><th>QP</th><th>Sched0 (AC-on/AC-off/TXS)</th><th>TXs0 Clear (AC-on/AC-off/TXS)</th></tr></thead><tbody>
 <tr><td>2</td><td>115 / 20.8 / 30.5</td><td>56.2 / 10.4 / 20.4</td></tr>
 <tr><td>4</td><td>230 / 41.5 / 60.9</td><td>170 / 31.0 / 60.8</td></tr>
 <tr><td>8</td><td>404 / 78.0 / 119.6</td><td>369 / 69.7 / 140.3</td></tr>
@@ -90,25 +90,25 @@ code{background:#20263f;padding:1px 6px;border-radius:5px;font-size:12px}a{color
 <tr><td>64</td><td>1007 / 253.9 / 380.5</td><td>1611 / 377.7 / 755.4</td></tr>
 </tbody></table></div>
 </div>
-<p class=mut><b>Efficiency (SMC QP8):</b> F pays <b>+31M</b> Sched0 and <b>+83M</b> Clear over B2 to remove <b>~563M</b> spurious PHVs (1121M → 558M) — ~<b>18:1</b> spurious removed per extra SQ wake-up. B1 (AC-on) also suppresses spurious PHVs but at far higher cost (376M Sched0 / 707M Clear at QP8 — ~4–6× B2's doorbells under drain, ~230× under saturation); that churn is exactly what surfaces as the small ~1.2% RCCL alltoall penalty (§4). <code>hcache</code> rd-hit 99.8–99.9% and <code>XOFF% / phv_drop / real drops = 0</code> across B1/B2/F.</p>
+<p class=mut><b>Efficiency (SMC QP8):</b> TXS pays <b>+31M</b> Sched0 and <b>+83M</b> Clear over AC-off to remove <b>~563M</b> spurious PHVs (1121M → 558M) — ~<b>18:1</b> spurious removed per extra SQ wake-up. AC-on also suppresses spurious PHVs but at far higher cost (376M Sched0 / 707M Clear at QP8 — ~4–6× AC-off's doorbells under drain, ~230× under saturation); that churn is exactly what surfaces as the small ~1.2% RCCL alltoall penalty (§4). <code>hcache</code> rd-hit 99.8–99.9% and <code>XOFF% / phv_drop / real drops = 0</code> across all three.</p>
 
 <h2>3 · No regression — bandwidth &amp; latency <span class=pill>saturated</span></h2>
 <div class=grid>
 <div class=card><h3>SMC 400G</h3><div class=kpi>
-<div class=b><div class=n>~753 Gb/s</div><div class=l>peak bidir BW, B1≈B2≈F, all QP, RCN off/on</div></div>
+<div class=b><div class=n>~753 Gb/s</div><div class=l>peak bidir BW, AC-on≈AC-off≈TXS, all QP, RCN off/on</div></div>
 <div class=b><div class=n>0</div><div class=l>packet-buffer drops · phv_drop · XOFF</div></div></div>
-<p class=mut>Saturated <code>-t128</code> 512B/1M: F ≈ B2 ±0–3%. Per-size latency percentiles below.</p></div>
+<p class=mut>Saturated <code>-t128</code> 512B/1M: TXS ≈ AC-off ±0–3%. Per-size latency percentiles below.</p></div>
 <div class=card><h3>Kenya 800G</h3><div class=kpi>
-<div class=b><div class=n>~1.5 Tbps</div><div class=l>~1517–1534 Gb/s bidir (800G line rate), B1≈B2≈F</div></div>
+<div class=b><div class=n>~1.5 Tbps</div><div class=l>~1517–1534 Gb/s bidir (800G line rate), AC-on≈AC-off≈TXS</div></div>
 <div class=b><div class=n>0</div><div class=l>packet drops; anomalies clean pre/post</div></div></div>
 <p class=mut>Full A–E × RCN off/on suite, all 3 configs one-pass gated PASS.</p></div>
 </div>
 
 <h3 style="margin-top:20px">Latency percentiles — <code>ib_write_lat -a</code>, QP1, RCN off (µs)</h3>
-<p class=sub>One table per statistic (B1/B2/F, both platforms). <b>Min, typical and 99% are effectively identical across B1/B2/F at every size</b> → no latency or tail regression from txs. The 99.9% column is a single-shot tail sample so it jitters run-to-run, with no config systematically worse (F's small-size tail is if anything a touch tighter — e.g. SMC 2B: F 6.19 vs B2 8.76µs; 64B: F 4.96 vs B1 6.21µs).</p>
+<p class=sub>One table per statistic (AC-on / AC-off / TXS, both platforms). <b>Min, typical and 99% are effectively identical across all three at every size</b> → no latency or tail regression from TXS. The 99.9% column is a single-shot tail sample so it jitters run-to-run, with no config systematically worse (TXS's small-size tail is if anything a touch tighter — e.g. SMC 2B: TXS 6.19 vs AC-off 8.76µs; 64B: TXS 4.96 vs AC-on 6.21µs).</p>
 <div class=card lt><h3>Min (µs)</h3>
 <table><thead><tr><th rowspan=2>size</th><th colspan=3>SMC 400G</th><th colspan=3 class=g>Kenya 800G</th></tr>
-<tr><th>B1</th><th>B2</th><th>F</th><th class=g>B1</th><th>B2</th><th>F</th></tr></thead><tbody>
+<tr><th>AC-on</th><th>AC-off</th><th>TXS</th><th class=g>AC-on</th><th>AC-off</th><th>TXS</th></tr></thead><tbody>
 <tr><td>2B</td><td>4.83</td><td>4.84</td><td>4.84</td><td class=g>4.03</td><td>3.97</td><td>4.01</td></tr>
 <tr><td>64B</td><td>4.82</td><td>4.82</td><td>4.81</td><td class=g>3.85</td><td>3.83</td><td>3.92</td></tr>
 <tr><td>4K</td><td>5.53</td><td>5.54</td><td>5.52</td><td class=g>4.34</td><td>4.24</td><td>4.32</td></tr>
@@ -118,7 +118,7 @@ code{background:#20263f;padding:1px 6px;border-radius:5px;font-size:12px}a{color
 </tbody></table></div>
 <div class=card lt><h3>Typical (µs)</h3>
 <table><thead><tr><th rowspan=2>size</th><th colspan=3>SMC 400G</th><th colspan=3 class=g>Kenya 800G</th></tr>
-<tr><th>B1</th><th>B2</th><th>F</th><th class=g>B1</th><th>B2</th><th>F</th></tr></thead><tbody>
+<tr><th>AC-on</th><th>AC-off</th><th>TXS</th><th class=g>AC-on</th><th>AC-off</th><th>TXS</th></tr></thead><tbody>
 <tr><td>2B</td><td>4.87</td><td>4.88</td><td>4.87</td><td class=g>4.10</td><td>4.02</td><td>4.17</td></tr>
 <tr><td>64B</td><td>4.83</td><td>4.84</td><td>4.83</td><td class=g>3.89</td><td>3.90</td><td>3.94</td></tr>
 <tr><td>4K</td><td>5.56</td><td>5.56</td><td>5.55</td><td class=g>4.41</td><td>4.26</td><td>4.36</td></tr>
@@ -128,7 +128,7 @@ code{background:#20263f;padding:1px 6px;border-radius:5px;font-size:12px}a{color
 </tbody></table></div>
 <div class=card lt><h3>99% percentile (µs)</h3>
 <table><thead><tr><th rowspan=2>size</th><th colspan=3>SMC 400G</th><th colspan=3 class=g>Kenya 800G</th></tr>
-<tr><th>B1</th><th>B2</th><th>F</th><th class=g>B1</th><th>B2</th><th>F</th></tr></thead><tbody>
+<tr><th>AC-on</th><th>AC-off</th><th>TXS</th><th class=g>AC-on</th><th>AC-off</th><th>TXS</th></tr></thead><tbody>
 <tr><td>2B</td><td>4.97</td><td>4.98</td><td>4.96</td><td class=g>4.32</td><td>4.23</td><td>4.65</td></tr>
 <tr><td>64B</td><td>4.94</td><td>4.93</td><td>4.92</td><td class=g>4.08</td><td>4.07</td><td>4.12</td></tr>
 <tr><td>4K</td><td>5.67</td><td>5.67</td><td>5.67</td><td class=g>4.53</td><td>4.39</td><td>4.49</td></tr>
@@ -138,7 +138,7 @@ code{background:#20263f;padding:1px 6px;border-radius:5px;font-size:12px}a{color
 </tbody></table></div>
 <div class=card lt><h3>99.9% percentile (µs)</h3>
 <table><thead><tr><th rowspan=2>size</th><th colspan=3>SMC 400G</th><th colspan=3 class=g>Kenya 800G</th></tr>
-<tr><th>B1</th><th>B2</th><th>F</th><th class=g>B1</th><th>B2</th><th>F</th></tr></thead><tbody>
+<tr><th>AC-on</th><th>AC-off</th><th>TXS</th><th class=g>AC-on</th><th>AC-off</th><th>TXS</th></tr></thead><tbody>
 <tr><td>2B</td><td>8.54</td><td>8.76</td><td>6.19</td><td class=g>7.84</td><td>6.56</td><td>8.15</td></tr>
 <tr><td>64B</td><td>6.21</td><td>6.16</td><td>4.96</td><td class=g>5.06</td><td>6.15</td><td>4.64</td></tr>
 <tr><td>4K</td><td>5.75</td><td>6.55</td><td>6.59</td><td class=g>5.08</td><td>4.97</td><td>5.63</td></tr>
@@ -148,9 +148,9 @@ code{background:#20263f;padding:1px 6px;border-radius:5px;font-size:12px}a{color
 </tbody></table></div>
 
 <h2>4 · RCCL collectives — no regression at the real workload level</h2>
-<p class=sub>SMC1+SMC2, 2-node × 8 MI300X = <b>16 ranks</b>, meta-RoCE + ANP CTS-disable, 1K–16G, n20 w5, qps1, 3-run avg. B2 = currently-loaded official 1.130.2-a-6; F/B1 fw-only reflashed. Harness whole-sweep avg (GB/s). <code>-c 1</code> validation: <b>#wrong 0</b> everywhere.</p>
+<p class=sub>SMC1+SMC2, 2-node × 8 MI300X = <b>16 ranks</b>, meta-RoCE + ANP CTS-disable, 1K–16G, n20 w5, qps1, 3-run avg. AC-off = currently-loaded official 1.130.2-a-6; TXS/AC-on fw-only reflashed. Harness whole-sweep avg (GB/s). <code>-c 1</code> validation: <b>#wrong 0</b> everywhere.</p>
 <div class=card>
-<table><thead><tr><th>collective</th><th>B2 (ship)</th><th>F (txs)</th><th>B1 (AC-on)</th><th>F vs B2</th><th>B1 vs B2</th></tr></thead><tbody>
+<table><thead><tr><th>collective</th><th>AC-off (ship)</th><th>TXS</th><th>AC-on</th><th>TXS vs AC-off</th><th>AC-on vs AC-off</th></tr></thead><tbody>
 <tr><td>all_reduce</td><td>141.68</td><td>141.44</td><td>141.65</td><td class=mut>−0.17%</td><td class=mut>−0.02%</td></tr>
 <tr><td>alltoall</td><td>43.43</td><td>43.38</td><td>43.06</td><td class=mut>−0.13%</td><td class=mut>−0.87%</td></tr>
 <tr><td>alltoallv</td><td>31.79</td><td>31.68</td><td>31.58</td><td class=mut>−0.33%</td><td class=mut>−0.67%</td></tr>
@@ -158,16 +158,16 @@ code{background:#20263f;padding:1px 6px;border-radius:5px;font-size:12px}a{color
 <tr><td>reduce_scatter</td><td>135.38</td><td>134.21</td><td>135.00</td><td class=mut>−0.86%</td><td class=mut>−0.28%</td></tr>
 <tr><td>all_gather</td><td>137.76</td><td>137.63</td><td>137.63</td><td class=mut>−0.10%</td><td class=mut>−0.10%</td></tr>
 </tbody></table>
-<p class=mut>all_reduce peak@16G: 360.5 / 360.2 / 359.0 (B2/F/B1). Largest peak deviation −1.5% (B1 alltoall). RCCL keeps the SQ backlogged → txs dormant → no-regression confirmation.</p>
+<p class=mut>all_reduce peak@16G: 360.5 / 360.2 / 359.0 (AC-off/TXS/AC-on). Largest peak deviation −1.5% (AC-on alltoall). RCCL keeps the SQ backlogged → TXS dormant → no-regression confirmation.</p>
 </div>
 
 <div class=card>
-<h3>A-B-C-A confound test (all_reduce + alltoall, 5 runs; B2 bracketed)</h3>
-<table><thead><tr><th>coll</th><th>B2 (a)</th><th>F</th><th>B1</th><th>B2 (c)</th><th>F vs B2</th><th>B1 vs B2</th><th>B2 drift</th></tr></thead><tbody>
+<h3>A-B-C-A confound test (all_reduce + alltoall, 5 runs; AC-off bracketed)</h3>
+<table><thead><tr><th>coll</th><th>AC-off (a)</th><th>TXS</th><th>AC-on</th><th>AC-off (c)</th><th>TXS vs AC-off</th><th>AC-on vs AC-off</th><th>AC-off drift</th></tr></thead><tbody>
 <tr><td>all_reduce</td><td>141.74</td><td>141.44</td><td>141.58</td><td>141.64</td><td class=mut>−0.17%</td><td class=mut>−0.07%</td><td class=mut>−0.07%</td></tr>
 <tr><td>alltoall</td><td>43.41</td><td>43.25</td><td>42.88</td><td>43.41</td><td class=mut>−0.38%</td><td class=bad>−1.22%</td><td class=mut>−0.01%</td></tr>
 </tbody></table>
-<p>B2 stable across both brackets (drift ≤0.07%) → order/reflash confound ruled out; the gaps are <b>real but tiny</b>. On <code>alltoall</code> the bands cleanly separate: <b>AC-off (B2) &gt; txs (F) &gt; AC-on (B1)</b>. AC-on is the slowest (auto-clear's ~230× higher SQ doorbell churn under saturation); txs adds only a sliver of S2 re-eval cost. Still comfortably no regression for the feature (F ≤0.4% under shipping B2).</p>
+<p>AC-off stable across both brackets (drift ≤0.07%) → order/reflash confound ruled out; the gaps are <b>real but tiny</b>. On <code>alltoall</code> the bands cleanly separate: <b>AC-off &gt; TXS &gt; AC-on</b>. AC-on is the slowest (auto-clear's ~230× higher SQ doorbell churn under saturation); TXS adds only a sliver of S2 re-eval cost. Still comfortably no regression for the feature (TXS ≤0.4% under shipping AC-off).</p>
 </div>
 
 <h2>5 · Correctness (all campaigns)</h2>
@@ -184,7 +184,7 @@ code{background:#20263f;padding:1px 6px;border-radius:5px;font-size:12px}a{color
 <a href="../kenya/">Kenya 800G IB (detailed)</a>
 <a href="../smc-rccl/">SMC RCCL (detailed + A-B-C-A)</a>
 </div>
-<p class=mut>Raw archives: <code>results2-full.tar.gz</code> (SMC IB), <code>results_kenya_{B1,B2,F}.tar.gz</code> (Kenya IB), <code>results_smc_rccl_{B2,F,B1}.tar.gz</code> + <code>results_smc_rccl_aba/</code> (RCCL). Handoff: <code>dev-notes/pensando-sw/scripts/txs-hw-validation/HANDOFF-txs-hw-validation.md</code> (Phases 1–4b).</p>
+<p class=mut>Detailed reports &amp; raw archive filenames use the original codes <b>AC-on = B1, AC-off = B2, TXS = F</b>. Raw archives: <code>results2-full.tar.gz</code> (SMC IB), <code>results_kenya_{B1,B2,F}.tar.gz</code> (Kenya IB), <code>results_smc_rccl_{B2,F,B1}.tar.gz</code> + <code>results_smc_rccl_aba/</code> (RCCL). Handoff: <code>dev-notes/pensando-sw/scripts/txs-hw-validation/HANDOFF-txs-hw-validation.md</code> (Phases 1–4b).</p>
 
-<div class=foot>txs SQ fast-disable · SMC1/SMC2 (10.30.75.198/.204, 400G, 16 MI300X) · kenya-perf-3/4 (10.30.52.66/.75, 800G) · feature branch pradeept/hydra-sq-txs-disable · 2026-07-21</div>
+<div class=foot>txs SQ fast-disable · AC-on=B1 / AC-off=B2 (shipping) / TXS=F · SMC1/SMC2 (10.30.75.198/.204, 400G, 16 MI300X) · kenya-perf-3/4 (10.30.52.66/.75, 800G) · feature branch pradeept/hydra-sq-txs-disable · 2026-07-21</div>
 </div></body></html>
