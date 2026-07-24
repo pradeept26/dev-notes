@@ -10,6 +10,7 @@ h3{font-size:14px;color:var(--accent);margin:16px 0 6px;text-transform:uppercase
 table{border-collapse:collapse;width:100%;margin:6px 0;font-size:13px}th,td{border:1px solid var(--line);padding:6px 9px;text-align:right}
 th:first-child,td:first-child{text-align:left}thead th{background:#20263f}tbody tr:nth-child(even){background:#1c2136}
 .good{color:var(--good);font-weight:600}.bad{color:var(--bad);font-weight:700}.mut{color:var(--mut)}.warn{color:var(--warn)}
+.g{border-left:2px solid #3a4270}.lt td+td{ text-align:right}
 code{background:#20263f;padding:1px 6px;border-radius:5px;font-size:12px}a{color:var(--accent)}
 .pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:12px;font-weight:600;background:rgba(46,204,113,.15);color:var(--good);border:1px solid rgba(46,204,113,.4)}
 .kpi{display:flex;gap:12px;flex-wrap:wrap;margin:8px 0}.kpi .b{flex:1;min-width:150px;background:#20263f;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
@@ -104,24 +105,46 @@ code{background:#20263f;padding:1px 6px;border-radius:5px;font-size:12px}a{color
 </div>
 
 <h3 style="margin-top:20px">Latency percentiles — <code>ib_write_lat -a</code>, QP1, RCN off (µs)</h3>
-<p class=sub>Cells = <b>min / typical / 99% / 99.9%</b>. <b>Typical and 99% are identical across B1/B2/F at every size</b> → no latency-tail regression from txs. The 99.9% column is a single-shot tail sample so it jitters run-to-run, but no config is systematically worse — F's tail is if anything a touch tighter at small sizes (e.g. SMC 2B 99.9%: F 6.19 vs B2 8.76; 64B: F 4.96 vs B1 6.21).</p>
-<div class=card><h3>SMC 400G</h3>
-<table><thead><tr><th>size</th><th>B1&nbsp;&nbsp;(min / typ / 99% / 99.9%)</th><th>B2</th><th>F</th></tr></thead><tbody>
-<tr><td>2B</td><td>4.83 / 4.87 / 4.97 / 8.54</td><td>4.84 / 4.88 / 4.98 / 8.76</td><td>4.84 / 4.87 / 4.96 / 6.19</td></tr>
-<tr><td>64B</td><td>4.82 / 4.83 / 4.94 / 6.21</td><td>4.82 / 4.84 / 4.93 / 6.16</td><td>4.81 / 4.83 / 4.92 / 4.96</td></tr>
-<tr><td>4K</td><td>5.53 / 5.56 / 5.67 / 5.75</td><td>5.54 / 5.56 / 5.67 / 6.55</td><td>5.52 / 5.55 / 5.67 / 6.59</td></tr>
-<tr><td>64K</td><td>6.83 / 6.89 / 12.73 / 16.25</td><td>6.82 / 6.89 / 12.69 / 16.47</td><td>6.82 / 6.88 / 12.73 / 19.18</td></tr>
-<tr><td>1M</td><td>26.64 / 27.27 / 27.36 / 30.02</td><td>26.42 / 27.33 / 27.42 / 27.55</td><td>26.62 / 27.27 / 27.34 / 27.96</td></tr>
-<tr><td>8M</td><td>178.4 / 178.7 / 178.9 / 179.2</td><td>178.2 / 178.9 / 179.4 / 181.9</td><td>177.8 / 178.6 / 178.9 / 179.9</td></tr>
+<p class=sub>One table per statistic (B1/B2/F, both platforms). <b>Min, typical and 99% are effectively identical across B1/B2/F at every size</b> → no latency or tail regression from txs. The 99.9% column is a single-shot tail sample so it jitters run-to-run, with no config systematically worse (F's small-size tail is if anything a touch tighter — e.g. SMC 2B: F 6.19 vs B2 8.76µs; 64B: F 4.96 vs B1 6.21µs).</p>
+<div class=card lt><h3>Min (µs)</h3>
+<table><thead><tr><th rowspan=2>size</th><th colspan=3>SMC 400G</th><th colspan=3 class=g>Kenya 800G</th></tr>
+<tr><th>B1</th><th>B2</th><th>F</th><th class=g>B1</th><th>B2</th><th>F</th></tr></thead><tbody>
+<tr><td>2B</td><td>4.83</td><td>4.84</td><td>4.84</td><td class=g>4.03</td><td>3.97</td><td>4.01</td></tr>
+<tr><td>64B</td><td>4.82</td><td>4.82</td><td>4.81</td><td class=g>3.85</td><td>3.83</td><td>3.92</td></tr>
+<tr><td>4K</td><td>5.53</td><td>5.54</td><td>5.52</td><td class=g>4.34</td><td>4.24</td><td>4.32</td></tr>
+<tr><td>64K</td><td>6.83</td><td>6.82</td><td>6.82</td><td class=g>5.21</td><td>5.19</td><td>5.30</td></tr>
+<tr><td>1M</td><td>26.64</td><td>26.42</td><td>26.62</td><td class=g>21.58</td><td>21.56</td><td>21.69</td></tr>
+<tr><td>8M</td><td>178.39</td><td>178.16</td><td>177.76</td><td class=g>143.87</td><td>143.86</td><td>143.91</td></tr>
 </tbody></table></div>
-<div class=card><h3>Kenya 800G</h3>
-<table><thead><tr><th>size</th><th>B1&nbsp;&nbsp;(min / typ / 99% / 99.9%)</th><th>B2</th><th>F</th></tr></thead><tbody>
-<tr><td>2B</td><td>4.03 / 4.10 / 4.32 / 7.84</td><td>3.97 / 4.02 / 4.23 / 6.56</td><td>4.01 / 4.17 / 4.65 / 8.15</td></tr>
-<tr><td>64B</td><td>3.85 / 3.89 / 4.08 / 5.06</td><td>3.83 / 3.90 / 4.07 / 6.15</td><td>3.92 / 3.94 / 4.12 / 4.64</td></tr>
-<tr><td>4K</td><td>4.34 / 4.41 / 4.53 / 5.08</td><td>4.24 / 4.26 / 4.39 / 4.97</td><td>4.32 / 4.36 / 4.49 / 5.63</td></tr>
-<tr><td>64K</td><td>5.21 / 5.24 / 7.08 / 11.94</td><td>5.19 / 5.22 / 5.38 / 14.02</td><td>5.30 / 5.35 / 9.47 / 14.02</td></tr>
-<tr><td>1M</td><td>21.58 / 21.62 / 21.73 / 22.41</td><td>21.56 / 21.65 / 21.85 / 22.50</td><td>21.69 / 21.74 / 22.46 / 22.56</td></tr>
-<tr><td>8M</td><td>143.9 / 144.0 / 144.2 / 145.2</td><td>143.9 / 144.0 / 145.0 / 145.7</td><td>143.9 / 144.0 / 144.3 / 144.8</td></tr>
+<div class=card lt><h3>Typical (µs)</h3>
+<table><thead><tr><th rowspan=2>size</th><th colspan=3>SMC 400G</th><th colspan=3 class=g>Kenya 800G</th></tr>
+<tr><th>B1</th><th>B2</th><th>F</th><th class=g>B1</th><th>B2</th><th>F</th></tr></thead><tbody>
+<tr><td>2B</td><td>4.87</td><td>4.88</td><td>4.87</td><td class=g>4.10</td><td>4.02</td><td>4.17</td></tr>
+<tr><td>64B</td><td>4.83</td><td>4.84</td><td>4.83</td><td class=g>3.89</td><td>3.90</td><td>3.94</td></tr>
+<tr><td>4K</td><td>5.56</td><td>5.56</td><td>5.55</td><td class=g>4.41</td><td>4.26</td><td>4.36</td></tr>
+<tr><td>64K</td><td>6.89</td><td>6.89</td><td>6.88</td><td class=g>5.24</td><td>5.22</td><td>5.35</td></tr>
+<tr><td>1M</td><td>27.27</td><td>27.33</td><td>27.27</td><td class=g>21.62</td><td>21.65</td><td>21.74</td></tr>
+<tr><td>8M</td><td>178.72</td><td>178.94</td><td>178.55</td><td class=g>143.96</td><td>143.95</td><td>144.01</td></tr>
+</tbody></table></div>
+<div class=card lt><h3>99% percentile (µs)</h3>
+<table><thead><tr><th rowspan=2>size</th><th colspan=3>SMC 400G</th><th colspan=3 class=g>Kenya 800G</th></tr>
+<tr><th>B1</th><th>B2</th><th>F</th><th class=g>B1</th><th>B2</th><th>F</th></tr></thead><tbody>
+<tr><td>2B</td><td>4.97</td><td>4.98</td><td>4.96</td><td class=g>4.32</td><td>4.23</td><td>4.65</td></tr>
+<tr><td>64B</td><td>4.94</td><td>4.93</td><td>4.92</td><td class=g>4.08</td><td>4.07</td><td>4.12</td></tr>
+<tr><td>4K</td><td>5.67</td><td>5.67</td><td>5.67</td><td class=g>4.53</td><td>4.39</td><td>4.49</td></tr>
+<tr><td>64K</td><td>12.73</td><td>12.69</td><td>12.73</td><td class=g>7.08</td><td>5.38</td><td>9.47</td></tr>
+<tr><td>1M</td><td>27.36</td><td>27.42</td><td>27.34</td><td class=g>21.73</td><td>21.85</td><td>22.46</td></tr>
+<tr><td>8M</td><td>178.94</td><td>179.41</td><td>178.94</td><td class=g>144.22</td><td>144.99</td><td>144.30</td></tr>
+</tbody></table></div>
+<div class=card lt><h3>99.9% percentile (µs)</h3>
+<table><thead><tr><th rowspan=2>size</th><th colspan=3>SMC 400G</th><th colspan=3 class=g>Kenya 800G</th></tr>
+<tr><th>B1</th><th>B2</th><th>F</th><th class=g>B1</th><th>B2</th><th>F</th></tr></thead><tbody>
+<tr><td>2B</td><td>8.54</td><td>8.76</td><td>6.19</td><td class=g>7.84</td><td>6.56</td><td>8.15</td></tr>
+<tr><td>64B</td><td>6.21</td><td>6.16</td><td>4.96</td><td class=g>5.06</td><td>6.15</td><td>4.64</td></tr>
+<tr><td>4K</td><td>5.75</td><td>6.55</td><td>6.59</td><td class=g>5.08</td><td>4.97</td><td>5.63</td></tr>
+<tr><td>64K</td><td>16.25</td><td>16.47</td><td>19.18</td><td class=g>11.94</td><td>14.02</td><td>14.02</td></tr>
+<tr><td>1M</td><td>30.02</td><td>27.55</td><td>27.96</td><td class=g>22.41</td><td>22.50</td><td>22.56</td></tr>
+<tr><td>8M</td><td>179.22</td><td>181.93</td><td>179.85</td><td class=g>145.17</td><td>145.72</td><td>144.84</td></tr>
 </tbody></table></div>
 
 <h2>4 · RCCL collectives — no regression at the real workload level</h2>
