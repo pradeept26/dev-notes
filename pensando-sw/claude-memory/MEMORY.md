@@ -15,6 +15,9 @@
 ## Findings
 - [Low-QP BW dip fix = omega, not PHB poke](project_phb_unlimit_bw_finding.md) — omega 5->10 recovers line rate at 8QP (1378->1522 +10.5%, no downside at 64QP); unlimit PHB poke HURTS on perf-11/12 (switched path). Effect of poke is boot-state+path dependent
 
+## Testbed / Lab
+- [SMC GPUs + dmabuf limitation](reference_smc_gpu_dmabuf.md) — SMC has 8x MI300X (1x400G); `--use_rocm_dmabuf` broken on kernel 5.15 (both a-8 & a-55), use peer-mem `--use_rocm=N`
+
 ## P4+ Conventions
 - [P4+ PHV fields are zero by default](feedback_p4plus_phv_zero_default.md) — don't add defensive zero-init for PHV flags; a set-only-to-1 flag reads 0 on other paths automatically
 - [Always-on auto-clear verified fine on Vulcano; TXS-for-hydra parked](project_vulcano_autoclear_verified_ok.md) — no fairness/perf pain, so pulsar TXS port to hydra is not being pursued
