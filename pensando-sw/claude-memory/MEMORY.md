@@ -18,6 +18,9 @@
 ## Testbed / Lab
 - [SMC GPUs + dmabuf limitation](reference_smc_gpu_dmabuf.md) — SMC has 8x MI300X (1x400G); `--use_rocm_dmabuf` broken on kernel 5.15 (both a-8 & a-55), use peer-mem `--use_rocm=N`
 
+## Active Investigations
+- [AI-7302 QP4092 hang — NOT reproduced on SMC](project_ai7302_investigation.md) — passes on a-55 (reported build) & a-8 at line rate, 2x n5000 clean; FW/driver ruled out, dmabuf-path suspect. SMC left on a-55. Pending: draft Jira comment, evt2 peer-mem retest
+
 ## P4+ Conventions
 - [P4+ PHV fields are zero by default](feedback_p4plus_phv_zero_default.md) — don't add defensive zero-init for PHV flags; a set-only-to-1 flag reads 0 on other paths automatically
 - [Always-on auto-clear verified fine on Vulcano; TXS-for-hydra parked](project_vulcano_autoclear_verified_ok.md) — no fairness/perf pain, so pulsar TXS port to hydra is not being pursued
