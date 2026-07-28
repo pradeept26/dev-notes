@@ -19,6 +19,7 @@
 - [SMC GPUs + dmabuf limitation](reference_smc_gpu_dmabuf.md) — SMC has 8x MI300X (1x400G); `--use_rocm_dmabuf` broken on kernel 5.15 (both a-8 & a-55), use peer-mem `--use_rocm=N`
 
 ## Active Investigations
+- [IPv6 RCCL single-node fail = ud_loopback + IPv6 62B template](project_ipv6_loopback_rccl.md) — IPv6 GID idx2 loopback (P2P-off) → responder VA2PA KT_RANGE_CK → NAK OP_ERR; IPv4 loopback & IPv6 inter-node both pass. TX-side bug suspected in ud_loopback write header path
 - [AI-7302 QP4092 hang — NOT reproduced on SMC](project_ai7302_investigation.md) — passes on a-55 (reported build) & a-8 at line rate, 2x n5000 clean; FW/driver ruled out, dmabuf-path suspect. SMC left on a-55. Pending: draft Jira comment, evt2 peer-mem retest
 
 ## P4+ Conventions
