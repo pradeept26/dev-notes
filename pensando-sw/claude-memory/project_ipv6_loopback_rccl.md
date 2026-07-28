@@ -20,9 +20,13 @@ Investigation on SMC-1 (2026-07-28). Single-node RCCL with P2P disabled, run ove
   - IPv4 + single-node loopback (ud_loopback=1, 42B): PASS `sts_err=0x0`.
 - So inter-node IPv6 (parse) works and IPv4 loopback (path) works; only IPv6×loopback breaks → the ud_loopback datapath mishandles the larger 62B IPv6 header template.
 
-**Why:** For ud_loopback=1, TX builds a stripped packet (no BTH): `meta_roce_tx_s5_add_headers_write.p4:170` → `_meta_roce_write_loopback_header()` + `_meta_roce_write_common_loopback_dma_cmd_add()` (DMAs METH only). RX (`meta_roce_rx_s0.p4:122`) does `_resp_rx_set_skip_dma()` then VA2PA on `reth.va + (meth.posn<<mtu)` with `reth.rkey`. Suspected **TX-side** bug: loopback packet assembly assumes 42B (IPv4) template offsets, so with 62B IPv6 the responder resolves a wrong RETH VA/rkey → out-of-MR → KT_RANGE_CK.
+**Trigger is IP-gated in the CONTROL PLANE, not the parser:** `nicmgr_is_loopback_mac(ah.dmac, lif)` (`nic/sdk/rtos-shared/src/lib/nicmgr/core/nicmgr.c:592`) returns true iff AH dmac == the QP's own lif MAC. In `admincmd_handler.c` (~1577, sets at 3106-3108) this makes `ud_loopback=1` for IPv6 self-writes (AH dmac resolves to own MAC) but `ud_loopback=0` for IPv4 (dmac resolves to non-own/next-hop). Verified across ALL used QPs (2/3 and 2048/2049) both runs: IPv4 loopback all ud_loopback=0 (42B tmpl), IPv6 loopback all ud_loopback=1 (62B tmpl).
 
-**Fix area:** `nic/rudra/src/hydra/p4/p4plus-16/meta_roce/tx/meta_roce_tx_s5_add_headers_write.p4` (and the send equivalent `_add_headers_send.p4`) ud_loopback branch; verify against 62B vs 42B `header_template_size`. Also check nicmgr header-template construction for loopback QPs.
+**IMPORTANT refinement (2026-07-28): ud_loopback=1 is necessary but NOT sufficient.** Simple `ib_write_bw` IPv6 same-NIC loopback on SMC2 (stock a-55) **PASSES** even though its client QP has `ud_loopback=1` (62B tmpl). So the ud_loopback WRITE path is not universally broken — RCCL adds an extra factor. Candidates: (a) multipath (RCCL max_paths=8/path_id vs ib_write_bw single-path); (b) the specific MR/rkey — failing RCCL write resolved ukey 0xd with kte_va_base=0 (possibly an ANP/CTS special region), whereas ib_write_bw uses a normal buffer MR. `ib_write_bw -x 1/-x 2` loopback both pass → simple IB test does NOT reproduce.
+
+**Workaround under test:** default `g_disable_p4_loopback=true` (`admincmd_handler.c:119`) forces `loopback=false` (line 1580) → IPv6 self-writes use the wire path like IPv4. Building/flashing on SMC1 to confirm it fixes RCCL IPv6.
+
+**Fix area:** the ud_loopback WRITE path (`meta_roce_tx_s5_add_headers_write.p4` loopback branch + `meta_roce_tx_s6.p4` `_common_loopback_headers_dma_cmd_add`; RX `meta_roce_rx_s0.p4:122` skip-dma + VA2PA), specifically its interaction with RCCL multipath / ANP MR. Pin via debug-FW mputrace comparing ib_write_bw (pass) vs RCCL (fail) ud_loopback WRITEs — next step.
 
 **Consequence for testing:** any RCCL config that keeps intra-node loopback (P2P disabled) on a multi-GPU node will hit this over IPv6. Inter-node IPv6 (P2P on, or 1 GPU/node) is unaffected.
 
