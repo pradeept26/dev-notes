@@ -9,6 +9,11 @@ Run IB bandwidth/latency tests on a dual-node Vulcano testbed. Handles setup, ex
 
 > **Single-NIC loopback latency?** For NIC-pipeline latency on ONE card (no peer) — PCS/port loopback
 > with macvlan namespaces + `ud_loopback=0` verification — use the **`/analyze-latency`** skill instead.
+>
+> **Isolating IPv6 dmac resolution?** A same-node two-NIC loopback (server `roceP1 -x 2`, client
+> `roceP2 -x 2 <localhost>`, IPv6 GID idx2) directly pins whether a peer GID resolves to the switch
+> MAC (passes) or the NIC's own MAC (hangs/`cqe error 11`) — independent of RCCL. See the
+> `debug-meta-roce` "IPv6 / host dmac-resolution triage" section.
 
 ## Usage Examples
 
