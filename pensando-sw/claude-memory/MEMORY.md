@@ -21,7 +21,7 @@
 ## Active Investigations
 - [IPv6 RCCL single-node fail = ud_loopback + IPv6 62B template](project_ipv6_loopback_rccl.md) — IPv6 GID idx2 loopback (P2P-off) → responder VA2PA KT_RANGE_CK → NAK OP_ERR; IPv4 loopback & IPv6 inter-node both pass. TX-side bug suspected in ud_loopback write header path
 - [AI-7302 QP4092 hang — NOT reproduced on SMC](project_ai7302_investigation.md) — passes on a-55 (reported build) & a-8 at line rate, 2x n5000 clean; FW/driver ruled out, dmabuf-path suspect. SMC left on a-55. Pending: draft Jira comment, evt2 peer-mem retest
-- [AI-7376 RCCL a-8→a-10 regression = libionic expdb, NOT FW](project_ai7376_libionic_expdb.md) — int-sar 8N; userspace libionic (26.07.10 bad / 26.06.3 good) doorbell inflation, confirmed via asicmon (2.7× doorbells); FW/kernel-ionic cleared; Madan's "FW root cause" disproven
+- [AI-7376 RCCL a-8→a-10 regression = libionic movdir64b/expdb bug, NOT FW](project_ai7376_libionic_expdb.md) — int-sar 8N; bisected to commit `8d4110362` (broke have_movdir64b CPUID → express doorbell disabled → 2.7× doorbells, 128M 263→100); FW/kernel-ionic cleared; Madan's "FW root cause" disproven
 
 ## P4+ Conventions
 - [P4+ PHV fields are zero by default](feedback_p4plus_phv_zero_default.md) — don't add defensive zero-init for PHV flags; a set-only-to-1 flag reads 0 on other paths automatically
