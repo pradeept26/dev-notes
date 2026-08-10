@@ -22,10 +22,12 @@
 - [IPv6 RCCL single-node fail = ud_loopback + IPv6 62B template](project_ipv6_loopback_rccl.md) — IPv6 GID idx2 loopback (P2P-off) → responder VA2PA KT_RANGE_CK → NAK OP_ERR; IPv4 loopback & IPv6 inter-node both pass. TX-side bug suspected in ud_loopback write header path
 - [AI-7302 QP4092 hang — NOT reproduced on SMC](project_ai7302_investigation.md) — passes on a-55 (reported build) & a-8 at line rate, 2x n5000 clean; FW/driver ruled out, dmabuf-path suspect. SMC left on a-55. Pending: draft Jira comment, evt2 peer-mem retest
 - [AI-7376 RCCL a-8→a-10 regression = libionic movdir64b/expdb bug, NOT FW](project_ai7376_libionic_expdb.md) — int-sar 8N; bisected to commit `8d4110362` (broke have_movdir64b CPUID → express doorbell disabled → 2.7× doorbells, 128M 263→100); FW/kernel-ionic cleared; Madan's "FW root cause" disproven
+- [AI-7522 reproduces on IPv4 = multi-QP bidir BW stall, NOT IPv6](project_ai7522_ipv4_multiqp.md) — SMC a-86: 1QP lat PASS, QP≥2 bidir BW FAIL (send_bw @16B match, spec_failure/ACK-gen-broken); QP=1 clean rules out IPv6 & SMC QoS; IPv6 direct compare blocked by Micas switch ND broken
 
 ## P4+ Conventions
 - [P4+ PHV fields are zero by default](feedback_p4plus_phv_zero_default.md) — don't add defensive zero-init for PHV flags; a set-only-to-1 flag reads 0 on other paths automatically
 - [Always-on auto-clear verified fine on Vulcano; TXS-for-hydra parked](project_vulcano_autoclear_verified_ok.md) — no fairness/perf pain, so pulsar TXS port to hydra is not being pursued
+- [Fast RDMA state clear between IB runs](feedback_clear_pipeline_state.md) — use `nicctl clear pipeline internal state` (not card reset+bringup, ~3min) to clear anomaly/error state; also: run perftest server detached + log to remote files (ssh-stream+timeout loses buffered output)
 
 ## Memory Sync Protocol
 **IMPORTANT: After updating this memory file, ALWAYS run:**
