@@ -53,6 +53,17 @@ Disabling exact_cwnd_enforce (removes snd_nxt/snd_max split + :87 snapshot) -> 2
 pass clean, 0 anomalies. With it enabled -> hard hang. `nicctl update pipeline rdma congestion-control
 profile -p 0 --exact-cwnd-enforce disable` (both nodes, fresh QPs).
 
+## FIX VALIDATED (2026-08-10)
+Fix: gate the eth_lif.c lb_stride copy-back (lines 636-642) under `#ifdef QUASAR` so it compiles out
+for Hydra (QUASAR undefined for vulcano-hydra fw — confirmed: DQUASAR count in ainic-rtos build.ninja = 0).
+Branch `ai7522-fix-lbstride-quasar` off tag 1.130.0-a-86 (d3f76cbfb14); built vulcano-hydra-ainic-fw
+(ainic_fw_vulcano.tar, md5 ac4a487155e7337ff138df85cf646f3a); flashed on benic3 (BDF 0000:43:00.0) both
+smc nodes = "1.130.0-a-86-dirty".
+Result with exact_cwnd_enforce ENABLED on benic3: 2QP + 8QP full sweep + send_bw/send_imm/write_imm ALL
+pass clean, 0 anomalies (same configs hard-hang on a-86 benic1). capview: benic3 SQ lif 0x11 restored to
+8 qgrps spread ud=0/1/2 — byte-identical to a-85 (benic2); a-86 (benic1) stays collapsed (2 qgrps ud=0).
+Testbed: benic1=a-86(buggy), benic2=a-85(good), benic3=a-86+fix(good).
+
 ## Fix direction
 Advance snd_max in lock-step with retx_pi/snd_nxt in the allow branch (or derive ring occupancy from a
 single counter), and close the _window_check boundary so two concurrent packets can't both take last_pkt.
