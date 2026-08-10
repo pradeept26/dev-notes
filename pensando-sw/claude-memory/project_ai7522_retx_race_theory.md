@@ -84,7 +84,22 @@ single counter), and close the _window_check boundary so two concurrent packets 
 - CAVEATS: (1) a-85(benic2) vs a-86(benic1) test used DIFFERENT physical cards -> possible timing confound;
   controlled same-card A/B needed. (2) capview per-qgrp UD dump (rx_sxdma in TXS qgrp_cfg_0) on both cards
   would empirically confirm SQ/PATH same-UD in a-85 vs split in a-86. capview on host:
-  /usr/sbin/capview-ainic-vulcano-rudra-hydra --card <uuid> -f /etc/amd/ainic/vulcano/rudra/hydra/capviewdb.bin
+  sudo bash -lc "TERM=dumb /usr/sbin/capview --bdf <BDF> -f /etc/amd/ainic/vulcano/rudra/hydra/capviewdb.bin < cmdfile"
+
+## CAPVIEW CONFIRMATION (2026-08-10) — cross-UD theory CONFIRMED
+Register: txs{0,1}_dhs_sch_qgrp_cfg_0_sram_entry (txs0 base 0x22318000, txs1 0x22518000, 2048 rows).
+Fields: lif_idx[20:10], rx_sxdma[3:2]=UD, cos[7:4], qid_start/end, disabled[9], auto_clear[0].
+LIFs: PF/SQ+RQ = lif_idx 0x11 (txs0). PATH service lif (RUDRA_HYDRA_PATH_LIF=70) = hw sched lif_idx 0x6 (txs1),
+cos 2/3, qid 0x0..0x3fff. Both cards on smc1: benic1=a-86 BDF 0000:06:00.0, benic2=a-85 BDF 0000:23:00.0.
+Dump/parse script: /tmp/cvdump.sh <bdf> <lif_hex> (NB: don't name awk var 'cos' — it's the builtin cosine).
+RESULT:
+- PATH lif 0x6 (txs1): IDENTICAL a-86 vs a-85 — 4 qgrps spread ud=1/2 (UD0/UD1). path_tx unchanged.
+- PF/SQ lif 0x11 (txs0): a-85 = 8 fine qgrps spread ud 0/1/2 (per-UD, paired with PATH); a-86 = 2 coarse
+  qgrps both ud=0 (COLLAPSED). => a-85 SQ<->PATH co-located same-UD (serialized, safe); a-86 SQ collapsed
+  to ud=0 while PATH stays ud=1/2 => SQ(req_tx) and PATH(path_tx) on DIFFERENT UDs => per-CB lock no longer
+  serializes => cross-UD lost update on snd_nxt/snd_max/retx_pi => hang. CONFIRMS cross-UD race.
+OPEN: exact rx_sxdma encoding (0=default-parity vs UD0) + map a specific QP's SQ qid & PATH qid to prove
+per-QP UD mismatch; but directionally consistent and confirms fe8a collapsed the SQ UD spread.
 - Testbed state after test: benic2 on a-85 (exact enabled); benic1+others on a-86 (exact re-enabled
   globally by the test). exact_cwnd_enforce is profile-0 global (not per-card) via nicctl update.
 - Pradeep has follow-up questions on this theory.
