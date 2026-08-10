@@ -60,6 +60,11 @@ single counter), and close the _window_check boundary so two concurrent packets 
 ## Open / next
 - Serialize the exact interleave (MPU trace of req_tx/_path_cwnd_retry_process at stall onset, or a
   gtest driving the allow->cwnd_retry boundary on 2 QPs asserting retx_pi-retx_ci == snd_max-snd_una).
-- Regression: test a-85 (believed good) with exact_cwnd_enforce ENABLED on a separate NIC pair; if no
-  repro -> bug introduced a-85->a-86, bisect tx_s3 change.
+- Regression CONFIRMED (2026-08-10): a-85 with exact_cwnd_enforce ENABLED does NOT repro — 2QP -s1M and
+  8QP full -a sweep both pass clean (0 anomalies) on benic2 (BDF 23:00.0) both nodes. a-86 same config =
+  hard hang. => bug introduced a-85 -> a-86. Next: diff/bisect tx_s3 (retx_pi/snd_max/snd_nxt/cwnd_retry
+  accounting) between the a-85 and a-86 SHAs.
+- Test matrix: a-86+exact=hang, a-86+no-exact=clean, a-85+exact=clean.
+- Testbed state after test: benic2 on a-85 (exact enabled); benic1+others on a-86 (exact re-enabled
+  globally by the test). exact_cwnd_enforce is profile-0 global (not per-card) via nicctl update.
 - Pradeep has follow-up questions on this theory.
