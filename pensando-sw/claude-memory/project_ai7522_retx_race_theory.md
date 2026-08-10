@@ -65,6 +65,26 @@ single counter), and close the _window_check boundary so two concurrent packets 
   hard hang. => bug introduced a-85 -> a-86. Next: diff/bisect tx_s3 (retx_pi/snd_max/snd_nxt/cwnd_retry
   accounting) between the a-85 and a-86 SHAs.
 - Test matrix: a-86+exact=hang, a-86+no-exact=clean, a-85+exact=clean.
+
+## Regressor (a-85 65a29968a76 .. a-86 d3f76cbfb14)
+- NO hydra P4 change in range -> race was always latent in P4; a shared-firmware change exposed it.
+- Prime suspect: **fe8a85350ea "rdma: dynamic RQ TX UD separation (#118857)"** — only commit touching the
+  Vulcano TXS scheduler (asicpd/vulcano/vulcano_txs_scheduler.c, scheduler_vulcano.c/.cc) + shared
+  nicmgr/eth_lif.c.
+- Mechanism: hydra is 2-UD (NICMGR_NUM_UDMA=2; UXDMA_PORT_LB_SELECT(id)=TM_PORT_DMA1+(id&1); per-UD
+  rdma_path_qid_allocator). Per-qgrp UD toggle in tx_map_to_qgrp is gated by CONFIG_UXDMA_MODE_2UD; qgrp
+  allocation uses qgrp_lb=100/lb_stride. The per-CB (path_cb2) table lock only serializes WITHIN one UD;
+  cross-UD there is NO shared lock -> concurrent req_tx(qtype3)+path_tx(qtype0) RMW of snd_nxt/snd_max/
+  retx_pi = lost update = the off-by-one.
+- fe8a's likely hydra-affecting (non-Quasar-gated) side effect: eth_lif.c copies pipeline_impl lb_stride
+  back into lif_info.queue_info for ALL qtypes -> feeds updated lb_stride into TXS qgrp mapping -> shifts
+  qgrp numbering/UD parity -> can move SQ(req_tx) and PATH(path_tx) from same-UD (a-85) to different-UD
+  (a-86). RQ lb_stride=100 itself is Quasar-only (#ifdef QUASAR), so hydra impact is via the general
+  copy-back, NOT proven 100% statically.
+- CAVEATS: (1) a-85(benic2) vs a-86(benic1) test used DIFFERENT physical cards -> possible timing confound;
+  controlled same-card A/B needed. (2) capview per-qgrp UD dump (rx_sxdma in TXS qgrp_cfg_0) on both cards
+  would empirically confirm SQ/PATH same-UD in a-85 vs split in a-86. capview on host:
+  /usr/sbin/capview-ainic-vulcano-rudra-hydra --card <uuid> -f /etc/amd/ainic/vulcano/rudra/hydra/capviewdb.bin
 - Testbed state after test: benic2 on a-85 (exact enabled); benic1+others on a-86 (exact re-enabled
   globally by the test). exact_cwnd_enforce is profile-0 global (not per-card) via nicctl update.
 - Pradeep has follow-up questions on this theory.
