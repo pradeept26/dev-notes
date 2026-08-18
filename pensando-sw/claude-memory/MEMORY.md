@@ -28,6 +28,8 @@
 
 ## P4+ Conventions
 - [P4+ PHV fields are zero by default](feedback_p4plus_phv_zero_default.md) — don't add defensive zero-init for PHV flags; a set-only-to-1 flag reads 0 on other paths automatically
+- [p4pd TCAM key byte order](feedback_p4pd_tcam_key_byteorder.md) — multi-byte swkey array keys (IPv6/MAC) pack MSB-first from swkey[N-1]; store REVERSED. v4 uint32 big-endian assembly already lands reversed on LE host (why v4 passes while v6 silently drops)
+- [Hydra gtest AQ arming](feedback_hydra_gtest_aq_arming.md) — default hydra_gtest is use_aq=false (NicMgr never runs, learn hooks don't fire); features armed by firmware control-plane MUST be tested with hydra_gtest_aq; nicmgr change needs full gtest build
 - [Always-on auto-clear verified fine on Vulcano; TXS-for-hydra parked](project_vulcano_autoclear_verified_ok.md) — no fairness/perf pain, so pulsar TXS port to hydra is not being pursued
 - [Fast RDMA state clear between IB runs](feedback_clear_pipeline_state.md) — use `nicctl clear pipeline internal state` (not card reset+bringup, ~3min) to clear anomaly/error state; also: run perftest server detached + log to remote files (ssh-stream+timeout loses buffered output)
 
