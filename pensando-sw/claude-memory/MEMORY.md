@@ -17,6 +17,7 @@
 
 ## Testbed / Lab
 - [SMC GPUs + dmabuf limitation](reference_smc_gpu_dmabuf.md) — SMC has 8x MI300X (1x400G); `--use_rocm_dmabuf` broken on kernel 5.15 (both a-8 & a-55), use peer-mem `--use_rocm=N`
+- [f02 Helios-P access + ops](reference_f02_access.md) — SSH `prthangar@<ip>` (Conductor key), IPs shift on reboot (f02-1=10.5.229.87, f02-2=10.5.229.114 as of 2026-08-07), BMC cross-node only, AC-cycle procedure, `nicctl reset card` HANGS host
 
 ## Active Investigations
 - [IPv6 RCCL single-node fail = ud_loopback + IPv6 62B template](project_ipv6_loopback_rccl.md) — IPv6 GID idx2 loopback (P2P-off) → responder VA2PA KT_RANGE_CK → NAK OP_ERR; IPv4 loopback & IPv6 inter-node both pass. TX-side bug suspected in ud_loopback write header path
