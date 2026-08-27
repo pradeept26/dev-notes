@@ -1,0 +1,276 @@
+
+NIC/Lif/QP id/Path id/Path qid : 42424650-5132-3535-3130-303542000000 (0000:03:00.0) / 02000070-0100-0000-4242-04908199dd40 (2) / 25 / 0 / 192
+--------------------------------------------------------------------------------------------------------------------------------------------
+
+Path TX statistics:
+  Packets                                                        : 3898333
+  ACKs                                                           : 284230
+  SACKs                                                          : 4497
+  RTO retransmit packets                                         : 3115
+  SACK retransmit packets                                        : 5126
+  CWND retry retransmit packets                                  : 208207
+  Path disabled (window exhausted)                               : 0
+  CWND overflow packets                                          : 0
+  Inactive output port changes                                   : 0
+  RTO output port changes                                        : 0
+  Retry ring doorbells                                           : 208207
+Path RX statistics:
+  Packets                                                        : 278329
+  ACKs                                                           : 3707610
+  SACKs                                                          : 1515945
+  Duplicates                                                     : 6138
+  Drops                                                          : 0
+  OOO packets                                                    : 9055
+  ECN received                                                   : 0
+  Path inactive (congestion)                                     : 205
+  CC additive increments                                         : 11667
+  CC multiplicative decrements                                   : 12491
+  CNP received                                                   : 60113
+  RTT bucket (0 - 25 us)                                         : 329271
+  RTT bucket (25 - 50 us)                                        : 379949
+  RTT bucket (50 - 75 us)                                        : 153814
+  RTT bucket (> 75 us)                                           : 1301566
+  Min RTT (us)                                                   : 9
+  Max RTT (us)                                                   : 607
+
+NIC/Lif/QP id/Path id/Path qid : 42424650-5132-3535-3130-303542000000 (0000:03:00.0) / 02000070-0100-0000-4242-04908199dd40 (2) / 25 / 1 / 193
+--------------------------------------------------------------------------------------------------------------------------------------------
+
+Path TX statistics:
+  Packets                                                        : 2022725
+  ACKs                                                           : 0
+  SACKs                                                          : 0
+  RTO retransmit packets                                         : 2128
+  SACK retransmit packets                                        : 3109
+  CWND retry retransmit packets                                  : 96790
+  Path disabled (window exhausted)                               : 0
+  CWND overflow packets                                          : 0
+  Inactive output port changes                                   : 0
+  RTO output port changes                                        : 0
+  Retry ring doorbells                                           : 96790
+Path RX statistics:
+  Packets                                                        : 0
+  ACKs                                                           : 1925454
+  SACKs                                                          : 842199
+  Duplicates                                                     : 0
+  Drops                                                          : 0
+  OOO packets                                                    : 0
+  ECN received                                                   : 0
+  Path inactive (congestion)                                     : 130
+  CC additive increments                                         : 4725
+  CC multiplicative decrements                                   : 5249
+  CNP received                                                   : 52913
+  RTT bucket (0 - 25 us)                                         : 173672
+  RTT bucket (25 - 50 us)                                        : 173787
+  RTT bucket (50 - 75 us)                                        : 87010
+  RTT bucket (> 75 us)                                           : 686310
+  Min RTT (us)                                                   : 9
+  Max RTT (us)                                                   : 585
+
+NIC/Lif/QP id/Path id/Path qid : 42424650-5132-3535-3130-303542000000 (0000:03:00.0) / 02000070-0100-0000-4242-04908199dd40 (2) / 25 / 2 / 194
+--------------------------------------------------------------------------------------------------------------------------------------------
+
+Path TX statistics:
+  Packets                                                        : 4241441
+  ACKs                                                           : 284033
+  SACKs                                                          : 4257
+  RTO retransmit packets                                         : 3633
+  SACK retransmit packets                                        : 5891
+  CWND retry retransmit packets                                  : 236196
+  Path disabled (window exhausted)                               : 0
+  CWND overflow packets                                          : 0
+  Inactive output port changes                                   : 0
+  RTO output port changes                                        : 0
+  Retry ring doorbells                                           : 236196
+Path RX statistics:
+  Packets                                                        : 278334
+  ACKs                                                           : 4040237
+  SACKs                                                          : 1618085
+  Duplicates                                                     : 5929
+  Drops                                                          : 0
+  OOO packets                                                    : 8594
+  ECN received                                                   : 0
+  Path inactive (congestion)                                     : 211
+  CC additive increments                                         : 12982
+  CC multiplicative decrements                                   : 13818
+  CNP received                                                   : 55577
+  RTT bucket (0 - 25 us)                                         : 407730
+  RTT bucket (25 - 50 us)                                        : 384136
+  RTT bucket (50 - 75 us)                                        : 181199
+  RTT bucket (> 75 us)                                           : 1425794
+  Min RTT (us)                                                   : 9
+  Max RTT (us)                                                   : 646
+
+NIC/Lif/QP id/Path id/Path qid : 42424650-5132-3535-3130-303542000000 (0000:03:00.0) / 02000070-0100-0000-4242-04908199dd40 (2) / 25 / 3 / 195
+--------------------------------------------------------------------------------------------------------------------------------------------
+
+Path TX statistics:
+  Packets                                                        : 1103376
+  ACKs                                                           : 0
+  SACKs                                                          : 0
+  RTO retransmit packets                                         : 1385
+  SACK retransmit packets                                        : 3227
+  CWND retry retransmit packets                                  : 70571
+  Path disabled (window exhausted)                               : 0
+  CWND overflow packets                                          : 0
+  Inactive output port changes                                   : 0
+  RTO output port changes                                        : 0
+  Retry ring doorbells                                           : 70571
+Path RX statistics:
+  Packets                                                        : 0
+  ACKs                                                           : 1063266
+  SACKs                                                          : 389044
+  Duplicates                                                     : 0
+  Drops                                                          : 0
+  OOO packets                                                    : 0
+  ECN received                                                   : 0
+  Path inactive (congestion)                                     : 134
+  CC additive increments                                         : 3272
+  CC multiplicative decrements                                   : 3812
+  CNP received                                                   : 22401
+  RTT bucket (0 - 25 us)                                         : 117533
+  RTT bucket (25 - 50 us)                                        : 114985
+  RTT bucket (50 - 75 us)                                        : 53750
+  RTT bucket (> 75 us)                                           : 392342
+  Min RTT (us)                                                   : 9
+  Max RTT (us)                                                   : 573
+
+NIC/Lif/QP id/Path id/Path qid : 42424650-5132-3535-3130-303542000000 (0000:03:00.0) / 02000070-0100-0000-4242-04908199dd40 (2) / 25 / 4 / 196
+--------------------------------------------------------------------------------------------------------------------------------------------
+
+Path TX statistics:
+  Packets                                                        : 1318190
+  ACKs                                                           : 284272
+  SACKs                                                          : 4556
+  RTO retransmit packets                                         : 1540
+  SACK retransmit packets                                        : 3265
+  CWND retry retransmit packets                                  : 72933
+  Path disabled (window exhausted)                               : 0
+  CWND overflow packets                                          : 0
+  Inactive output port changes                                   : 0
+  RTO output port changes                                        : 0
+  Retry ring doorbells                                           : 72933
+Path RX statistics:
+  Packets                                                        : 278308
+  ACKs                                                           : 1263611
+  SACKs                                                          : 504572
+  Duplicates                                                     : 6158
+  Drops                                                          : 0
+  OOO packets                                                    : 9180
+  ECN received                                                   : 0
+  Path inactive (congestion)                                     : 164
+  CC additive increments                                         : 3372
+  CC multiplicative decrements                                   : 4028
+  CNP received                                                   : 25941
+  RTT bucket (0 - 25 us)                                         : 115147
+  RTT bucket (25 - 50 us)                                        : 141331
+  RTT bucket (50 - 75 us)                                        : 63934
+  RTT bucket (> 75 us)                                           : 457616
+  Min RTT (us)                                                   : 9
+  Max RTT (us)                                                   : 634
+
+NIC/Lif/QP id/Path id/Path qid : 42424650-5132-3535-3130-303542000000 (0000:03:00.0) / 02000070-0100-0000-4242-04908199dd40 (2) / 25 / 5 / 197
+--------------------------------------------------------------------------------------------------------------------------------------------
+
+Path TX statistics:
+  Packets                                                        : 8779559
+  ACKs                                                           : 0
+  SACKs                                                          : 0
+  RTO retransmit packets                                         : 3680
+  SACK retransmit packets                                        : 5041
+  CWND retry retransmit packets                                  : 346706
+  Path disabled (window exhausted)                               : 0
+  CWND overflow packets                                          : 0
+  Inactive output port changes                                   : 0
+  RTO output port changes                                        : 1
+  Retry ring doorbells                                           : 346706
+Path RX statistics:
+  Packets                                                        : 0
+  ACKs                                                           : 8223931
+  SACKs                                                          : 3967427
+  Duplicates                                                     : 0
+  Drops                                                          : 0
+  OOO packets                                                    : 0
+  ECN received                                                   : 0
+  Path inactive (congestion)                                     : 144
+  CC additive increments                                         : 24397
+  CC multiplicative decrements                                   : 24906
+  CNP received                                                   : 139272
+  RTT bucket (0 - 25 us)                                         : 781683
+  RTT bucket (25 - 50 us)                                        : 859783
+  RTT bucket (50 - 75 us)                                        : 322949
+  RTT bucket (> 75 us)                                           : 2614379
+  Min RTT (us)                                                   : 9
+  Max RTT (us)                                                   : 647
+
+NIC/Lif/QP id/Path id/Path qid : 42424650-5132-3535-3130-303542000000 (0000:03:00.0) / 02000070-0100-0000-4242-04908199dd40 (2) / 25 / 6 / 198
+--------------------------------------------------------------------------------------------------------------------------------------------
+
+Path TX statistics:
+  Packets                                                        : 6857790
+  ACKs                                                           : 285117
+  SACKs                                                          : 5475
+  RTO retransmit packets                                         : 3576
+  SACK retransmit packets                                        : 5277
+  CWND retry retransmit packets                                  : 301128
+  Path disabled (window exhausted)                               : 0
+  CWND overflow packets                                          : 0
+  Inactive output port changes                                   : 0
+  RTO output port changes                                        : 0
+  Retry ring doorbells                                           : 301128
+Path RX statistics:
+  Packets                                                        : 278327
+  ACKs                                                           : 6429010
+  SACKs                                                          : 3257115
+  Duplicates                                                     : 7019
+  Drops                                                          : 0
+  OOO packets                                                    : 10987
+  ECN received                                                   : 0
+  Path inactive (congestion)                                     : 200
+  CC additive increments                                         : 17397
+  CC multiplicative decrements                                   : 18197
+  CNP received                                                   : 193596
+  RTT bucket (0 - 25 us)                                         : 382039
+  RTT bucket (25 - 50 us)                                        : 566493
+  RTT bucket (50 - 75 us)                                        : 241979
+  RTT bucket (> 75 us)                                           : 2250892
+  Min RTT (us)                                                   : 9
+  Max RTT (us)                                                   : 636
+
+NIC/Lif/QP id/Path id/Path qid : 42424650-5132-3535-3130-303542000000 (0000:03:00.0) / 02000070-0100-0000-4242-04908199dd40 (2) / 25 / 7 / 199
+--------------------------------------------------------------------------------------------------------------------------------------------
+
+Path TX statistics:
+  Packets                                                        : 7303910
+  ACKs                                                           : 0
+  SACKs                                                          : 0
+  RTO retransmit packets                                         : 3286
+  SACK retransmit packets                                        : 5111
+  CWND retry retransmit packets                                  : 316713
+  Path disabled (window exhausted)                               : 0
+  CWND overflow packets                                          : 0
+  Inactive output port changes                                   : 0
+  RTO output port changes                                        : 0
+  Retry ring doorbells                                           : 316713
+Path RX statistics:
+  Packets                                                        : 0
+  ACKs                                                           : 6851336
+  SACKs                                                          : 3406283
+  Duplicates                                                     : 0
+  Drops                                                          : 0
+  OOO packets                                                    : 0
+  ECN received                                                   : 0
+  Path inactive (congestion)                                     : 203
+  CC additive increments                                         : 19233
+  CC multiplicative decrements                                   : 20045
+  CNP received                                                   : 185833
+  RTT bucket (0 - 25 us)                                         : 437399
+  RTT bucket (25 - 50 us)                                        : 560139
+  RTT bucket (50 - 75 us)                                        : 243828
+  RTT bucket (> 75 us)                                           : 2403166
+  Min RTT (us)                                                   : 9
+  Max RTT (us)                                                   : 736
+
+
+Number of paths : 8
+

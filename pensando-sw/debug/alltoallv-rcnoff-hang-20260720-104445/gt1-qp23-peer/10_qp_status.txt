@@ -1,0 +1,41 @@
+
+NIC/Lif : 42424650-5132-3535-3130-303542000000 (0000:03:00.0) / 02000070-0100-0000-4242-04908199dd40 (2)
+---------------------------------------------------------------------------------------------------------
+Local queue pair id                                          : 23
+Send queue status :
+  Queue state                                                : RTS (idle)
+  Header template address                                    : 0x200c5010
+  Header template size (in bytes)                            : 62
+  Requester TX status :
+    SQ ring PI/CI                                            : 210/210
+    MSN (message sequence number)                            : 56531
+    BMSN (base message sequence number)                      : 56531
+    CSN (completion sequence number)                         : 0
+    Active/Disabled/Inactive/Max paths                       : 4/0/4/8
+    Active path bitmap                                       : 0x0 95
+    Inactive path bitmap                                     : 0x0 6a
+    Traffic profile id                                       : 0
+    RCN                                                      : Disabled
+    Congestion state                                         : aimd
+    QP CWND (whole)                                          : 15
+    QP CWND (fraction)                                       : 4
+    QP CWND max                                              : 2048
+    RTT QP (us)                                              : 207
+    Rate hints (Gbps)                                        : 0
+    Average window per path                                  : 16
+    Round robin burst                                        : 1
+  Requester RX status :
+    ACK MSN                                                  : 56530
+Receive queue status :
+  Queue state                                                : ready-to-send
+  Responder TX status :
+    Producer index/Consumer index                            : 0/0
+  Responder RX status :
+    Expected CSN (completion sequence number)                : 56522
+    BMSN (base message sequence number)                      : 56523
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Number of queue pairs : 1
+
+Connection to 10.30.69.101 closed.

@@ -1,0 +1,338 @@
+
+{
+    "nic": [
+        {
+            "id": "42424650-5132-3534-3930-303232000000",
+            "lif": [
+                {
+                    "spec": {
+                        "id": "02000070-0100-0000-4242-0490818f1e40"
+                    },
+                    "queue_pair": [
+                        {
+                            "spec": {
+                                "id": "23"
+                            },
+                            "path": [
+                                {
+                                    "spec": {
+                                        "id": "0"
+                                    },
+                                    "statistics": {
+                                        "path_tx_statistics": {
+                                            "num_packet": "13157730",
+                                            "num_acknowledgement": "332590",
+                                            "num_sack": "5698",
+                                            "num_timeout_retransmitted_packet": "3759",
+                                            "num_selective_ack_retransmitted_packet": "5876",
+                                            "num_congestion_window_retry_retransmitted_packet": "382681",
+                                            "num_path_disabled": "0",
+                                            "num_cwnd_overflow_packets": "0",
+                                            "num_inactive_output_port_changes": "0",
+                                            "num_rto_output_port_changes": "1",
+                                            "num_retry_ring_doorbell": "382681"
+                                        },
+                                        "path_rx_statistics": {
+                                            "num_packet": "325407",
+                                            "num_acknowledgement": "12116905",
+                                            "num_sack": "6473355",
+                                            "num_duplicate": "7414",
+                                            "num_drop": "0",
+                                            "num_ooo_packets": "11488",
+                                            "num_ecn_received": "0",
+                                            "num_path_inactive": "219",
+                                            "num_cc_add_incr": "35359",
+                                            "num_cc_mul_decr": "36162",
+                                            "num_rx_cnp": "230622",
+                                            "rtt_bucket_1": "517936",
+                                            "rtt_bucket_2": "2005535",
+                                            "rtt_bucket_3": "526666",
+                                            "rtt_bucket_4": "3452405",
+                                            "min_rtt": "9",
+                                            "max_rtt": "608"
+                                        }
+                                    }
+                                },
+                                {
+                                    "spec": {
+                                        "id": "1"
+                                    },
+                                    "statistics": {
+                                        "path_tx_statistics": {
+                                            "num_packet": "4602164",
+                                            "num_acknowledgement": "0",
+                                            "num_sack": "0",
+                                            "num_timeout_retransmitted_packet": "2970",
+                                            "num_selective_ack_retransmitted_packet": "4684",
+                                            "num_congestion_window_retry_retransmitted_packet": "209668",
+                                            "num_path_disabled": "0",
+                                            "num_cwnd_overflow_packets": "0",
+                                            "num_inactive_output_port_changes": "0",
+                                            "num_rto_output_port_changes": "0",
+                                            "num_retry_ring_doorbell": "209668"
+                                        },
+                                        "path_rx_statistics": {
+                                            "num_packet": "0",
+                                            "num_acknowledgement": "4333452",
+                                            "num_sack": "2128208",
+                                            "num_duplicate": "0",
+                                            "num_drop": "0",
+                                            "num_ooo_packets": "0",
+                                            "num_ecn_received": "0",
+                                            "num_path_inactive": "157",
+                                            "num_cc_add_incr": "11286",
+                                            "num_cc_mul_decr": "11914",
+                                            "num_rx_cnp": "105343",
+                                            "rtt_bucket_1": "349738",
+                                            "rtt_bucket_2": "327021",
+                                            "rtt_bucket_3": "198144",
+                                            "rtt_bucket_4": "1509633",
+                                            "min_rtt": "9",
+                                            "max_rtt": "640"
+                                        }
+                                    }
+                                },
+                                {
+                                    "spec": {
+                                        "id": "2"
+                                    },
+                                    "statistics": {
+                                        "path_tx_statistics": {
+                                            "num_packet": "2952113",
+                                            "num_acknowledgement": "332876",
+                                            "num_sack": "5882",
+                                            "num_timeout_retransmitted_packet": "2574",
+                                            "num_selective_ack_retransmitted_packet": "5363",
+                                            "num_congestion_window_retry_retransmitted_packet": "141389",
+                                            "num_path_disabled": "0",
+                                            "num_cwnd_overflow_packets": "0",
+                                            "num_inactive_output_port_changes": "0",
+                                            "num_rto_output_port_changes": "0",
+                                            "num_retry_ring_doorbell": "141389"
+                                        },
+                                        "path_rx_statistics": {
+                                            "num_packet": "325445",
+                                            "num_acknowledgement": "2793244",
+                                            "num_sack": "1307910",
+                                            "num_duplicate": "7711",
+                                            "num_drop": "0",
+                                            "num_ooo_packets": "11854",
+                                            "num_ecn_received": "0",
+                                            "num_path_inactive": "249",
+                                            "num_cc_add_incr": "7271",
+                                            "num_cc_mul_decr": "8267",
+                                            "num_rx_cnp": "100099",
+                                            "rtt_bucket_1": "222563",
+                                            "rtt_bucket_2": "251921",
+                                            "rtt_bucket_3": "126100",
+                                            "rtt_bucket_4": "978527",
+                                            "min_rtt": "9",
+                                            "max_rtt": "596"
+                                        }
+                                    }
+                                },
+                                {
+                                    "spec": {
+                                        "id": "3"
+                                    },
+                                    "statistics": {
+                                        "path_tx_statistics": {
+                                            "num_packet": "3682309",
+                                            "num_acknowledgement": "0",
+                                            "num_sack": "0",
+                                            "num_timeout_retransmitted_packet": "3035",
+                                            "num_selective_ack_retransmitted_packet": "5810",
+                                            "num_congestion_window_retry_retransmitted_packet": "183655",
+                                            "num_path_disabled": "0",
+                                            "num_cwnd_overflow_packets": "0",
+                                            "num_inactive_output_port_changes": "0",
+                                            "num_rto_output_port_changes": "0",
+                                            "num_retry_ring_doorbell": "183655"
+                                        },
+                                        "path_rx_statistics": {
+                                            "num_packet": "0",
+                                            "num_acknowledgement": "3491518",
+                                            "num_sack": "1563338",
+                                            "num_duplicate": "0",
+                                            "num_drop": "0",
+                                            "num_ooo_packets": "0",
+                                            "num_ecn_received": "0",
+                                            "num_path_inactive": "321",
+                                            "num_cc_add_incr": "9636",
+                                            "num_cc_mul_decr": "10920",
+                                            "num_rx_cnp": "102734",
+                                            "rtt_bucket_1": "266912",
+                                            "rtt_bucket_2": "381130",
+                                            "rtt_bucket_3": "165177",
+                                            "rtt_bucket_4": "1217721",
+                                            "min_rtt": "10",
+                                            "max_rtt": "661"
+                                        }
+                                    }
+                                },
+                                {
+                                    "spec": {
+                                        "id": "4"
+                                    },
+                                    "statistics": {
+                                        "path_tx_statistics": {
+                                            "num_packet": "7770094",
+                                            "num_acknowledgement": "332736",
+                                            "num_sack": "5890",
+                                            "num_timeout_retransmitted_packet": "3141",
+                                            "num_selective_ack_retransmitted_packet": "6493",
+                                            "num_congestion_window_retry_retransmitted_packet": "299515",
+                                            "num_path_disabled": "0",
+                                            "num_cwnd_overflow_packets": "0",
+                                            "num_inactive_output_port_changes": "0",
+                                            "num_rto_output_port_changes": "0",
+                                            "num_retry_ring_doorbell": "299515"
+                                        },
+                                        "path_rx_statistics": {
+                                            "num_packet": "325440",
+                                            "num_acknowledgement": "7226017",
+                                            "num_sack": "3591135",
+                                            "num_duplicate": "7513",
+                                            "num_drop": "0",
+                                            "num_ooo_packets": "11836",
+                                            "num_ecn_received": "0",
+                                            "num_path_inactive": "243",
+                                            "num_cc_add_incr": "22398",
+                                            "num_cc_mul_decr": "23366",
+                                            "num_rx_cnp": "131342",
+                                            "rtt_bucket_1": "460379",
+                                            "rtt_bucket_2": "905348",
+                                            "rtt_bucket_3": "306986",
+                                            "rtt_bucket_4": "2251978",
+                                            "min_rtt": "9",
+                                            "max_rtt": "712"
+                                        }
+                                    }
+                                },
+                                {
+                                    "spec": {
+                                        "id": "5"
+                                    },
+                                    "statistics": {
+                                        "path_tx_statistics": {
+                                            "num_packet": "4550281",
+                                            "num_acknowledgement": "0",
+                                            "num_sack": "0",
+                                            "num_timeout_retransmitted_packet": "3332",
+                                            "num_selective_ack_retransmitted_packet": "5960",
+                                            "num_congestion_window_retry_retransmitted_packet": "217565",
+                                            "num_path_disabled": "0",
+                                            "num_cwnd_overflow_packets": "0",
+                                            "num_inactive_output_port_changes": "0",
+                                            "num_rto_output_port_changes": "0",
+                                            "num_retry_ring_doorbell": "217565"
+                                        },
+                                        "path_rx_statistics": {
+                                            "num_packet": "0",
+                                            "num_acknowledgement": "4313412",
+                                            "num_sack": "1949785",
+                                            "num_duplicate": "0",
+                                            "num_drop": "0",
+                                            "num_ooo_packets": "0",
+                                            "num_ecn_received": "0",
+                                            "num_path_inactive": "196",
+                                            "num_cc_add_incr": "11496",
+                                            "num_cc_mul_decr": "12280",
+                                            "num_rx_cnp": "84978",
+                                            "rtt_bucket_1": "389150",
+                                            "rtt_bucket_2": "342880",
+                                            "rtt_bucket_3": "190804",
+                                            "rtt_bucket_4": "1508661",
+                                            "min_rtt": "10",
+                                            "max_rtt": "649"
+                                        }
+                                    }
+                                },
+                                {
+                                    "spec": {
+                                        "id": "6"
+                                    },
+                                    "statistics": {
+                                        "path_tx_statistics": {
+                                            "num_packet": "1489078",
+                                            "num_acknowledgement": "185668",
+                                            "num_sack": "4434",
+                                            "num_timeout_retransmitted_packet": "1316",
+                                            "num_selective_ack_retransmitted_packet": "3078",
+                                            "num_congestion_window_retry_retransmitted_packet": "85029",
+                                            "num_path_disabled": "0",
+                                            "num_cwnd_overflow_packets": "0",
+                                            "num_inactive_output_port_changes": "0",
+                                            "num_rto_output_port_changes": "0",
+                                            "num_retry_ring_doorbell": "85029"
+                                        },
+                                        "path_rx_statistics": {
+                                            "num_packet": "180522",
+                                            "num_acknowledgement": "1428114",
+                                            "num_sack": "526622",
+                                            "num_duplicate": "5303",
+                                            "num_drop": "0",
+                                            "num_ooo_packets": "8937",
+                                            "num_ecn_received": "0",
+                                            "num_path_inactive": "121",
+                                            "num_cc_add_incr": "3781",
+                                            "num_cc_mul_decr": "4265",
+                                            "num_rx_cnp": "26691",
+                                            "rtt_bucket_1": "169745",
+                                            "rtt_bucket_2": "134208",
+                                            "rtt_bucket_3": "61609",
+                                            "rtt_bucket_4": "518756",
+                                            "min_rtt": "9",
+                                            "max_rtt": "616"
+                                        }
+                                    }
+                                },
+                                {
+                                    "spec": {
+                                        "id": "7"
+                                    },
+                                    "statistics": {
+                                        "path_tx_statistics": {
+                                            "num_packet": "3350869",
+                                            "num_acknowledgement": "147432",
+                                            "num_sack": "1859",
+                                            "num_timeout_retransmitted_packet": "3016",
+                                            "num_selective_ack_retransmitted_packet": "6952",
+                                            "num_congestion_window_retry_retransmitted_packet": "196508",
+                                            "num_path_disabled": "0",
+                                            "num_cwnd_overflow_packets": "0",
+                                            "num_inactive_output_port_changes": "0",
+                                            "num_rto_output_port_changes": "0",
+                                            "num_retry_ring_doorbell": "196508"
+                                        },
+                                        "path_rx_statistics": {
+                                            "num_packet": "144900",
+                                            "num_acknowledgement": "3197545",
+                                            "num_sack": "1283836",
+                                            "num_duplicate": "2616",
+                                            "num_drop": "0",
+                                            "num_ooo_packets": "3725",
+                                            "num_ecn_received": "0",
+                                            "num_path_inactive": "395",
+                                            "num_cc_add_incr": "10927",
+                                            "num_cc_mul_decr": "12511",
+                                            "num_rx_cnp": "51955",
+                                            "rtt_bucket_1": "348047",
+                                            "rtt_bucket_2": "319680",
+                                            "rtt_bucket_3": "140499",
+                                            "rtt_bucket_4": "1127554",
+                                            "min_rtt": "10",
+                                            "max_rtt": "658"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
+
+Connection to 10.30.69.98 closed.

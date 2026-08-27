@@ -1,0 +1,71 @@
+Running all_reduce, qps 1 ...
+Num nodes: 2
+LIST ________________________roce_ai0_vip,roce_ai1_vip,roce_ai2_vip,roce_ai3_vip,roce_ai4_vip,roce_ai5_vip,roce_ai6_vip,roce_ai7_vip
++ /home/amd/vul-rccl/ompi_build/bin/mpirun --np 16 --allow-run-as-root -H 10.30.69.101:8,10.30.69.98:8 --bind-to numa -x NCCL_IB_GID_INDEX=1 -x NCCL_GDR_FLUSH_DISABLE=1 -x RCCL_GDR_FLUSH_GPU_MEM_NO_RELAXED_ORDERING=0 -x PATH=/home/amd/vul-rccl/ompi_build/bin:/opt/rocm/bin:/root/.local/bin:/root/bin:/usr/share/Modules/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin -x LD_LIBRARY_PATH=/home/amd/vul-rccl/rccl/build/release:/home/amd/vul-rccl/amd-anp-mp-new/build:/home/amd/vul-rccl/ompi_build/lib:/home/amd/vul-rccl/rccl/build/release/_deps/fmt-build: --mca btl '^vader,openib' -mca btl_tcp_if_include eth0 -x NCCL_SOCKET_IFNAME=eth0 -x NCCL_IB_QPS_PER_CONNECTION=1 -x NCCL_TOPO_DUMP_FILE=/tmp/system_run2.txt -x HSA_NO_SCRATCH_RECLAIM=1 -x NCCL_IB_TC=128 -x NCCL_IB_FIFO_TC=144 -x NCCL_IGNORE_CPU_AFFINITY=1 -x NCCL_PXN_DISABLE=1 -x NCCL_DMABUF_ENABLE=1 -x NCCL_DEBUG=VERSION -x RCCL_VIP_PIP_MAP_FILE=/home/amd/vul-rccl/vip_pip_mapping_gt_u.json -x NCCL_NET_OPTIONAL_RECV_COMPLETION=1 -x NCCL_IB_USE_INLINE=1 -x IONIC_LOCKFREE=all -x NCCL_IB_HCA=roce_ai0_vip,roce_ai1_vip,roce_ai2_vip,roce_ai3_vip,roce_ai4_vip,roce_ai5_vip,roce_ai6_vip,roce_ai7_vip -x NCCL_NET_PLUGIN=librccl-anp.so -x RCCL_LL128_FORCE_ENABLE=1 -x LD_PRELOAD=/home/amd/vul-rccl/rccl/build/release/librccl.so.1.0 /home/amd/vul-rccl/rccl-tests/build/all_reduce_perf -b 16 -e 16G -f 2 -g 1 -n 20 -c 1 -w 5
+# Collective test starting: all_reduce_perf
+# nThread 1 nGpus 1 minBytes 16 maxBytes 17179869184 step: 2(factor) warmup iters: 5 iters: 20 agg iters: 1 validation: 1 graph: 0
+#
+rccl-tests: Version develop_deprecated:40b1b17
+# Using devices
+#  Rank  0 Group  0 Pid  89371 on SC-GT-Node1 device  0 [0000:0e:00] AMD Instinct MI300X
+#  Rank  1 Group  0 Pid  89372 on SC-GT-Node1 device  1 [0000:6e:00] AMD Instinct MI300X
+#  Rank  2 Group  0 Pid  89373 on SC-GT-Node1 device  2 [0000:4e:00] AMD Instinct MI300X
+#  Rank  3 Group  0 Pid  89374 on SC-GT-Node1 device  3 [0000:2e:00] AMD Instinct MI300X
+#  Rank  4 Group  0 Pid  89375 on SC-GT-Node1 device  4 [0000:ef:00] AMD Instinct MI300X
+#  Rank  5 Group  0 Pid  89376 on SC-GT-Node1 device  5 [0000:ce:00] AMD Instinct MI300X
+#  Rank  6 Group  0 Pid  89377 on SC-GT-Node1 device  6 [0000:8e:00] AMD Instinct MI300X
+#  Rank  7 Group  0 Pid  89378 on SC-GT-Node1 device  7 [0000:ae:00] AMD Instinct MI300X
+#  Rank  8 Group  0 Pid  67102 on SC-GT-Node4 device  0 [0000:0e:00] AMD Instinct MI325X
+#  Rank  9 Group  0 Pid  67103 on SC-GT-Node4 device  1 [0000:6e:00] AMD Instinct MI325X
+#  Rank 10 Group  0 Pid  67104 on SC-GT-Node4 device  2 [0000:4e:00] AMD Instinct MI325X
+#  Rank 11 Group  0 Pid  67105 on SC-GT-Node4 device  3 [0000:2e:00] AMD Instinct MI325X
+#  Rank 12 Group  0 Pid  67106 on SC-GT-Node4 device  4 [0000:ef:00] AMD Instinct MI325X
+#  Rank 13 Group  0 Pid  67107 on SC-GT-Node4 device  5 [0000:ce:00] AMD Instinct MI325X
+#  Rank 14 Group  0 Pid  67108 on SC-GT-Node4 device  6 [0000:8e:00] AMD Instinct MI325X
+#  Rank 15 Group  0 Pid  67109 on SC-GT-Node4 device  7 [0000:ae:00] AMD Instinct MI325X
+RCCL version : 2.27.7-Unknown 
+HIP version  : 7.0.51831-7c9236b16
+ROCm version : 7.0.2.0-56-9428210
+Hostname     : SC-GT-Node1
+Librccl path : /home/amd/vul-rccl/rccl/build/release/librccl.so.1.0
+#
+#                                                              out-of-place                       in-place          
+#       size         count      type   redop    root     time   algbw   busbw #wrong     time   algbw   busbw #wrong                               
+#        (B)    (elements)                               (us)  (GB/s)  (GB/s)            (us)  (GB/s)  (GB/s)                                      
+          16             4     float     sum      -1    39.41    0.00    0.00      0    36.05    0.00    0.00      0
+          32             8     float     sum      -1    37.36    0.00    0.00      0    36.75    0.00    0.00      0
+          64            16     float     sum      -1    36.16    0.00    0.00      0    37.21    0.00    0.00      0
+         128            32     float     sum      -1    37.14    0.00    0.01      0    41.83    0.00    0.01      0
+         256            64     float     sum      -1    37.41    0.01    0.01      0    40.08    0.01    0.01      0
+         512           128     float     sum      -1    39.17    0.01    0.02      0    38.36    0.01    0.03      0
+        1024           256     float     sum      -1    39.93    0.03    0.05      0    41.78    0.02    0.05      0
+        2048           512     float     sum      -1    41.98    0.05    0.09      0    42.69    0.05    0.09      0
+        4096          1024     float     sum      -1    46.97    0.09    0.16      0    44.08    0.09    0.17      0
+        8192          2048     float     sum      -1    44.44    0.18    0.35      0    46.07    0.18    0.33      0
+       16384          4096     float     sum      -1    46.43    0.35    0.66      0    45.70    0.36    0.67      0
+       32768          8192     float     sum      -1    47.81    0.69    1.28      0    46.54    0.70    1.32      0
+       65536         16384     float     sum      -1    48.97    1.34    2.51      0    47.75    1.37    2.57      0
+      131072         32768     float     sum      -1    50.33    2.60    4.88      0    50.17    2.61    4.90      0
+      262144         65536     float     sum      -1    55.51    4.72    8.85      0    56.21    4.66    8.74      0
+      524288        131072     float     sum      -1    75.81    6.92   12.97      0    74.03    7.08   13.28      0
+     1048576        262144     float     sum      -1    95.58   10.97   20.57      0    99.00   10.59   19.86      0
+     2097152        524288     float     sum      -1    106.7   19.66   36.86      0    103.6   20.25   37.96      0
+     4194304       1048576     float     sum      -1    120.5   34.82   65.28      0    120.4   34.83   65.31      0
+     8388608       2097152     float     sum      -1    170.3   49.26   92.36      0    165.7   50.63   94.93      0
+    16777216       4194304     float     sum      -1    267.5   62.71  117.58      0    277.5   60.46  113.37      0
+    33554432       8388608     float     sum      -1    407.6   82.31  154.34      0    410.6   81.72  153.22      0
+    67108864      16777216     float     sum      -1    615.5  109.03  204.43      0    615.6  109.02  204.41      0
+   134217728      33554432     float     sum      -1   1016.8  132.00  247.51      0    996.5  134.69  252.54      0
+   268435456      67108864     float     sum      -1   1485.3  180.72  338.86      0   1494.0  179.67  336.89      0
+   536870912     134217728     float     sum      -1   2904.4  184.85  346.59      0   2905.5  184.78  346.45      0
+  1073741824     268435456     float     sum      -1   5793.6  185.33  347.50      0   5797.7  185.20  347.25      0
+  2147483648     536870912     float     sum      -1    11564  185.71  348.20      0    11564  185.70  348.19      0
+  4294967296    1073741824     float     sum      -1    23000  186.73  350.13      0    23027  186.52  349.73      0
+  8589934592    2147483648     float     sum      -1    45900  187.14  350.90      0    46070  186.45  349.60      0
+ 17179869184    4294967296     float     sum      -1    91941  186.86  350.36      0    91577  187.60  351.75      0
+# Errors with asterisks indicate errors that have exceeded the maximum threshold.
+# Out of bounds values : 0 OK
+# Avg bus bandwidth    : 109.79 
+#
+# Collective test concluded: all_reduce_perf
+

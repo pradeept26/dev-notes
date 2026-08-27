@@ -1,0 +1,269 @@
+
+NIC/Lif/QP id/Path id/Path qid : 42424650-5132-3535-3130-303542000000 (0000:03:00.0) / 02000070-0100-0000-4242-04908199dd40 (2) / 23 / 0 / 152
+--------------------------------------------------------------------------------------------------------------------------------------------
+Path id                                                          : 152
+Path TX status :
+  Port index                                                     : 3
+  Path entropy                                                   : 65305
+  Ring0 (ack): PI/CI                                             : 59639/59639
+  Ring1 (rto retransmit): PI/CI                                  : 1536/1536
+  Ring2 (sack retransmit): PI/CI                                 : 5696/5696
+  Ring3 (timer): PI/CI                                           : 478/478
+  Ring4 (cwnd retry): PI/CI                                      : 0/0
+  Retransmission ring: PI/CI                                     : 287/287
+  Send next FSN (snd_nxt)                                        : 63263
+  Send unacked FSN (snd_una)                                     : 63263
+  Send max FSN (snd_max)                                         : 0
+  Retransmit ring outstanding                                    : 0
+  Retransmit state                                               : idle
+  SACK holes                                                     : 0
+  RTO retry count at same snd_una                                : 1
+  Congestion window (effective PWND)                             : 4
+  Send inflate (SACKed packets)                                  : 0
+  RTT (smoothed, us)                                             : 77
+  RTT mean deviation                                             : 728
+  RTO (retransmission timeout, us)                               : 441
+  Last ACK or packet sent timestamp                              : 6726733928671
+  ACK/NAK status                                                 : 0
+  Last tx ack cumulative FSN                                     : 50529
+  Last tx ack cumulative delivered MSN                           : 56522
+Path RX status :
+  Receive next FSN (rcv_nxt)                                     : 50530
+  Max received FSN (max_fsn)                                     : 50529
+  Last entropy received from requester                           : 62900
+
+NIC/Lif/QP id/Path id/Path qid : 42424650-5132-3535-3130-303542000000 (0000:03:00.0) / 02000070-0100-0000-4242-04908199dd40 (2) / 23 / 1 / 153
+--------------------------------------------------------------------------------------------------------------------------------------------
+Path id                                                          : 153
+Path TX status :
+  Port index                                                     : 3
+  Path entropy                                                   : 62233
+  Ring0 (ack): PI/CI                                             : 21915/21915
+  Ring1 (rto retransmit): PI/CI                                  : 0/0
+  Ring2 (sack retransmit): PI/CI                                 : 0/0
+  Ring3 (timer): PI/CI                                           : 0/0
+  Ring4 (cwnd retry): PI/CI                                      : 0/0
+  Retransmission ring: PI/CI                                     : 0/0
+  Send next FSN (snd_nxt)                                        : 0
+  Send unacked FSN (snd_una)                                     : 0
+  Send max FSN (snd_max)                                         : 0
+  Retransmit ring outstanding                                    : 0
+  Retransmit state                                               : idle
+  SACK holes                                                     : 0
+  Congestion window (effective PWND)                             : 0
+  Send inflate (SACKed packets)                                  : 0
+  Path inactive (cwnd=0)                                         : True
+  RTT (smoothed, us)                                             : 0
+  RTT mean deviation                                             : 0
+  RTO (retransmission timeout, us)                               : 75
+  Last ACK or packet sent timestamp                              : 0
+  ACK/NAK status                                                 : 0
+  Last tx ack cumulative FSN                                     : 14643
+  Last tx ack cumulative delivered MSN                           : 48001
+Path RX status :
+  Receive next FSN (rcv_nxt)                                     : 14644
+  Max received FSN (max_fsn)                                     : 14643
+  Last entropy received from requester                           : 62630
+
+NIC/Lif/QP id/Path id/Path qid : 42424650-5132-3535-3130-303542000000 (0000:03:00.0) / 02000070-0100-0000-4242-04908199dd40 (2) / 23 / 2 / 154
+--------------------------------------------------------------------------------------------------------------------------------------------
+Path id                                                          : 154
+Path TX status :
+  Port index                                                     : 0
+  Path entropy                                                   : 65531
+  Ring0 (ack): PI/CI                                             : 10305/10305
+  Ring1 (rto retransmit): PI/CI                                  : 1648/1648
+  Ring2 (sack retransmit): PI/CI                                 : 5882/5882
+  Ring3 (timer): PI/CI                                           : 42636/42636
+  Ring4 (cwnd retry): PI/CI                                      : 0/0
+  Retransmission ring: PI/CI                                     : 325/325
+  Send next FSN (snd_nxt)                                        : 63301
+  Send unacked FSN (snd_una)                                     : 63301
+  Send max FSN (snd_max)                                         : 0
+  Retransmit ring outstanding                                    : 0
+  Retransmit state                                               : idle
+  SACK holes                                                     : 0
+  RTO retry count at same snd_una                                : 2
+  Congestion window (effective PWND)                             : 4
+  Send inflate (SACKed packets)                                  : 0
+  RTT (smoothed, us)                                             : 59
+  RTT mean deviation                                             : 491
+  RTO (retransmission timeout, us)                               : 305
+  Last ACK or packet sent timestamp                              : 6726733838509
+  ACK/NAK status                                                 : 0
+  Last tx ack cumulative FSN                                     : 2992
+  Last tx ack cumulative delivered MSN                           : 20243
+Path RX status :
+  Receive next FSN (rcv_nxt)                                     : 2993
+  Max received FSN (max_fsn)                                     : 2992
+  Last entropy received from requester                           : 62827
+
+NIC/Lif/QP id/Path id/Path qid : 42424650-5132-3535-3130-303542000000 (0000:03:00.0) / 02000070-0100-0000-4242-04908199dd40 (2) / 23 / 3 / 155
+--------------------------------------------------------------------------------------------------------------------------------------------
+Path id                                                          : 155
+Path TX status :
+  Port index                                                     : 0
+  Path entropy                                                   : 62235
+  Ring0 (ack): PI/CI                                             : 20354/20354
+  Ring1 (rto retransmit): PI/CI                                  : 0/0
+  Ring2 (sack retransmit): PI/CI                                 : 0/0
+  Ring3 (timer): PI/CI                                           : 0/0
+  Ring4 (cwnd retry): PI/CI                                      : 0/0
+  Retransmission ring: PI/CI                                     : 0/0
+  Send next FSN (snd_nxt)                                        : 0
+  Send unacked FSN (snd_una)                                     : 0
+  Send max FSN (snd_max)                                         : 0
+  Retransmit ring outstanding                                    : 0
+  Retransmit state                                               : idle
+  SACK holes                                                     : 0
+  Congestion window (effective PWND)                             : 0
+  Send inflate (SACKed packets)                                  : 0
+  Path inactive (cwnd=0)                                         : True
+  RTT (smoothed, us)                                             : 0
+  RTT mean deviation                                             : 0
+  RTO (retransmission timeout, us)                               : 75
+  Last ACK or packet sent timestamp                              : 0
+  ACK/NAK status                                                 : 0
+  Last tx ack cumulative FSN                                     : 12292
+  Last tx ack cumulative delivered MSN                           : 8307
+Path RX status :
+  Receive next FSN (rcv_nxt)                                     : 12293
+  Max received FSN (max_fsn)                                     : 12292
+  Last entropy received from requester                           : 63022
+
+NIC/Lif/QP id/Path id/Path qid : 42424650-5132-3535-3130-303542000000 (0000:03:00.0) / 02000070-0100-0000-4242-04908199dd40 (2) / 23 / 4 / 156
+--------------------------------------------------------------------------------------------------------------------------------------------
+Path id                                                          : 156
+Path TX status :
+  Port index                                                     : 1
+  Path entropy                                                   : 65339
+  Ring0 (ack): PI/CI                                             : 45872/45872
+  Ring1 (rto retransmit): PI/CI                                  : 1551/1551
+  Ring2 (sack retransmit): PI/CI                                 : 5890/5890
+  Ring3 (timer): PI/CI                                           : 51840/51840
+  Ring4 (cwnd retry): PI/CI                                      : 0/0
+  Retransmission ring: PI/CI                                     : 320/320
+  Send next FSN (snd_nxt)                                        : 63296
+  Send unacked FSN (snd_una)                                     : 63296
+  Send max FSN (snd_max)                                         : 0
+  Retransmit ring outstanding                                    : 0
+  Retransmit state                                               : idle
+  SACK holes                                                     : 0
+  RTO retry count at same snd_una                                : 1
+  Congestion window (effective PWND)                             : 4
+  Send inflate (SACKed packets)                                  : 0
+  RTT (smoothed, us)                                             : 47
+  RTT mean deviation                                             : 459
+  RTO (retransmission timeout, us)                               : 277
+  Last ACK or packet sent timestamp                              : 6726733776562
+  ACK/NAK status                                                 : 0
+  Last tx ack cumulative FSN                                     : 36845
+  Last tx ack cumulative delivered MSN                           : 38273
+Path RX status :
+  Receive next FSN (rcv_nxt)                                     : 36846
+  Max received FSN (max_fsn)                                     : 36845
+  Last entropy received from requester                           : 62996
+
+NIC/Lif/QP id/Path id/Path qid : 42424650-5132-3535-3130-303542000000 (0000:03:00.0) / 02000070-0100-0000-4242-04908199dd40 (2) / 23 / 5 / 157
+--------------------------------------------------------------------------------------------------------------------------------------------
+Path id                                                          : 157
+Path TX status :
+  Port index                                                     : 1
+  Path entropy                                                   : 62237
+  Ring0 (ack): PI/CI                                             : 37090/37090
+  Ring1 (rto retransmit): PI/CI                                  : 0/0
+  Ring2 (sack retransmit): PI/CI                                 : 0/0
+  Ring3 (timer): PI/CI                                           : 0/0
+  Ring4 (cwnd retry): PI/CI                                      : 0/0
+  Retransmission ring: PI/CI                                     : 0/0
+  Send next FSN (snd_nxt)                                        : 0
+  Send unacked FSN (snd_una)                                     : 0
+  Send max FSN (snd_max)                                         : 0
+  Retransmit ring outstanding                                    : 0
+  Retransmit state                                               : idle
+  SACK holes                                                     : 0
+  Congestion window (effective PWND)                             : 0
+  Send inflate (SACKed packets)                                  : 0
+  Path inactive (cwnd=0)                                         : True
+  RTT (smoothed, us)                                             : 0
+  RTT mean deviation                                             : 0
+  RTO (retransmission timeout, us)                               : 75
+  Last ACK or packet sent timestamp                              : 0
+  ACK/NAK status                                                 : 0
+  Last tx ack cumulative FSN                                     : 28296
+  Last tx ack cumulative delivered MSN                           : 42
+Path RX status :
+  Receive next FSN (rcv_nxt)                                     : 28297
+  Max received FSN (max_fsn)                                     : 28296
+  Last entropy received from requester                           : 62867
+
+NIC/Lif/QP id/Path id/Path qid : 42424650-5132-3535-3130-303542000000 (0000:03:00.0) / 02000070-0100-0000-4242-04908199dd40 (2) / 23 / 6 / 158
+--------------------------------------------------------------------------------------------------------------------------------------------
+Path id                                                          : 158
+Path TX status :
+  Port index                                                     : 2
+  Path entropy                                                   : 63981
+  Ring0 (ack): PI/CI                                             : 51372/51372
+  Ring1 (rto retransmit): PI/CI                                  : 871/871
+  Ring2 (sack retransmit): PI/CI                                 : 4434/4434
+  Ring3 (timer): PI/CI                                           : 32697/32697
+  Ring4 (cwnd retry): PI/CI                                      : 0/0
+  Retransmission ring: PI/CI                                     : 298/298
+  Send next FSN (snd_nxt)                                        : 49450
+  Send unacked FSN (snd_una)                                     : 49450
+  Send max FSN (snd_max)                                         : 0
+  Retransmit ring outstanding                                    : 0
+  Retransmit state                                               : idle
+  SACK holes                                                     : 0
+  Congestion window (effective PWND)                             : 0
+  Send inflate (SACKed packets)                                  : 0
+  Path inactive (cwnd=0)                                         : True
+  RTT (smoothed, us)                                             : 61
+  RTT mean deviation                                             : 598
+  RTO (retransmission timeout, us)                               : 360
+  Last ACK or packet sent timestamp                              : 6675374993415
+  ACK/NAK status                                                 : 0
+  Last tx ack cumulative FSN                                     : 47285
+  Last tx ack cumulative delivered MSN                           : 25117
+Path RX status :
+  Receive next FSN (rcv_nxt)                                     : 47286
+  Max received FSN (max_fsn)                                     : 47285
+  Last entropy received from requester                           : 62223
+
+NIC/Lif/QP id/Path id/Path qid : 42424650-5132-3535-3130-303542000000 (0000:03:00.0) / 02000070-0100-0000-4242-04908199dd40 (2) / 23 / 7 / 159
+--------------------------------------------------------------------------------------------------------------------------------------------
+Path id                                                          : 159
+Path TX status :
+  Port index                                                     : 2
+  Path entropy                                                   : 63512
+  Ring0 (ack): PI/CI                                             : 17530/17530
+  Ring1 (rto retransmit): PI/CI                                  : 636/636
+  Ring2 (sack retransmit): PI/CI                                 : 1859/1859
+  Ring3 (timer): PI/CI                                           : 30361/30361
+  Ring4 (cwnd retry): PI/CI                                      : 0/0
+  Retransmission ring: PI/CI                                     : 4/4
+  Send next FSN (snd_nxt)                                        : 13828
+  Send unacked FSN (snd_una)                                     : 13828
+  Send max FSN (snd_max)                                         : 0
+  Retransmit ring outstanding                                    : 0
+  Retransmit state                                               : idle
+  SACK holes                                                     : 0
+  RTO retry count at same snd_una                                : 3
+  Congestion window (effective PWND)                             : 3
+  Send inflate (SACKed packets)                                  : 0
+  RTT (smoothed, us)                                             : 73
+  RTT mean deviation                                             : 761
+  RTO (retransmission timeout, us)                               : 454
+  Last ACK or packet sent timestamp                              : 6726733977764
+  ACK/NAK status                                                 : 0
+  Last tx ack cumulative FSN                                     : 8532
+  Last tx ack cumulative delivered MSN                           : 39051
+Path RX status :
+  Receive next FSN (rcv_nxt)                                     : 8533
+  Max received FSN (max_fsn)                                     : 8532
+  Last entropy received from requester                           : 63341
+
+
+Number of paths : 8
+
+Connection to 10.30.69.101 closed.

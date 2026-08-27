@@ -1,0 +1,7 @@
+
+NIC/Lif : 42424650-5132-3534-3930-303232000000 (0000:03:00.0) / 02000070-0100-0000-4242-0490818f1e40 (2)
+Number of queue pairs : 61
+Number of CTS queue pairs  : 32
+Number of data queue pairs : 29
+
+Connection to 10.30.69.98 closed.

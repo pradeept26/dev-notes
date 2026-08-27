@@ -1,0 +1,128 @@
+{
+    "nic": [
+        {
+            "id": "42424650-5132-3534-3930-303232000000",
+            "lif": [
+                {
+                    "id": "02000070-0100-0000-4242-0490818f1e40",
+                    "queue_pair": [
+                        {
+                            "spec": {
+                                "local_qp_id": "23",
+                                "remote_qp_id": "23",
+                                "source_mac_address": "04:90:81:8f:1e:41",
+                                "destination_mac_address": "80:ba:16:00:2d:77",
+                                "source_ip_address": "2001::50:2:4:30",
+                                "destination_ip_address": "2001::50:1:0:30",
+                                "ip_protocol": "UDP",
+                                "dscp_or_traffic_class": "32",
+                                "plane": [
+                                    {
+                                        "source_mac_address": "04:90:81:8f:1e:41",
+                                        "destination_mac_address": "80:ba:16:00:2d:77",
+                                        "source_ip_address": "2001::50:2:4:30",
+                                        "destination_ip_address": "2001::50:1:0:30",
+                                        "ip_protocol": "UDP",
+                                        "vlan_priority": "0",
+                                        "dscp_or_traffic_class": "32"
+                                    },
+                                    {
+                                        "source_mac_address": "04:90:81:8f:1e:42",
+                                        "destination_mac_address": "80:ba:16:00:2d:77",
+                                        "source_ip_address": "2001::50:2:4:32",
+                                        "destination_ip_address": "2001::50:1:0:32",
+                                        "ip_protocol": "UDP",
+                                        "vlan_priority": "0",
+                                        "dscp_or_traffic_class": "32"
+                                    },
+                                    {
+                                        "source_mac_address": "04:90:81:8f:1e:43",
+                                        "destination_mac_address": "80:ba:16:00:2d:77",
+                                        "source_ip_address": "2001::50:2:4:34",
+                                        "destination_ip_address": "2001::50:1:0:34",
+                                        "ip_protocol": "UDP",
+                                        "vlan_priority": "0",
+                                        "dscp_or_traffic_class": "32"
+                                    },
+                                    {
+                                        "source_mac_address": "04:90:81:8f:1e:44",
+                                        "destination_mac_address": "80:ba:16:00:2d:77",
+                                        "source_ip_address": "2001::50:2:4:36",
+                                        "destination_ip_address": "2001::50:1:0:36",
+                                        "ip_protocol": "UDP",
+                                        "vlan_priority": "0",
+                                        "dscp_or_traffic_class": "32"
+                                    }
+                                ]
+                            },
+                            "status": {
+                                "send_queue": {
+                                    "queue_state": "RTS (active)",
+                                    "header_template_address": "0x200c4fe0",
+                                    "header_template_size": "62",
+                                    "requester_tx_status": {
+                                        "queue_ring_status": {
+                                            "ring": [
+                                                {
+                                                    "id": "0",
+                                                    "producer_index": "210",
+                                                    "consumer_index": "201"
+                                                }
+                                            ]
+                                        },
+                                        "message_sequence_number": "56523",
+                                        "completion_queue_control_block_base_address": "0x100cbcf00",
+                                        "completion_sequence_number": "56522",
+                                        "base_message_sequence_number": "56524",
+                                        "active_path_bitmap_1": "0",
+                                        "active_path_bitmap_2": "0",
+                                        "max_paths": "8",
+                                        "num_active_path": "0",
+                                        "num_disabled_path": "5",
+                                        "num_inactive_path": "3",
+                                        "inactive_path_bitmap_1": "0",
+                                        "inactive_path_bitmap_2": "25",
+                                        "traffic_profile_id": "0",
+                                        "rcn": "Disabled",
+                                        "congestion_state": "aimd",
+                                        "qp_cwnd_whole": "0",
+                                        "qp_cwnd_fraction": "56",
+                                        "qp_cwnd_max": "2048",
+                                        "rtt_qp": "1346",
+                                        "rate_hints": "0",
+                                        "average_window_shift": "4",
+                                        "round_robin_burst": "1"
+                                    },
+                                    "requester_rx_status": {
+                                        "ack_message_sequence_number": "56522",
+                                        "unacked_messages": "1"
+                                    }
+                                },
+                                "receive_queue": {
+                                    "responder_tx_status": {
+                                        "queue_ring_status": {
+                                            "ring": [
+                                                {
+                                                    "id": "0",
+                                                    "producer_index": "0",
+                                                    "consumer_index": "0"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "active_qp": "false",
+                                    "responder_rx_status": {
+                                        "expected_completion_sequence_number": "0",
+                                        "base_message_sequence_num": "56531"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
+
+Connection to 10.30.69.98 closed.

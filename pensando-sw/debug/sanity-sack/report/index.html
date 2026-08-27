@@ -1,0 +1,188 @@
+<html><head><meta charset='utf-8'><title>GT SACK/RCN busBW comparison</title><style>
+body{font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:24px;color:#1b1f23;background:#fafbfc}
+h1{font-size:22px;margin:0 0 4px} h2{font-size:17px;margin:26px 0 8px;border-bottom:2px solid #e1e4e8;padding-bottom:4px}
+.meta{color:#586069;font-size:13px;margin-bottom:16px;line-height:1.5}
+table{border-collapse:collapse;font-size:13px;margin:6px 0 14px;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+th,td{border:1px solid #d0d7de;padding:5px 10px;text-align:right}
+th{background:#0969da;color:#fff;position:sticky;top:0}
+td.sz{text-align:right;font-weight:600;background:#f6f8fa}
+tr:nth-child(even) td{background:#f6f8fa}
+tr:nth-child(even) td.sz{background:#eef1f4}
+.best{background:#dafbe1 !important;font-weight:600}
+.summary th{background:#1f2328}
+.note{color:#586069;font-size:12px;margin:2px 0 18px}
+.legend{font-size:12px;color:#586069;margin:8px 0}
+code{background:#eff1f3;padding:1px 5px;border-radius:4px}
+</style></head><body>
+<h1>GT Vulcano — SACK mode &times; RCN busBW comparison</h1>
+<div class='meta'>
+FW: <code>1.130.2-a-4-dirty</code> (Fix A: rx_s3 disabled-path demotion + Build-1 instrumentation) &nbsp;|&nbsp;
+Testbed: GT-1 (SC-GT-Node1) + GT-4 (SC-GT-Node4), 2-node, 8&times;Vulcano/node, 4&times;100G, path count 8, 16 ranks<br>
+Workload: RCCL rccl-tests, size sweep 16&nbsp;B&rarr;16&nbsp;GB (factor 2), <code>-n 20 -w 5</code> &nbsp;|&nbsp;
+RCCL 2.27.7 / ROCm 7.0.2 / amd-anp v1.3.0<br>
+Metric: <b>out-of-place busBW (GB/s)</b>; green = best of the 4 conditions per row. Generated 2026-07-23 10:36 .<br>
+Result: all collectives completed in all 4 conditions (no hang); RCN-off had 0 stranded paths / 0 cwnd-collapse wedge.
+</div>
+<h2>Summary — peak out-of-place busBW (GB/s)</h2>
+<table class='summary'><tr><th>collective</th><th>SACK immediate / RCN on</th><th>SACK immediate / RCN off</th><th>SACK delay / RCN on</th><th>SACK delay / RCN off</th></tr>
+<tr><td class='sz'>all_reduce</td><td class='best'>351.0</td><td>350.7</td><td>350.8</td><td>350.9</td></tr>
+<tr><td class='sz'>alltoall</td><td>83.2</td><td>84.3</td><td>82.6</td><td class='best'>84.3</td></tr>
+<tr><td class='sz'>alltoallv</td><td class='best'>56.0</td><td>52.5</td><td>55.9</td><td>53.0</td></tr>
+<tr><td class='sz'>reduce_scatter</td><td>352.1</td><td>355.5</td><td>352.2</td><td class='best'>355.5</td></tr>
+<tr><td class='sz'>all_gather</td><td>351.3</td><td class='best'>353.1</td><td>351.3</td><td>352.8</td></tr>
+</table>
+<div class='legend'>Per-size detail below. busBW columns are out-of-place; in-place values are in the raw logs.</div>
+<h2>all_reduce</h2>
+<table><tr><th>size</th><th>bytes</th><th>SACK immediate / RCN on</th><th>SACK immediate / RCN off</th><th>SACK delay / RCN on</th><th>SACK delay / RCN off</th></tr>
+<tr><td class='sz'>16</td><td>16</td><td class='best'>0.00</td><td class='best'>0.00</td><td class='best'>0.00</td><td class='best'>0.00</td></tr>
+<tr><td class='sz'>32</td><td>32</td><td class='best'>0.00</td><td class='best'>0.00</td><td class='best'>0.00</td><td class='best'>0.00</td></tr>
+<tr><td class='sz'>64</td><td>64</td><td class='best'>0.00</td><td class='best'>0.00</td><td class='best'>0.00</td><td class='best'>0.00</td></tr>
+<tr><td class='sz'>128</td><td>128</td><td class='best'>0.01</td><td class='best'>0.01</td><td class='best'>0.01</td><td class='best'>0.01</td></tr>
+<tr><td class='sz'>256</td><td>256</td><td class='best'>0.01</td><td class='best'>0.01</td><td class='best'>0.01</td><td class='best'>0.01</td></tr>
+<tr><td class='sz'>512</td><td>512</td><td class='best'>0.03</td><td class='best'>0.03</td><td>0.02</td><td>0.02</td></tr>
+<tr><td class='sz'>1K</td><td>1024</td><td class='best'>0.05</td><td class='best'>0.05</td><td class='best'>0.05</td><td class='best'>0.05</td></tr>
+<tr><td class='sz'>2K</td><td>2048</td><td class='best'>0.09</td><td class='best'>0.09</td><td class='best'>0.09</td><td class='best'>0.09</td></tr>
+<tr><td class='sz'>4K</td><td>4096</td><td class='best'>0.17</td><td class='best'>0.17</td><td class='best'>0.17</td><td>0.16</td></tr>
+<tr><td class='sz'>8K</td><td>8192</td><td>0.34</td><td>0.32</td><td>0.34</td><td class='best'>0.35</td></tr>
+<tr><td class='sz'>16K</td><td>16384</td><td class='best'>0.69</td><td class='best'>0.69</td><td>0.66</td><td>0.66</td></tr>
+<tr><td class='sz'>32K</td><td>32768</td><td class='best'>1.38</td><td>1.37</td><td>1.37</td><td>1.28</td></tr>
+<tr><td class='sz'>64K</td><td>65536</td><td>2.54</td><td class='best'>2.59</td><td>2.55</td><td>2.51</td></tr>
+<tr><td class='sz'>128K</td><td>131072</td><td>4.22</td><td class='best'>5.01</td><td>4.73</td><td>4.88</td></tr>
+<tr><td class='sz'>256K</td><td>262144</td><td>8.24</td><td>8.62</td><td>8.75</td><td class='best'>8.85</td></tr>
+<tr><td class='sz'>512K</td><td>524288</td><td>13.42</td><td class='best'>13.47</td><td>13.37</td><td>12.97</td></tr>
+<tr><td class='sz'>1M</td><td>1048576</td><td>20.46</td><td class='best'>20.67</td><td>20.62</td><td>20.57</td></tr>
+<tr><td class='sz'>2M</td><td>2097152</td><td>37.69</td><td>37.72</td><td class='best'>37.81</td><td>36.86</td></tr>
+<tr><td class='sz'>4M</td><td>4194304</td><td class='best'>65.35</td><td>64.60</td><td>65.33</td><td>65.28</td></tr>
+<tr><td class='sz'>8M</td><td>8388608</td><td class='best'>94.56</td><td>91.80</td><td>92.59</td><td>92.36</td></tr>
+<tr><td class='sz'>16M</td><td>16777216</td><td>118.50</td><td>118.03</td><td class='best'>118.54</td><td>117.58</td></tr>
+<tr><td class='sz'>32M</td><td>33554432</td><td>153.49</td><td>153.75</td><td>153.42</td><td class='best'>154.34</td></tr>
+<tr><td class='sz'>64M</td><td>67108864</td><td>205.18</td><td>205.38</td><td class='best'>205.80</td><td>204.43</td></tr>
+<tr><td class='sz'>128M</td><td>134217728</td><td>243.76</td><td>247.00</td><td>242.94</td><td class='best'>247.51</td></tr>
+<tr><td class='sz'>256M</td><td>268435456</td><td>325.77</td><td>338.19</td><td>327.13</td><td class='best'>338.86</td></tr>
+<tr><td class='sz'>512M</td><td>536870912</td><td>341.90</td><td>345.55</td><td>342.08</td><td class='best'>346.59</td></tr>
+<tr><td class='sz'>1G</td><td>1073741824</td><td>344.55</td><td>347.37</td><td>344.39</td><td class='best'>347.50</td></tr>
+<tr><td class='sz'>2G</td><td>2147483648</td><td>346.01</td><td>347.96</td><td>345.83</td><td class='best'>348.20</td></tr>
+<tr><td class='sz'>4G</td><td>4294967296</td><td>348.47</td><td>349.62</td><td>348.46</td><td class='best'>350.13</td></tr>
+<tr><td class='sz'>8G</td><td>8589934592</td><td>350.09</td><td>350.66</td><td>349.96</td><td class='best'>350.90</td></tr>
+<tr><td class='sz'>16G</td><td>17179869184</td><td class='best'>351.02</td><td>350.47</td><td>350.82</td><td>350.36</td></tr>
+</table>
+<h2>alltoall</h2>
+<table><tr><th>size</th><th>bytes</th><th>SACK immediate / RCN on</th><th>SACK immediate / RCN off</th><th>SACK delay / RCN on</th><th>SACK delay / RCN off</th></tr>
+<tr><td class='sz'>256</td><td>256</td><td class='best'>0.01</td><td class='best'>0.01</td><td class='best'>0.01</td><td class='best'>0.01</td></tr>
+<tr><td class='sz'>512</td><td>512</td><td class='best'>0.01</td><td class='best'>0.01</td><td class='best'>0.01</td><td class='best'>0.01</td></tr>
+<tr><td class='sz'>1K</td><td>1024</td><td class='best'>0.03</td><td>0.02</td><td>0.02</td><td class='best'>0.03</td></tr>
+<tr><td class='sz'>2K</td><td>2048</td><td class='best'>0.05</td><td class='best'>0.05</td><td class='best'>0.05</td><td class='best'>0.05</td></tr>
+<tr><td class='sz'>4K</td><td>4096</td><td class='best'>0.10</td><td class='best'>0.10</td><td class='best'>0.10</td><td class='best'>0.10</td></tr>
+<tr><td class='sz'>8K</td><td>8192</td><td>0.19</td><td>0.19</td><td>0.19</td><td class='best'>0.20</td></tr>
+<tr><td class='sz'>16K</td><td>16384</td><td class='best'>0.41</td><td>0.40</td><td>0.40</td><td>0.40</td></tr>
+<tr><td class='sz'>32K</td><td>32768</td><td>0.78</td><td class='best'>0.80</td><td>0.79</td><td class='best'>0.80</td></tr>
+<tr><td class='sz'>64K</td><td>65536</td><td class='best'>1.51</td><td>1.50</td><td>1.49</td><td class='best'>1.51</td></tr>
+<tr><td class='sz'>128K</td><td>131072</td><td>3.02</td><td>3.08</td><td class='best'>3.09</td><td class='best'>3.09</td></tr>
+<tr><td class='sz'>256K</td><td>262144</td><td>6.08</td><td>6.05</td><td>6.06</td><td class='best'>6.12</td></tr>
+<tr><td class='sz'>512K</td><td>524288</td><td>11.15</td><td>11.23</td><td>11.33</td><td class='best'>11.37</td></tr>
+<tr><td class='sz'>1M</td><td>1048576</td><td>17.46</td><td>17.59</td><td>17.61</td><td class='best'>17.73</td></tr>
+<tr><td class='sz'>2M</td><td>2097152</td><td>26.95</td><td>27.01</td><td>27.21</td><td class='best'>27.51</td></tr>
+<tr><td class='sz'>4M</td><td>4194304</td><td>37.23</td><td>41.09</td><td>37.74</td><td class='best'>41.11</td></tr>
+<tr><td class='sz'>8M</td><td>8388608</td><td>48.63</td><td>53.35</td><td>47.48</td><td class='best'>53.49</td></tr>
+<tr><td class='sz'>16M</td><td>16777216</td><td>60.09</td><td class='best'>64.27</td><td>60.18</td><td class='best'>64.27</td></tr>
+<tr><td class='sz'>32M</td><td>33554432</td><td>68.44</td><td>67.64</td><td>68.09</td><td class='best'>68.65</td></tr>
+<tr><td class='sz'>64M</td><td>67108864</td><td>75.38</td><td>76.20</td><td>75.53</td><td class='best'>76.48</td></tr>
+<tr><td class='sz'>128M</td><td>134217728</td><td>77.79</td><td>73.15</td><td class='best'>78.38</td><td>74.48</td></tr>
+<tr><td class='sz'>256M</td><td>268435456</td><td>81.55</td><td class='best'>82.52</td><td>81.23</td><td>81.15</td></tr>
+<tr><td class='sz'>512M</td><td>536870912</td><td>82.22</td><td class='best'>83.47</td><td>81.86</td><td>83.36</td></tr>
+<tr><td class='sz'>1G</td><td>1073741824</td><td>82.50</td><td>84.11</td><td>81.88</td><td class='best'>84.15</td></tr>
+<tr><td class='sz'>2G</td><td>2147483648</td><td>82.65</td><td>84.28</td><td>82.09</td><td class='best'>84.34</td></tr>
+<tr><td class='sz'>4G</td><td>4294967296</td><td>82.91</td><td class='best'>84.22</td><td>82.35</td><td>84.19</td></tr>
+<tr><td class='sz'>8G</td><td>8589934592</td><td>83.06</td><td>84.28</td><td>81.51</td><td class='best'>84.31</td></tr>
+<tr><td class='sz'>16G</td><td>17179869184</td><td>83.15</td><td class='best'>84.28</td><td>82.58</td><td>84.18</td></tr>
+</table>
+<h2>alltoallv</h2>
+<table><tr><th>size</th><th>bytes</th><th>SACK immediate / RCN on</th><th>SACK immediate / RCN off</th><th>SACK delay / RCN on</th><th>SACK delay / RCN off</th></tr>
+<tr><td class='sz'>512</td><td>512</td><td class='best'>0.01</td><td class='best'>0.01</td><td class='best'>0.01</td><td class='best'>0.01</td></tr>
+<tr><td class='sz'>1K</td><td>1024</td><td class='best'>0.03</td><td>0.02</td><td>0.02</td><td>0.02</td></tr>
+<tr><td class='sz'>2K</td><td>2048</td><td class='best'>0.05</td><td class='best'>0.05</td><td class='best'>0.05</td><td class='best'>0.05</td></tr>
+<tr><td class='sz'>4K</td><td>4096</td><td class='best'>0.10</td><td class='best'>0.10</td><td class='best'>0.10</td><td class='best'>0.10</td></tr>
+<tr><td class='sz'>8K</td><td>8192</td><td class='best'>0.20</td><td class='best'>0.20</td><td>0.19</td><td class='best'>0.20</td></tr>
+<tr><td class='sz'>16K</td><td>16384</td><td class='best'>0.39</td><td>0.38</td><td>0.37</td><td>0.38</td></tr>
+<tr><td class='sz'>32K</td><td>32768</td><td class='best'>0.78</td><td class='best'>0.78</td><td>0.75</td><td>0.76</td></tr>
+<tr><td class='sz'>64K</td><td>65536</td><td class='best'>1.49</td><td>1.47</td><td>1.46</td><td>1.46</td></tr>
+<tr><td class='sz'>128K</td><td>131072</td><td>2.91</td><td class='best'>2.95</td><td>2.83</td><td>2.94</td></tr>
+<tr><td class='sz'>256K</td><td>262144</td><td>5.68</td><td>5.62</td><td class='best'>5.70</td><td>5.65</td></tr>
+<tr><td class='sz'>512K</td><td>524288</td><td>9.11</td><td class='best'>9.23</td><td>9.12</td><td>9.16</td></tr>
+<tr><td class='sz'>1M</td><td>1048576</td><td>14.34</td><td>14.18</td><td>14.25</td><td class='best'>14.53</td></tr>
+<tr><td class='sz'>2M</td><td>2097152</td><td>22.92</td><td>23.18</td><td>22.49</td><td class='best'>23.48</td></tr>
+<tr><td class='sz'>4M</td><td>4194304</td><td>29.89</td><td>32.64</td><td>30.17</td><td class='best'>32.68</td></tr>
+<tr><td class='sz'>8M</td><td>8388608</td><td>37.63</td><td>38.47</td><td>37.94</td><td class='best'>39.06</td></tr>
+<tr><td class='sz'>16M</td><td>16777216</td><td>46.07</td><td>45.93</td><td>46.19</td><td class='best'>48.09</td></tr>
+<tr><td class='sz'>32M</td><td>33554432</td><td>50.76</td><td>48.96</td><td>50.77</td><td class='best'>51.87</td></tr>
+<tr><td class='sz'>64M</td><td>67108864</td><td>51.59</td><td>52.54</td><td>51.06</td><td class='best'>52.84</td></tr>
+<tr><td class='sz'>128M</td><td>134217728</td><td>52.85</td><td>52.35</td><td class='best'>53.20</td><td>52.98</td></tr>
+<tr><td class='sz'>256M</td><td>268435456</td><td>53.64</td><td>51.59</td><td class='best'>53.87</td><td>51.76</td></tr>
+<tr><td class='sz'>512M</td><td>536870912</td><td class='best'>54.55</td><td>50.62</td><td>54.18</td><td>50.99</td></tr>
+<tr><td class='sz'>1G</td><td>1073741824</td><td class='best'>55.03</td><td>49.99</td><td>54.50</td><td>50.64</td></tr>
+<tr><td class='sz'>2G</td><td>2147483648</td><td class='best'>55.20</td><td>50.16</td><td>54.87</td><td>50.19</td></tr>
+<tr><td class='sz'>4G</td><td>4294967296</td><td class='best'>55.82</td><td>50.02</td><td>55.14</td><td>50.00</td></tr>
+<tr><td class='sz'>8G</td><td>8589934592</td><td class='best'>55.63</td><td>49.89</td><td>55.60</td><td>49.71</td></tr>
+<tr><td class='sz'>16G</td><td>17179869184</td><td class='best'>55.96</td><td>49.70</td><td>55.92</td><td>49.60</td></tr>
+</table>
+<h2>reduce_scatter</h2>
+<table><tr><th>size</th><th>bytes</th><th>SACK immediate / RCN on</th><th>SACK immediate / RCN off</th><th>SACK delay / RCN on</th><th>SACK delay / RCN off</th></tr>
+<tr><td class='sz'>256</td><td>256</td><td class='best'>0.01</td><td class='best'>0.01</td><td class='best'>0.01</td><td class='best'>0.01</td></tr>
+<tr><td class='sz'>512</td><td>512</td><td class='best'>0.01</td><td class='best'>0.01</td><td class='best'>0.01</td><td class='best'>0.01</td></tr>
+<tr><td class='sz'>1K</td><td>1024</td><td class='best'>0.02</td><td class='best'>0.02</td><td class='best'>0.02</td><td class='best'>0.02</td></tr>
+<tr><td class='sz'>2K</td><td>2048</td><td class='best'>0.04</td><td class='best'>0.04</td><td class='best'>0.04</td><td class='best'>0.04</td></tr>
+<tr><td class='sz'>4K</td><td>4096</td><td class='best'>0.09</td><td>0.08</td><td class='best'>0.09</td><td>0.08</td></tr>
+<tr><td class='sz'>8K</td><td>8192</td><td class='best'>0.17</td><td class='best'>0.17</td><td class='best'>0.17</td><td class='best'>0.17</td></tr>
+<tr><td class='sz'>16K</td><td>16384</td><td class='best'>0.33</td><td class='best'>0.33</td><td class='best'>0.33</td><td class='best'>0.33</td></tr>
+<tr><td class='sz'>32K</td><td>32768</td><td class='best'>0.63</td><td class='best'>0.63</td><td class='best'>0.63</td><td class='best'>0.63</td></tr>
+<tr><td class='sz'>64K</td><td>65536</td><td class='best'>1.14</td><td>1.13</td><td>1.13</td><td class='best'>1.14</td></tr>
+<tr><td class='sz'>128K</td><td>131072</td><td class='best'>2.24</td><td>2.20</td><td>2.23</td><td>2.22</td></tr>
+<tr><td class='sz'>256K</td><td>262144</td><td>4.18</td><td>4.20</td><td class='best'>4.26</td><td>4.13</td></tr>
+<tr><td class='sz'>512K</td><td>524288</td><td>7.81</td><td>7.83</td><td>7.73</td><td class='best'>7.84</td></tr>
+<tr><td class='sz'>1M</td><td>1048576</td><td>12.83</td><td>12.70</td><td>12.91</td><td class='best'>12.98</td></tr>
+<tr><td class='sz'>2M</td><td>2097152</td><td>14.87</td><td class='best'>14.93</td><td>14.88</td><td class='best'>14.93</td></tr>
+<tr><td class='sz'>4M</td><td>4194304</td><td>28.71</td><td>28.68</td><td>28.65</td><td class='best'>28.78</td></tr>
+<tr><td class='sz'>8M</td><td>8388608</td><td class='best'>57.01</td><td>56.95</td><td>56.84</td><td>56.75</td></tr>
+<tr><td class='sz'>16M</td><td>16777216</td><td>95.73</td><td>95.07</td><td>95.26</td><td class='best'>96.15</td></tr>
+<tr><td class='sz'>32M</td><td>33554432</td><td class='best'>157.75</td><td>157.36</td><td>156.87</td><td>157.15</td></tr>
+<tr><td class='sz'>64M</td><td>67108864</td><td class='best'>132.85</td><td>132.50</td><td>132.24</td><td>132.56</td></tr>
+<tr><td class='sz'>128M</td><td>134217728</td><td>238.05</td><td>239.42</td><td>238.33</td><td class='best'>240.28</td></tr>
+<tr><td class='sz'>256M</td><td>268435456</td><td>314.27</td><td class='best'>329.64</td><td>313.90</td><td>328.99</td></tr>
+<tr><td class='sz'>512M</td><td>536870912</td><td>340.97</td><td class='best'>344.00</td><td>340.96</td><td>343.80</td></tr>
+<tr><td class='sz'>1G</td><td>1073741824</td><td>348.39</td><td class='best'>350.19</td><td>348.42</td><td>349.90</td></tr>
+<tr><td class='sz'>2G</td><td>2147483648</td><td>352.09</td><td>351.88</td><td>352.20</td><td class='best'>352.29</td></tr>
+<tr><td class='sz'>4G</td><td>4294967296</td><td>351.85</td><td>355.47</td><td>351.12</td><td class='best'>355.50</td></tr>
+<tr><td class='sz'>8G</td><td>8589934592</td><td>350.76</td><td class='best'>354.90</td><td>351.22</td><td>354.51</td></tr>
+<tr><td class='sz'>16G</td><td>17179869184</td><td>348.66</td><td>349.64</td><td>348.25</td><td class='best'>350.04</td></tr>
+</table>
+<h2>all_gather</h2>
+<table><tr><th>size</th><th>bytes</th><th>SACK immediate / RCN on</th><th>SACK immediate / RCN off</th><th>SACK delay / RCN on</th><th>SACK delay / RCN off</th></tr>
+<tr><td class='sz'>256</td><td>256</td><td class='best'>0.01</td><td>0.00</td><td class='best'>0.01</td><td class='best'>0.01</td></tr>
+<tr><td class='sz'>512</td><td>512</td><td class='best'>0.01</td><td class='best'>0.01</td><td class='best'>0.01</td><td class='best'>0.01</td></tr>
+<tr><td class='sz'>1K</td><td>1024</td><td class='best'>0.03</td><td>0.02</td><td>0.02</td><td class='best'>0.03</td></tr>
+<tr><td class='sz'>2K</td><td>2048</td><td class='best'>0.05</td><td class='best'>0.05</td><td class='best'>0.05</td><td class='best'>0.05</td></tr>
+<tr><td class='sz'>4K</td><td>4096</td><td class='best'>0.10</td><td class='best'>0.10</td><td class='best'>0.10</td><td class='best'>0.10</td></tr>
+<tr><td class='sz'>8K</td><td>8192</td><td class='best'>0.20</td><td class='best'>0.20</td><td class='best'>0.20</td><td class='best'>0.20</td></tr>
+<tr><td class='sz'>16K</td><td>16384</td><td class='best'>0.41</td><td>0.40</td><td class='best'>0.41</td><td class='best'>0.41</td></tr>
+<tr><td class='sz'>32K</td><td>32768</td><td class='best'>0.81</td><td>0.79</td><td class='best'>0.81</td><td>0.80</td></tr>
+<tr><td class='sz'>64K</td><td>65536</td><td>1.52</td><td>1.49</td><td>1.49</td><td class='best'>1.54</td></tr>
+<tr><td class='sz'>128K</td><td>131072</td><td>3.08</td><td>3.12</td><td>3.12</td><td class='best'>3.14</td></tr>
+<tr><td class='sz'>256K</td><td>262144</td><td class='best'>6.17</td><td>5.98</td><td>6.09</td><td>6.02</td></tr>
+<tr><td class='sz'>512K</td><td>524288</td><td>11.29</td><td>11.08</td><td>11.23</td><td class='best'>11.31</td></tr>
+<tr><td class='sz'>1M</td><td>1048576</td><td>17.69</td><td class='best'>17.95</td><td>17.81</td><td>17.88</td></tr>
+<tr><td class='sz'>2M</td><td>2097152</td><td>27.40</td><td class='best'>27.71</td><td>27.41</td><td>26.32</td></tr>
+<tr><td class='sz'>4M</td><td>4194304</td><td>38.20</td><td>37.97</td><td class='best'>38.70</td><td>38.67</td></tr>
+<tr><td class='sz'>8M</td><td>8388608</td><td>65.21</td><td>65.23</td><td class='best'>65.53</td><td>65.15</td></tr>
+<tr><td class='sz'>16M</td><td>16777216</td><td>97.85</td><td>97.48</td><td>98.09</td><td class='best'>98.26</td></tr>
+<tr><td class='sz'>32M</td><td>33554432</td><td class='best'>178.93</td><td>177.41</td><td>178.43</td><td>178.05</td></tr>
+<tr><td class='sz'>64M</td><td>67108864</td><td>186.03</td><td>186.00</td><td class='best'>186.19</td><td>184.96</td></tr>
+<tr><td class='sz'>128M</td><td>134217728</td><td>238.27</td><td>241.52</td><td>238.61</td><td class='best'>242.56</td></tr>
+<tr><td class='sz'>256M</td><td>268435456</td><td>311.05</td><td class='best'>328.93</td><td>311.33</td><td>328.02</td></tr>
+<tr><td class='sz'>512M</td><td>536870912</td><td>332.74</td><td class='best'>338.18</td><td>332.08</td><td>337.76</td></tr>
+<tr><td class='sz'>1G</td><td>1073741824</td><td>338.31</td><td>342.21</td><td>338.31</td><td class='best'>342.50</td></tr>
+<tr><td class='sz'>2G</td><td>2147483648</td><td>341.06</td><td class='best'>344.47</td><td>341.09</td><td>344.36</td></tr>
+<tr><td class='sz'>4G</td><td>4294967296</td><td>346.50</td><td class='best'>348.84</td><td>346.46</td><td>348.72</td></tr>
+<tr><td class='sz'>8G</td><td>8589934592</td><td>349.56</td><td class='best'>351.58</td><td>349.54</td><td>351.42</td></tr>
+<tr><td class='sz'>16G</td><td>17179869184</td><td>351.28</td><td class='best'>353.06</td><td>351.32</td><td>352.80</td></tr>
+</table>
+</body></html>

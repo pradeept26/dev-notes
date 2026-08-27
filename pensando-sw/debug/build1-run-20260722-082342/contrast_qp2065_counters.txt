@@ -1,0 +1,5 @@
+	sqcb1.qp_cwnd_whole                              : 0x91
+	sqcb4.num_cnt_qwnd_uf_forceinact                 : 0x0
+	sqcb4.num_cnt_qwnd_uf_fold                       : 0x0
+	sqcb4.num_cnt_qwnd_uf_other                      : 0x0
+	sqcb4.num_cnt_disabled_drained_cwnd0             : 0x1f8

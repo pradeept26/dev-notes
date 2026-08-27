@@ -1,0 +1,57 @@
+
+NIC/Lif/QP id : 42424650-5132-3535-3130-303542000000 (0000:03:00.0) / 02000070-0100-0000-4242-04908199dd40 (2) / 25
+-----------------------------------------------------------------------------------------------------------------------------
+  Requester TX statistics:
+    Bytes                                                          : 145506707072
+    Packets                                                        : 35525324
+    SEND msgs                                                      : 0
+    SEND-immediate msgs                                            : 0
+    WRITE msgs                                                     : 1111659
+    WRITE-immediate msgs                                           : 1632
+    Inline msgs                                                    : 0
+    Zero-length msgs                                               : 0
+    Fast-start packets                                             : 32
+    Path bootstraps                                                : 1392
+    Path inactive                                                  : 1391
+    Path disabled (window exhausted)                               : 3319094
+    CWND increments                                                : 5568
+    Color mismatch errors                                          : 0
+    VA-to-PA errors                                                : 0
+    Invalid path selections                                        : 0
+  Requester RX statistics:
+    ACKs                                                           : 33504455
+    RNR msgs received                                              : 0
+    CC additive increments                                         : 97045
+    CC multiplicative decrements                                   : 102546
+    Skipped path inactivations                                     : 5831
+    QWND underflow (force_inactivate)                              : 1
+    QWND underflow (fold)                                          : 0
+    QWND underflow (other)                                         : 58
+    Disabled+drained cwnd<=0 (stranded)                            : 1313
+    Drops                                                          : 0
+    PAWS (stale ACK) drops                                         : 0
+    Invalid ACK drops                                              : 0
+  Responder RX statistics:
+    Bytes                                                          : 26719152
+    Packets                                                        : 1113298
+    SEND msgs                                                      : 0
+    SEND-immediate msgs                                            : 0
+    WRITE msgs                                                     : 1113298
+    WRITE-immediate msgs                                           : 0
+    ACK requested packets                                          : 1138542
+    RNR events                                                     : 0
+    Duplicate RNR events                                           : 0
+    Zero-length msgs                                               : 0
+    Drops                                                          : 0
+    Duplicates                                                     : 25244
+    FSN out-of-range                                               : 0
+    Invalid FSN/UNA shifts                                         : 0
+    Invalid paths                                                  : 0
+  Responder TX statistics:
+    Packets                                                        : 1137652
+    ACKs sent                                                      : 1137652
+    RNR sent                                                       : 0
+    CNP sent                                                       : 0
+
+Number of queue pairs : 1
+

@@ -1,0 +1,45 @@
+
+NIC/Lif : 42424650-5132-3534-3930-303232000000 (0000:03:00.0) / 02000070-0100-0000-4242-0490818f1e40 (2)
+---------------------------------------------------------------------------------------------------------
+Local queue pair id                  : 23
+Remote queue pair id                 : 23
+Source MAC address                   : 04:90:81:8f:1e:41
+Destination MAC address              : 80:ba:16:00:2d:77
+Send queue state                     : reset
+Receive queue state                  : reset
+Source IP address                    : 2001::50:2:4:30
+Destination IP address               : 2001::50:1:0:30
+IP protocol                          : UDP
+DSCP or traffic class                : 32
+
+
+Planes                              
+------                               :
+Source MAC address                   : 04:90:81:8f:1e:41
+Destination MAC address              : 80:ba:16:00:2d:77
+Source IP address                    : 2001::50:2:4:30
+Destination IP address               : 2001::50:1:0:30
+DSCP or traffic class                : 32
+
+Source MAC address                   : 04:90:81:8f:1e:42
+Destination MAC address              : 80:ba:16:00:2d:77
+Source IP address                    : 2001::50:2:4:32
+Destination IP address               : 2001::50:1:0:32
+DSCP or traffic class                : 32
+
+Source MAC address                   : 04:90:81:8f:1e:43
+Destination MAC address              : 80:ba:16:00:2d:77
+Source IP address                    : 2001::50:2:4:34
+Destination IP address               : 2001::50:1:0:34
+DSCP or traffic class                : 32
+
+Source MAC address                   : 04:90:81:8f:1e:44
+Destination MAC address              : 80:ba:16:00:2d:77
+Source IP address                    : 2001::50:2:4:36
+Destination IP address               : 2001::50:1:0:36
+DSCP or traffic class                : 32
+
+
+Number of queue pairs : 1
+
+Connection to 10.30.69.98 closed.

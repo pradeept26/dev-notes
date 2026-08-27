@@ -1,0 +1,34 @@
+===== GT-1 CC profile 0 (qwnd_min / pwnd_min / RCN) =====
+  Rate control notification (RCN)          : Disabled
+  Epsilon                                  : 1
+  Omega                                    : 5
+  Minimum queue window                     : 2
+  Minimum pacing window                    : 2
+  Rate control notification (RCN)          : Disabled
+  Epsilon                                  : 1
+  Omega                                    : 5
+  Minimum queue window                     : 2
+  Minimum pacing window                    : 2
+  Rate control notification (RCN)          : Disabled
+  Epsilon                                  : 1
+  Omega                                    : 5
+  Minimum queue window                     : 2
+  Minimum pacing window                    : 2
+  Rate control notification (RCN)          : Disabled
+  Epsilon                                  : 1
+  Omega                                    : 5
+  Minimum queue window                     : 2
+  Minimum pacing window                    : 2
+-- multiplane / path count --
+
+--------------------------------------------------------------------------------
+NIC                                     PCIe BDF       Plane Status   Epoch     
+--------------------------------------------------------------------------------
+42424650-5132-3535-3130-303542000000    0000:03:00.0   00001111       1         
+42424650-5132-3535-3130-303038000000    0000:23:00.0   00001111       1         
+42424650-5132-3535-3130-303238000000    0000:43:00.0   00001111       1         
+42424650-5132-3535-3130-303435000000    0000:63:00.0   00001111       1         
+42424650-5132-3535-3130-303744000000    0000:83:00.0   00001111       1         
+42424650-5132-3535-3130-303137000000    0000:a3:00.0   00001111       1         
+42424650-5132-3535-3130-303643000000    0000:c3:00.0   00001111       1         
+42424650-5132-3535-3130-303531000000    0000:e3:00.0   00001111       1         

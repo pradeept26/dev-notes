@@ -1,0 +1,58 @@
+
+NIC/Lif : 42424650-5132-3534-3930-303232000000 (0000:03:00.0) / 02000070-0100-0000-4242-0490818f1e40 (2)
+---------------------------------------------------------------------------------------------------------
+[SQ 0023] - ack_msn not advancing (ack_msn=56522, bmsn=56524, unacked_msgs=1) - messages not being acknowledged
+[Path 0166 (006) QID 0014] - ACKs yet to be received fsn_bitmap: 0x0 0x0 0x0 0x3a
+[Path 0183 (007) QID 0023] - ACKs yet to be received fsn_bitmap: 0x0 0x0 0x0 0x6
+
+Summary of rdma queue state analysis :
+Total no. of send queues in error state       : 1
+Total no. of paths in error state             : 2
+
+
+
+NIC/Lif : 42424650-5132-3535-3130-303644000000 (0000:43:00.0) / 02000070-0100-0000-4242-04908199def0 (2)
+---------------------------------------------------------------------------------------------------------
+[Path 0096 (000) QID 0014] - ACKs yet to be received fsn_bitmap: 0x0 0x0 0x0 0x1e0
+[Path 0097 (001) QID 0014] - ACKs yet to be received fsn_bitmap: 0x0 0x0 0x0 0x2
+[Path 0189 (005) QID 0025] - ACKs yet to be received fsn_bitmap: 0x0 0x0 0x0 0x7ffffe
+
+Summary of rdma queue state analysis :
+Total no. of paths in error state             : 3
+
+
+
+NIC/Lif : 42424650-5132-3535-3130-303138000000 (0000:83:00.0) / 02000070-0100-0000-4242-04908199d398 (2)
+---------------------------------------------------------------------------------------------------------
+[Path 4219 (003) QID 2065] - ACKs yet to be received fsn_bitmap: 0x0 0x0 0x0 0xc
+
+Summary of rdma queue state analysis :
+Total no. of paths in error state             : 1
+
+
+NIC/Lif : 42424650-5132-3535-3130-303738000000 (0000:a3:00.0) / 02000070-0100-0000-4242-04908199dff8 (2)
+---------------------------------------------------------------------------------------------------------
+[Path 0130 (002) QID 0017] - ACKs yet to be received fsn_bitmap: 0x0 0x0 0x0 0x4
+
+Summary of rdma queue state analysis :
+Total no. of paths in error state             : 1
+
+
+NIC/Lif : 42424650-5132-3535-3130-303132000000 (0000:c3:00.0) / 02000070-0100-0000-4242-04908199d308 (2)
+---------------------------------------------------------------------------------------------------------
+[Path 0160 (000) QID 0021] - ACKs yet to be received fsn_bitmap: 0x0 0x0 0x0 0x2
+[Path 0165 (005) QID 0021] - ACKs yet to be received fsn_bitmap: 0x0 0x0 0x0 0x4
+
+Summary of rdma queue state analysis :
+Total no. of paths in error state             : 2
+
+
+NIC/Lif : 42424650-5132-3534-3930-303145000000 (0000:e3:00.0) / 02000070-0100-0000-4242-0490818f1de0 (2)
+---------------------------------------------------------------------------------------------------------
+[Path 0155 (003) QID 0017] - ACKs yet to be received fsn_bitmap: 0x0 0x0 0x0 0x2
+
+Summary of rdma queue state analysis :
+Total no. of paths in error state             : 1
+
+
+Connection to 10.30.69.98 closed.

@@ -1,0 +1,18 @@
+=================== WEDGED QP 2 (lif 02000070-0100-0000-4242-0490818f1e40) ===================
+-- RAW sqcb4 instrumentation counters --
+	sqcb4.num_cnt_qwnd_uf_forceinact                 : 0x0
+	sqcb4.num_cnt_qwnd_uf_fold                       : 0x0
+	sqcb4.num_cnt_qwnd_uf_other                      : 0x0
+	sqcb4.num_cnt_disabled_drained_cwnd0             : 0x0
+=================== WEDGED QP 5 (lif 02000070-0100-0000-4242-0490818f1e40) ===================
+-- RAW sqcb4 instrumentation counters --
+	sqcb4.num_cnt_qwnd_uf_forceinact                 : 0x0
+	sqcb4.num_cnt_qwnd_uf_fold                       : 0x0
+	sqcb4.num_cnt_qwnd_uf_other                      : 0x0
+	sqcb4.num_cnt_disabled_drained_cwnd0             : 0x0
+=================== WEDGED QP 2049 (lif 02000070-0100-0000-4242-0490818f1e40) ===================
+-- RAW sqcb4 instrumentation counters --
+	sqcb4.num_cnt_qwnd_uf_forceinact                 : 0x0
+	sqcb4.num_cnt_qwnd_uf_fold                       : 0x0
+	sqcb4.num_cnt_qwnd_uf_other                      : 0x0
+	sqcb4.num_cnt_disabled_drained_cwnd0             : 0x0

@@ -1,0 +1,9 @@
+=========== RUN4 PRIMARY WEDGE: GT-1 qp=21 ===========
+	sqcb1.qp_cwnd_whole                              : 0x0
+	sqcb4.num_cnt_qwnd_uf_forceinact                 : 0x1
+	sqcb4.num_cnt_qwnd_uf_fold                       : 0x0
+	sqcb4.num_cnt_qwnd_uf_other                      : 0x1f
+	sqcb4.num_cnt_disabled_drained_cwnd0             : 0x548
+	sqcb4.num_cnt_qwnd_uf_forceinact                 : 0x1
+	sqcb4.num_cnt_qwnd_uf_other                      : 0x1f
+	sqcb4.num_cnt_disabled_drained_cwnd0             : 0x548

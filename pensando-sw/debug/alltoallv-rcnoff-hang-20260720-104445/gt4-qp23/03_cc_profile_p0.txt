@@ -1,0 +1,17 @@
+Error : Unknown argument "congestion-control" for nicctl show rdma
+
+Usage:
+  nicctl show rdma [flags]
+  nicctl show rdma [command]
+
+Available commands:
+  queue                                                                 Show RDMA queue information
+  queue-pair                                                            Show RDMA queue pair information
+  statistics                                                            Show RDMA statistics information
+
+Global Flags:
+  --card, -c <card-uuid1, card-uuid2, ...>                              Specify NIC UUIDs as comma separated list
+  --bdf, -b <card-bdf1, card-bdf2, ...>                                 Specify NIC PCIe BDFs as comma separated list
+
+Use "nicctl show rdma [command] --help" for more information about a command.
+Connection to 10.30.69.98 closed.

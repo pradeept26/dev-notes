@@ -300,3 +300,78 @@ nicctl show pipeline internal rdma anomalies
 # Clear pipeline state before a run
 nicctl clear pipeline internal state --all
 ```
+
+---
+
+## UPDATE 2026-08-27: Fix Validation Complete
+
+### Fix: Nataraj's 4 commits in 1.130.5-a-13
+
+The regression was caused by **two commits together** that changed MAC/PHY lane assignment for `4x100G_1` profile from alternate lanes (1,3,5,7) to consecutive (1,2,3,4):
+
+1. **Murali's PR #118792** (`06f6184586b`) — `platform/rtos-sw/modules/linkmgr/src/utils.c`: Added `PORT_BREAKOUT_MODE_4x100G_1` special case: `child_port = child_port_idx` → consecutive lanes
+2. **Shantanu's rtos commit** (`61ccea13`) — `vulcano_gelso_netport.dtsi`: Changed mac/phy channel wiring from alternate to consecutive
+
+On OSFP-800G-CR8 copper, consecutive lanes cause **adjacent-lane crosstalk** → bimodal RTT (47% of samples >75µs) → path disabling cascade (6-8/8 paths disabled per QP) → 22% alltoall regression.
+
+**Nataraj's 4 fix commits** (all in 1.130.5-a-13):
+- `bd5d5e3` — Fix TM oport formula in TX S5: OLD `port_index * (8/num_ports)` → NEW `port_index << PORT_OPORT_SHIFT_BITS` (shift precomputed from agg_rate/uplinks)
+- `3d1fd4f` — Remove nonzero_path_port_bitmap, fix cur_path_group_offset guard
+- `2b57c28` — Fix ACK port_index derivation in TX S2: `ack_tm_port >> PORT_OPORT_SHIFT_BITS`
+- `eb06102` — Fix RCN rate hints to use actual aggregate rate (4×100G = 400 Gbps, not 800)
+
+### Final Validation Results (1.130.5-a-13 vs 2-a-11, ROCm 7.0.2, RCN, 16G)
+
+All collectives within ±2% of 2-a-11 baseline. **Regression fully resolved.**
+
+| Collective | 5-a-13 | 2-a-11 | Delta |
+|---|---|---|---|
+| alltoall | 82.4 GB/s | 82.5 GB/s | -0.1% ✅ |
+| alltoallv | 55.2 GB/s | 56.2 GB/s | -1.9% ✅ |
+| all_reduce | 351.5 GB/s | 350.9 GB/s | +0.2% ✅ |
+| all_gather | 351.8 GB/s | 351.3 GB/s | +0.2% ✅ |
+| reduce_scatter | 349.1 GB/s | 348.7 GB/s | +0.1% ✅ |
+
+Reports: http://srv20.pensando.io/ainic/rccl_data/report_1.130.5-a-13_rocm7_rcn.html
+Comparison: http://srv20.pensando.io/ainic/rccl_data/comparison_1.130.5-a-13_vs_1.130.2-a-11_rocm7_rcn.html
+
+---
+
+## Critical GT Setup Notes (learned during this session)
+
+### Lane mapping differs between firmware versions
+- **1.130.5-a-7 (sequential)**: NIC ports 1,2,3,4 → switch Ethernet0,1,2,3 (consecutive)
+- **1.130.2-a-11+ (alternate)**: NIC ports 1,3,5,7 → switch Ethernet0,2,4,6 (every-other)
+- Moving between builds requires reconfiguring the switch
+
+### Switch reconfiguration for 1.130.2-a alternate lanes
+5-a backup: `sudo config reload /etc/sonic/config_db_5a_backup.json -y` (saved on both leaves)
+2-a config: scripts at `/tmp/reconfig_2a_leaf.sh`, `/tmp/fix_vrf_2a.sh`, `/tmp/readd_ips_2a.sh` on both leaves
+
+### GID index
+- **1.130.2-a-11 / 1.130.5-a-13**: GID[1]=IPv4-mapped, **GID[2]=IPv6 VIP** → use `NCCL_IB_GID_INDEX=2`
+- **1.130.5-a-7 (original / Nataraj's reverted build)**: GID[1]=IPv6 VIP → use `NCCL_IB_GID_INDEX=1`
+
+### ROCm version on GT nodes
+Both ROCm 7.0.2 and 10.1 installed. Default now points to 10.1.
+To switch: `ln -sfn /opt/rocm-7.0.2 /opt/rocm` on both GT-1 and GT-4
+Also update: `sed -i 's/RCCL_RELEASE=.*:-10.1/RCCL_RELEASE=${RELEASE:-7.0.2}/' ~/vul-rccl-benchmark/setup_env.sh`
+And remove ROCm 10.1-only vars from run-rccl.sh: `NCCL_NET=ROCM-IB`, `NCCL_GIN_ENABLE=0`, `RCCL_CTS_OFFLOAD_ENABLED=0`, `RCCL_MULTIPLANE_MAP_FILE=*.xml`
+Use instead: `RCCL_VIP_PIP_MAP_FILE=*.json`, `NCCL_NET_PLUGIN=librccl-anp.so`
+
+### ionic_rdma on GT-1
+`ionic_rdma.ko` missing from running kernel path after card reset. Fix:
+```bash
+depmod -a && modprobe ionic_rdma
+# Or install: dnf install -y /tmp/ainic_bundle_*/host_sw_pkg/ionic_driver/rpm/el9/ionic-dkms-*.el9.noarch.rpm
+```
+After loading, rename RDMA devices: `bash ~/vul-rccl-benchmark/gt_node1_rename_mp_roce.sh`
+
+### RCCL run command (ROCm 7.0.2)
+```bash
+cd /home/amd/vul-rccl-benchmark
+# All collectives, 5 iters
+python3 run.py --runs 5 --output <output_dir>
+# Single collective
+./run-rccl.sh alltoall 512M 16G 100
+```

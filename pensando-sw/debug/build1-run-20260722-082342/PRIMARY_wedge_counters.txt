@@ -1,0 +1,12 @@
+=========== PRIMARY WEDGE: GT-1 qp=25 lif=02000070-0100-0000-4242-04908199dd40 ===========
+-- RAW sqcb4 instrumentation counters --
+	sqcb1.qp_cwnd_whole                              : 0x0
+	sqcb4.num_cnt_qwnd_uf_forceinact                 : 0x1
+	sqcb4.num_cnt_qwnd_uf_fold                       : 0x0
+	sqcb4.num_cnt_qwnd_uf_other                      : 0x3a
+	sqcb4.num_cnt_disabled_drained_cwnd0             : 0x521
+-- STATS view (FILL_STATS labels) --
+    QWND underflow (force_inactivate)                              : 1
+    QWND underflow (fold)                                          : 0
+    QWND underflow (other)                                         : 58
+    Disabled+drained cwnd<=0 (stranded)                            : 1313

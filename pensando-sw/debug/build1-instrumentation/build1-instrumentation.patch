@@ -1,0 +1,176 @@
+diff --git a/nic/infra/ainic/nicctl/pipeline/hydra/rdma_queue.cc b/nic/infra/ainic/nicctl/pipeline/hydra/rdma_queue.cc
+index 7557dbcfc8a..f224086b252 100644
+--- a/nic/infra/ainic/nicctl/pipeline/hydra/rdma_queue.cc
++++ b/nic/infra/ainic/nicctl/pipeline/hydra/rdma_queue.cc
+@@ -309,6 +309,14 @@ typedef struct req_rx_cc_stats_s {
+     uint64_t num_invalid_ack_drop;
+     /// number of skipped path inactivations
+     uint64_t num_skip_path_inactivate;
++    /// Build-1: qp_cwnd_whole fell below qwnd_min via force_inactivate subtract
++    uint64_t num_qwnd_uf_forceinact;
++    /// Build-1: qp_cwnd_whole fell below qwnd_min via tx/rx fold
++    uint64_t num_qwnd_uf_fold;
++    /// Build-1: qp_cwnd_whole below qwnd_min, other source
++    uint64_t num_qwnd_uf_other;
++    /// Build-1: disabled+drained+cwnd<=0 stranded path (Fix-1 gap)
++    uint64_t num_disabled_drained_cwnd0;
+ } req_rx_cc_stats_t;
+ 
+ /// \brief    pipeline specific send queue cc stats
+@@ -1366,6 +1374,10 @@ fill_sq_stats (p4types::rdma_sqcb_t *sq, rdma_send_q_stats_t *sq_stats)
+     sq_stats->cc.req_rx_cc_stats.num_ack_paws_drop = sq4->num_ack_paws_drop;
+     sq_stats->cc.req_rx_cc_stats.num_invalid_ack_drop = sq4->num_invalid_ack_drop;
+     sq_stats->cc.req_rx_cc_stats.num_skip_path_inactivate = sq4->num_cnt_skip_path_inactivate;
++    sq_stats->cc.req_rx_cc_stats.num_qwnd_uf_forceinact = sq4->num_cnt_qwnd_uf_forceinact;
++    sq_stats->cc.req_rx_cc_stats.num_qwnd_uf_fold = sq4->num_cnt_qwnd_uf_fold;
++    sq_stats->cc.req_rx_cc_stats.num_qwnd_uf_other = sq4->num_cnt_qwnd_uf_other;
++    sq_stats->cc.req_rx_cc_stats.num_disabled_drained_cwnd0 = sq4->num_cnt_disabled_drained_cwnd0;
+ }
+ 
+ static void
+@@ -3400,6 +3412,10 @@ generate_sq_stats_json_output (rdma_send_q_stats_t *stats,
+     req_rx_stats_pt.put("num_ack_paws_drop", req_rx_cc_stats->num_ack_paws_drop);
+     req_rx_stats_pt.put("num_invalid_ack_drop", req_rx_cc_stats->num_invalid_ack_drop);
+     req_rx_stats_pt.put("num_skip_path_inactivate", req_rx_cc_stats->num_skip_path_inactivate);
++    req_rx_stats_pt.put("num_qwnd_uf_forceinact", req_rx_cc_stats->num_qwnd_uf_forceinact);
++    req_rx_stats_pt.put("num_qwnd_uf_fold", req_rx_cc_stats->num_qwnd_uf_fold);
++    req_rx_stats_pt.put("num_qwnd_uf_other", req_rx_cc_stats->num_qwnd_uf_other);
++    req_rx_stats_pt.put("num_disabled_drained_cwnd0", req_rx_cc_stats->num_disabled_drained_cwnd0);
+     child.put_child("requester_rx_statistics", req_rx_stats_pt);
+ }
+ 
+@@ -3529,6 +3545,11 @@ print_sq_stats (rdma_send_q_stats_t *stats, bool skip_zero,
+     FILL_STATS("CC additive increments", req_rx_cc_stats->num_additive_incr);
+     FILL_STATS("CC multiplicative decrements", req_rx_cc_stats->num_multiplicative_decr);
+     FILL_STATS("Skipped path inactivations", req_rx_cc_stats->num_skip_path_inactivate);
++    // Build-1 instrumentation counters
++    FILL_STATS("QWND underflow (force_inactivate)", req_rx_cc_stats->num_qwnd_uf_forceinact);
++    FILL_STATS("QWND underflow (fold)", req_rx_cc_stats->num_qwnd_uf_fold);
++    FILL_STATS("QWND underflow (other)", req_rx_cc_stats->num_qwnd_uf_other);
++    FILL_STATS("Disabled+drained cwnd<=0 (stranded)", req_rx_cc_stats->num_disabled_drained_cwnd0);
+     // requester RX stats — drops
+     FILL_STATS("Drops", req_rx_stats->num_drop);
+     FILL_STATS("PAWS (stale ACK) drops", req_rx_cc_stats->num_ack_paws_drop);
+diff --git a/nic/rudra/src/hydra/p4/p4plus-16/meta_roce/include/rdma_sqcb.p4 b/nic/rudra/src/hydra/p4/p4plus-16/meta_roce/include/rdma_sqcb.p4
+index 048cff508c6..c9a3791bf7b 100644
+--- a/nic/rudra/src/hydra/p4/p4plus-16/meta_roce/include/rdma_sqcb.p4
++++ b/nic/rudra/src/hydra/p4/p4plus-16/meta_roce/include/rdma_sqcb.p4
+@@ -229,7 +229,12 @@ struct rdma_sqcb4_t {
+     bit<3>      lif_stats_index;
+     bit<5>      _pad_1;
+     bit<16>     num_cnt_skip_path_inactivate;
+-    bit<176>    __pad_to_64B;
++    // Build-1 instrumentation (why qwnd->0 + Fix-1 stranding). RW Rx S7.
++    bit<32>     num_cnt_qwnd_uf_forceinact;   // qp_cwnd_whole < qwnd_min after force_inactivate subtract
++    bit<32>     num_cnt_qwnd_uf_fold;         // qp_cwnd_whole < qwnd_min after tx/rx fold
++    bit<32>     num_cnt_qwnd_uf_other;        // qp_cwnd_whole < qwnd_min, neither of the above
++    bit<32>     num_cnt_disabled_drained_cwnd0; // disabled+drained+cwnd<=0 stranded path (Fix-1 gap)
++    bit<48>     __pad_to_64B;
+ }
+ ASSERT_CORRECT_CB_SIZE(rdma_sqcb4_t);
+ 
+diff --git a/nic/rudra/src/hydra/p4/p4plus-16/meta_roce/rx/meta_roce_rx_phv.p4 b/nic/rudra/src/hydra/p4/p4plus-16/meta_roce/rx/meta_roce_rx_phv.p4
+index e139739a5f2..66b671d9d6f 100644
+--- a/nic/rudra/src/hydra/p4/p4plus-16/meta_roce/rx/meta_roce_rx_phv.p4
++++ b/nic/rudra/src/hydra/p4/p4plus-16/meta_roce/rx/meta_roce_rx_phv.p4
+@@ -62,7 +62,12 @@ struct meta_roce_rx_global_flags_t {
+     bit<1>              rcn_multi_decr;
+     bit<1>              ooo_packet;     // set in S2 when packet received OOO
+     bit<1>              path_window_limited;  // set in Rx S1 if outstanding >= cwnd at ack arrival
+-    bit<10>             __unused_flags;
++    // Build-1 instrumentation flags (set in rx_s2/rx_s3, counted in rx_s7)
++    bit<1>              qwnd_uf_forceinact;   // qp_cwnd_whole < qwnd_min after force_inactivate subtract (rx_s2)
++    bit<1>              qwnd_uf_fold;         // qp_cwnd_whole < qwnd_min after tx/rx fold (rx_s2)
++    bit<1>              qwnd_uf_other;        // qp_cwnd_whole < qwnd_min, other source (rx_s2)
++    bit<1>              disabled_drained_cwnd0; // disabled+drained+cwnd<=0 stranded path (rx_s3)
++    bit<6>              __unused_flags;
+ }
+ 
+ struct meta_roce_rx_ack_info_t {
+diff --git a/nic/rudra/src/hydra/p4/p4plus-16/meta_roce/rx/meta_roce_rx_s2.p4 b/nic/rudra/src/hydra/p4/p4plus-16/meta_roce/rx/meta_roce_rx_s2.p4
+index 3e59af03286..2d5b9615e5d 100644
+--- a/nic/rudra/src/hydra/p4/p4plus-16/meta_roce/rx/meta_roce_rx_s2.p4
++++ b/nic/rudra/src/hydra/p4/p4plus-16/meta_roce/rx/meta_roce_rx_s2.p4
+@@ -585,6 +585,10 @@ control meta_roce_rx_s2(inout meta_roce_rx_phv_t p) {
+         if (d.qp_cwnd_whole_tx != d.qp_cwnd_whole_rx) {
+             d.qp_cwnd_whole = d.qp_cwnd_whole + d.qp_cwnd_whole_tx - d.qp_cwnd_whole_rx;
+             d.qp_cwnd_whole_rx = d.qp_cwnd_whole_tx;
++            // Build-1: fold pushed qp_cwnd_whole below qwnd_min (signed to catch wrap)
++            if (__unlikely((int<16>)d.qp_cwnd_whole < (int<16>)(bit<16>)p.qwnd_min)) {
++                p.flags.qwnd_uf_fold = 1;
++            }
+         }
+ 
+         // Giveback skipped decrement to qp_cwnd_whole
+@@ -598,6 +602,11 @@ control meta_roce_rx_s2(inout meta_roce_rx_phv_t p) {
+         if (p.force_inactivate == 1) {
+             if (p.decr_qp_cwnd == 1) {
+                 d.qp_cwnd_whole = d.qp_cwnd_whole - p.path_cwnd;
++                // Build-1: force_inactivate subtract pushed qp_cwnd_whole below qwnd_min
++                // (signed to catch bit<16> underflow wrap). This is the suspected primary cause.
++                if (__unlikely((int<16>)d.qp_cwnd_whole < (int<16>)(bit<16>)p.qwnd_min)) {
++                    p.flags.qwnd_uf_forceinact = 1;
++                }
+             }
+             if (d.num_ports > 1) {
+                 bool is_last;
+@@ -626,6 +635,16 @@ control meta_roce_rx_s2(inout meta_roce_rx_phv_t p) {
+         if (d.qp_cwnd_whole_tx != d.qp_cwnd_whole_rx) {
+             d.qp_cwnd_whole = d.qp_cwnd_whole + d.qp_cwnd_whole_tx - d.qp_cwnd_whole_rx;
+             d.qp_cwnd_whole_rx = d.qp_cwnd_whole_tx;
++            // Build-1: fold pushed qp_cwnd_whole below qwnd_min
++            if (__unlikely((int<16>)d.qp_cwnd_whole < (int<16>)(bit<16>)p.qwnd_min)) {
++                p.flags.qwnd_uf_fold = 1;
++            }
++        }
++
++        // Build-1: catch-all - qp_cwnd_whole below qwnd_min from an unexpected source
++        if (__unlikely((int<16>)d.qp_cwnd_whole < (int<16>)(bit<16>)p.qwnd_min &&
++                       p.flags.qwnd_uf_fold == 0 && p.flags.qwnd_uf_forceinact == 0)) {
++            p.flags.qwnd_uf_other = 1;
+         }
+ 
+         bit<32> rtt_ticks = __current_time()[31:0] - __byteswap_wx(p.meta_roce_hdr.saeth.echo_ts);
+diff --git a/nic/rudra/src/hydra/p4/p4plus-16/meta_roce/rx/meta_roce_rx_s3.p4 b/nic/rudra/src/hydra/p4/p4plus-16/meta_roce/rx/meta_roce_rx_s3.p4
+index a42a421dba2..71d9dcbb501 100644
+--- a/nic/rudra/src/hydra/p4/p4plus-16/meta_roce/rx/meta_roce_rx_s3.p4
++++ b/nic/rudra/src/hydra/p4/p4plus-16/meta_roce/rx/meta_roce_rx_s3.p4
+@@ -271,6 +271,13 @@ control meta_roce_rx_s3(inout meta_roce_rx_phv_t p) {
+                     pred.update_path_bmp = 1;
+                     p.add_active_path = 1;
+                 }
++            // Build-1 (observation only, NO state change): this is exactly Fix-1's
++            // condition - a disabled path drained with cwnd<=0 that can neither re-enable
++            // (cwnd not > 0) nor is demoted to inactive. Count it to size the stranding gap.
++            else if (__unlikely((d.snd_nxt == d.snd_una) && ((int<16>)d.cwnd <= 0) &&
++                                (p.force_inactivate == 0) && (d.cwnd_retry == 0))) {
++                p.flags.disabled_drained_cwnd0 = 1;
++            }
+         } else if (__unlikely(d.snd_nxt == d.snd_una) && (d.cwnd_retry == 0)) {
+ 
+                 // due to separate SDP channels for tx and rx phvs in Salina, we have the
+diff --git a/nic/rudra/src/hydra/p4/p4plus-16/meta_roce/rx/meta_roce_rx_s7.p4 b/nic/rudra/src/hydra/p4/p4plus-16/meta_roce/rx/meta_roce_rx_s7.p4
+index 61b383a83ec..a73df6507aa 100644
+--- a/nic/rudra/src/hydra/p4/p4plus-16/meta_roce/rx/meta_roce_rx_s7.p4
++++ b/nic/rudra/src/hydra/p4/p4plus-16/meta_roce/rx/meta_roce_rx_s7.p4
+@@ -203,6 +203,20 @@ control meta_roce_rx_s7(inout meta_roce_rx_phv_t p) {
+             d.num_cnt_skip_path_inactivate = d.num_cnt_skip_path_inactivate + 1;
+         }
+ 
++        // Build-1 instrumentation: attribute qp_cwnd_whole underflow + Fix-1 stranding
++        if (__unlikely(p.flags.qwnd_uf_forceinact == 1)) {
++            d.num_cnt_qwnd_uf_forceinact = d.num_cnt_qwnd_uf_forceinact + 1;
++        }
++        if (__unlikely(p.flags.qwnd_uf_fold == 1)) {
++            d.num_cnt_qwnd_uf_fold = d.num_cnt_qwnd_uf_fold + 1;
++        }
++        if (__unlikely(p.flags.qwnd_uf_other == 1)) {
++            d.num_cnt_qwnd_uf_other = d.num_cnt_qwnd_uf_other + 1;
++        }
++        if (__unlikely(p.flags.disabled_drained_cwnd0 == 1)) {
++            d.num_cnt_disabled_drained_cwnd0 = d.num_cnt_disabled_drained_cwnd0 + 1;
++        }
++
+         // until read is implemented, req_rx only gets acks
+         d.num_acks = d.num_acks + 1;
+         // increment only packets as ACKs don't have payload
