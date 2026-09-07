@@ -14,6 +14,7 @@
 
 ## Findings
 - [Low-QP BW dip fix = omega, not PHB poke](project_phb_unlimit_bw_finding.md) — omega 5->10 recovers line rate at 8QP (1378->1522 +10.5%, no downside at 64QP); unlimit PHB poke HURTS on perf-11/12 (switched path). Effect of poke is boot-state+path dependent
+- [HOLB LLC-Meter RL Phase-1 validated](project_holb_rl_phase1_validated.md) — RL recovers HOLB to line rate (commit-ready); path-1 9QP proof 1123->1507 +34%; path-4 self-heals except no-RCN+shut+sparse; omega NOT lever for structural HOLB. Report on srv6
 
 ## Testbed / Lab
 - [SMC GPUs + dmabuf limitation](reference_smc_gpu_dmabuf.md) — SMC has 8x MI300X (1x400G); `--use_rocm_dmabuf` broken on kernel 5.15 (both a-8 & a-55), use peer-mem `--use_rocm=N`
