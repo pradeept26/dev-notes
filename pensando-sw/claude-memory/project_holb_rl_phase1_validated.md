@@ -22,7 +22,9 @@ Vishwas's LLC Atomic Meter Rate Limiter (HOLB fix) validated commit-ready on ken
   - subset `--planes` list (2 or 3 planes) FAILS at EVERY QP: 3-plane fails at QP9, QP12, QP512; 2-plane fails at QP8. So perftest multiplane needs the full 4-plane set matching the 4×200G profile — a subset never works (not a 512 thing, not divisibility).
   - only way to reduce ports = admin-down + list all 4 planes → QPs on the down plane carry 0. Tolerated at low QP (QP9+shut=859→1135, ~2 dead-plane QPs) but at 512 the ~128 dead-plane QPs abort the run (~50s, no BW). THAT is why it works at low QP but not 512.
   - 4-plane no-shut works at both 9 (1396) and 512 (1509).
-  - Clean 512-on-fewer-ports needs a native 2/3-port CARD PROFILE (+reboot). Neither edge affects RL — port-loss self-heal shown at QP9 (859→1135) & QP63.
   - Probe harness: /tmp/plane_probe.sh (QP P3planes P4planes label).
+- **LIVE port-shut = the way to get 512-QP port-loss** (user's idea, worked). Start all-4-planes (all 512 QPs connect), THEN admin-down a port during running traffic — QPs survive, traffic continues on survivors. Realistic "port dies mid-job" case. Harness /tmp/live_shut.sh (QP PATHCOUNT NSHUT LABEL). Raw: phase1c_live_portshut.txt on srv6.
+  - 512 results (baseline→shut rloff→shut rlon): p4-shut1 1512→1105(imbal 190/190/199)→**1135** bal(3-port LR); p1-shut1 1514→1139 bal→1135; p1-shut2 1514→759 bal(2-port LR)→759; p4-shut2 1507→**596**(starved 198/114)→**758** bal(2-port LR).
+  - At 512 QP each port self-saturates (128 QPs/port), so live port-loss is mostly clean; when a survivor starves (stochastic), **RL rebalances to exact N-port line rate** (1135/758). Port restore climbs back to ~1514. Confirms RL port-loss recovery holds at top of QP range.
 
 Testbed: perf-3 10.30.52.66 (sender) ↔ perf-4 10.30.52.75 (recv), BDF 0000:c1:00.0, rocep195s0f3, planes 19.1-4.0.2/.1. Left clean (RCN ω5, path-4, RL off, ports up, state cleared).
