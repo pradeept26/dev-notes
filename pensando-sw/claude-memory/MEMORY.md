@@ -37,6 +37,7 @@
 - [Hydra gtest AQ arming](feedback_hydra_gtest_aq_arming.md) — default hydra_gtest is use_aq=false (NicMgr never runs, learn hooks don't fire); features armed by firmware control-plane MUST be tested with hydra_gtest_aq; nicmgr change needs full gtest build
 - [Always-on auto-clear verified fine on Vulcano; TXS-for-hydra parked](project_vulcano_autoclear_verified_ok.md) — no fairness/perf pain, so pulsar TXS port to hydra is not being pursued
 - [Fast RDMA state clear between IB runs](feedback_clear_pipeline_state.md) — use `nicctl clear pipeline internal state` (not card reset+bringup, ~3min) to clear anomaly/error state; also: run perftest server detached + log to remote files (ssh-stream+timeout loses buffered output)
+- [nicctl err95 = missing TAWK registration](feedback_nicctl_tawk_vs_zrpc_transport.md) — nicctl debug/show pipeline internal cmds ride TAWK, NOT fwctl/zrpc; new opcode must be in BOTH tawk.c AND zrpc.c. grep -c OPCODE tawk.c zrpc.c FIRST before rabbit-holing into fwctl scope/callback/opcode-skew. (RL PIC_RL was zrpc-only after a-119 port → err95)
 
 ## Memory Sync Protocol
 **IMPORTANT: After updating this memory file, ALWAYS run:**
