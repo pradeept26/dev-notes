@@ -1,0 +1,59 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>RL Scatter-Fix Sweep: RL on vs off</title>
+<style>
+*{box-sizing:border-box} body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;margin:0 auto;padding:20px;background:#f8f9fa;color:#333;max-width:1400px}
+h1{color:#1a237e;border-bottom:3px solid #1a237e;padding-bottom:10px} h2{color:#283593;margin-top:36px;border-bottom:2px solid #c5cae9;padding-bottom:6px}
+table{border-collapse:collapse;margin:8px 0 22px 0;font-size:13px;width:100%} th{background:#1a237e;color:#fff;padding:7px 9px;text-align:right;font-size:12px} th:first-child{text-align:left}
+td{padding:6px 9px;border-bottom:1px solid #e0e0e0;text-align:right;font-family:'SF Mono',Consolas,monospace} td:first-child{text-align:left;font-weight:600;font-family:inherit}
+tr:nth-child(even){background:#f5f5f5} tr:hover{background:#e8eaf6}
+.good{color:#1b5e20;font-weight:600} .warn{color:#e65100;font-weight:600} .bad{color:#b71c1c;font-weight:600} .na{color:#999}
+.card{background:#fff;border-radius:8px;padding:18px;margin:14px 0;box-shadow:0 2px 4px rgba(0,0,0,.1)}
+.note{color:#666;font-size:12px;margin:6px 0} .kf{background:#fff8e1;border-left:4px solid #ffb300;padding:10px 14px;margin:10px 0;border-radius:4px}
+</style></head><body>
+<h1>Meta-RoCE LLC-Meter RL — Scatter-Fix Sweep: RL on vs off</h1>
+<div class="note"><b>Build:</b> 1.130.0-a-129-30-g81b19a8294d (ToT origin/1.130-a a-129 + 26 RL commits, Gaurav <code>meter_rl_llc</code> / PR #119731, incl. S2 scatter fix) &nbsp;|&nbsp;
+<b>Testbed:</b> kenya perf-3 &rlarr; perf-4, 4&times;200G (meta-roce-4x200G-2), bidir 800G/dir = 1600G theoretical &nbsp;|&nbsp; <b>Generated:</b> 2026-09-17</div>
+<div class="note"><b>Fixed:</b> RL 199 Gbps / burst 256 KB / window-lg2 10 / max-ports 4 / path count 4 / omega 7 &middot; ib_write_bw bidir, 1 MB msg, -D 20, 4 planes, tclass 96, 32/32 tx/rx depth. RL-on = scatter build; RL-off = meter disabled. Each (config, QP) run RL-on then RL-off back-to-back.</div>
+<div class="card"><h2>PPG enable · RCN enable</h2>
+<table><tr><th>QP</th><th>RL on (Gbps)</th><th>RL off (Gbps)</th><th>&Delta; on&minus;off</th><th>&Delta;%</th><th>RED marks (on)</th><th>spec-fail (on)</th></tr>
+<tr><td>8</td><td class="">1509.47</td><td class="">1505.06</td><td class="good">+4.41</td><td class="good">+0.3%</td><td class="">347</td><td class="">410</td></tr>
+<tr><td>64</td><td class="">1514.44</td><td class="">1514.81</td><td class="good">-0.37</td><td class="good">-0.0%</td><td class="">127289947</td><td class="">207053171</td></tr>
+<tr><td>256</td><td class="">1504.09</td><td class="">1512.61</td><td class="warn">-8.52</td><td class="warn">-0.6%</td><td class="">75588261</td><td class="">44331933</td></tr>
+<tr><td>512</td><td class="">1481.43</td><td class="">1513.79</td><td class="bad">-32.36</td><td class="bad">-2.1%</td><td class="">245270</td><td class="">47557</td></tr>
+<tr><td>1024</td><td class="">1490.13</td><td class="">1514.48</td><td class="bad">-24.35</td><td class="bad">-1.6%</td><td class="">345945</td><td class="">9028</td></tr>
+<tr><td>2048</td><td class="na">FAIL</td><td class="na">FAIL</td><td class="na">—</td><td class="na">—</td><td class="na">—</td><td class="na">—</td></tr>
+</table></div>
+<div class="card"><h2>PPG enable · RCN disable</h2>
+<table><tr><th>QP</th><th>RL on (Gbps)</th><th>RL off (Gbps)</th><th>&Delta; on&minus;off</th><th>&Delta;%</th><th>RED marks (on)</th><th>spec-fail (on)</th></tr>
+<tr><td>8</td><td class="">1517.51</td><td class="">1515.48</td><td class="good">+2.03</td><td class="good">+0.1%</td><td class="">117631876</td><td class="">95741783</td></tr>
+<tr><td>64</td><td class="">1512.38</td><td class="">1515.22</td><td class="good">-2.84</td><td class="good">-0.2%</td><td class="">142676441</td><td class="">162629327</td></tr>
+<tr><td>256</td><td class="">1502.02</td><td class="">1514.92</td><td class="warn">-12.90</td><td class="warn">-0.9%</td><td class="">71681552</td><td class="">44255644</td></tr>
+<tr><td>512</td><td class="">1485.53</td><td class="">1515.00</td><td class="bad">-29.47</td><td class="bad">-1.9%</td><td class="">783746</td><td class="">410966</td></tr>
+<tr><td>1024</td><td class="">1493.61</td><td class="">1514.95</td><td class="bad">-21.34</td><td class="bad">-1.4%</td><td class="">340140</td><td class="">35405</td></tr>
+<tr><td>2048</td><td class="na">FAIL</td><td class="na">FAIL</td><td class="na">—</td><td class="na">—</td><td class="na">—</td><td class="na">—</td></tr>
+</table></div>
+<div class="card"><h2>PPG disable · RCN enable</h2>
+<table><tr><th>QP</th><th>RL on (Gbps)</th><th>RL off (Gbps)</th><th>&Delta; on&minus;off</th><th>&Delta;%</th><th>RED marks (on)</th><th>spec-fail (on)</th></tr>
+<tr><td>8</td><td class="">1506.69</td><td class="">1511.26</td><td class="good">-4.57</td><td class="good">-0.3%</td><td class="">309</td><td class="">304</td></tr>
+<tr><td>64</td><td class="">1514.67</td><td class="">1515.27</td><td class="good">-0.60</td><td class="good">-0.0%</td><td class="">107767704</td><td class="">286891650</td></tr>
+<tr><td>256</td><td class="">1512.28</td><td class="">1473.22</td><td class="good">+39.06</td><td class="good">+2.7%</td><td class="">121903973</td><td class="">487716961</td></tr>
+<tr><td>512</td><td class="">1512.20</td><td class="">1513.34</td><td class="good">-1.14</td><td class="good">-0.1%</td><td class="">77837741</td><td class="">325829651</td></tr>
+<tr><td>1024</td><td class="">1512.31</td><td class="">1512.25</td><td class="good">+0.06</td><td class="good">+0.0%</td><td class="">65414328</td><td class="">329586218</td></tr>
+<tr><td>2048</td><td class="na">FAIL</td><td class="na">FAIL</td><td class="na">—</td><td class="na">—</td><td class="na">—</td><td class="na">—</td></tr>
+</table></div>
+<div class="card"><h2>PPG disable · RCN disable</h2>
+<table><tr><th>QP</th><th>RL on (Gbps)</th><th>RL off (Gbps)</th><th>&Delta; on&minus;off</th><th>&Delta;%</th><th>RED marks (on)</th><th>spec-fail (on)</th></tr>
+<tr><td>8</td><td class="">1517.45</td><td class="">1515.48</td><td class="good">+1.97</td><td class="good">+0.1%</td><td class="">118680692</td><td class="">97451944</td></tr>
+<tr><td>64</td><td class="">1512.30</td><td class="">1473.92</td><td class="good">+38.38</td><td class="good">+2.6%</td><td class="">159967463</td><td class="">502473078</td></tr>
+<tr><td>256</td><td class="">1512.35</td><td class="">1494.96</td><td class="good">+17.39</td><td class="good">+1.2%</td><td class="">132505634</td><td class="">571434969</td></tr>
+<tr><td>512</td><td class="">1512.29</td><td class="">1490.64</td><td class="good">+21.65</td><td class="good">+1.5%</td><td class="">81247388</td><td class="">352656926</td></tr>
+<tr><td>1024</td><td class="">1512.22</td><td class="">1502.40</td><td class="good">+9.82</td><td class="good">+0.7%</td><td class="">68121192</td><td class="">342215239</td></tr>
+<tr><td>2048</td><td class="na">FAIL</td><td class="na">FAIL</td><td class="na">—</td><td class="na">—</td><td class="na">—</td><td class="na">—</td></tr>
+</table></div>
+<div class="card"><h2>Summary: RL-on penalty vs RL-off (&Delta;%)</h2>
+<table><tr><th>Config</th><th>QP 8</th><th>QP 64</th><th>QP 256</th><th>QP 512</th><th>QP 1024</th><th>QP 2048</th></tr>
+<tr><td>PPG enable · RCN enable</td><td class="good">+0.3%</td><td class="good">-0.0%</td><td class="good">-0.6%</td><td class="warn">-2.1%</td><td class="warn">-1.6%</td><td class="na">—</td></tr>
+<tr><td>PPG enable · RCN disable</td><td class="good">+0.1%</td><td class="good">-0.2%</td><td class="warn">-0.9%</td><td class="warn">-1.9%</td><td class="warn">-1.4%</td><td class="na">—</td></tr>
+<tr><td>PPG disable · RCN enable</td><td class="good">-0.3%</td><td class="good">-0.0%</td><td class="good">+2.7%</td><td class="good">-0.1%</td><td class="good">+0.0%</td><td class="na">—</td></tr>
+<tr><td>PPG disable · RCN disable</td><td class="good">+0.1%</td><td class="good">+2.6%</td><td class="good">+1.2%</td><td class="good">+1.5%</td><td class="good">+0.7%</td><td class="na">—</td></tr>
+</table><div class='note'>Green &ge; &minus;0.7% (parity) &middot; orange &minus;0.7..&minus;3% &middot; red &lt; &minus;3%.</div></div>
+</body></html>

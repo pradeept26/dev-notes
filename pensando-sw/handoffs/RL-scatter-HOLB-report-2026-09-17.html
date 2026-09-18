@@ -1,0 +1,111 @@
+<!DOCTYPE html><html><head><meta charset=utf-8><title>HOLB Rate-Limiter Validation — ToT+scatter</title><style>
+*{box-sizing:border-box}body{font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:0;background:#f4f6f8;color:#1a1a1a}
+.wrap{max-width:1120px;margin:0 auto;padding:30px 20px 64px}h1{font-size:24px;margin:0 0 4px}h2{font-size:18px;margin:22px 0 10px;color:#0d47a1}
+.sub{color:#666;font-size:13px;margin-bottom:18px}.card{background:#fff;border:1px solid #e3e3e3;border-radius:10px;padding:18px 22px;margin-bottom:18px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+table{border-collapse:collapse;width:100%;font-size:13px}th,td{padding:6px 9px;text-align:center;border-bottom:1px solid #eee}th{background:#fafafa;font-size:10.5px;text-transform:uppercase;letter-spacing:.03em;color:#777}
+td.k{text-align:left;font-weight:600}td.on{background:#e3f2fd;color:#0d47a1;font-weight:700}td.rec{background:#e8f5e9;color:#1b5e20;font-weight:700}td.na{color:#b71c1c;font-size:11px}
+.hl{background:#fff8e1;border-left:4px solid #f9a825;padding:11px 15px;border-radius:4px;font-size:13.5px;line-height:1.6}.grp{background:#eef2f7!important;color:#333!important}
+code{background:#eef;padding:1px 5px;border-radius:3px;font-size:12px}ul{font-size:13.5px;line-height:1.7}
+</style></head><body><div class=wrap>
+<h1>Meta-RoCE LLC-Meter RL — HOLB Validation on ToT + scatter fix</h1>
+<div class=sub>Build <b>1.130.0-a-129-30-g81b19a8294d</b> (ToT origin/1.130-a a-129 + 26 RL commits, Gaurav <code>meter_rl_llc</code> / PR #119731) ·
+kenya perf-3 ↔ perf-4 · 4×200G · bidir <code>ib_write_bw</code> 1 MB · RL <b>199G / burst 200000 / window-lg2 4 / max-ports 4</b>, active-path <b>disabled</b> · generated 2026-09-17<br>
+Line rate: 4-port ~1512 · 3-port ~1134 · 2-port ~756 · 1-port ~378</div>
+<div class=card><div class=hl><b>Headline:</b> The scatter-fix build preserves RL's HOLB recovery.
+<b>1b path-1 9 QP</b> (HOLB generator): RL-off 886/1105/1227 → RL-on 1286/1426/<b>1524</b> (+24–45%).
+<b>1c live shut-2</b> (2 survivors, active-path off): RL-off ~603/577 → RL-on <b>757/716</b> (+24–25%, restores 2-port line rate).
+No-RCN mild HOLB across QP is fixed by RL to ~1511. ω5 caps low-QP (CC ceiling, not HOLB — use ω7).</div></div>
+<div class=card><h2>1a — path-4 QP-scale sweep (active-path DISABLED)</h2>
+<table><tr><th class=k>QP</th><th class=grp colspan=2>RCN ω5</th><th class=grp colspan=2>RCN ω7</th><th class=grp colspan=2>no-RCN</th></tr>
+<tr><th class=k></th><th>RL off</th><th>RL on</th><th>RL off</th><th>RL on</th><th>RL off</th><th>RL on</th></tr>
+<tr><td class=k>8</td><td>1337</td><td class=on>1335</td><td>1508</td><td class=on>1517</td><td>1515</td><td class=on>1517</td></tr>
+<tr><td class=k>16</td><td>1372</td><td class=on>1368</td><td>1517</td><td class=on>1518</td><td>1436</td><td class=rec>1512</td></tr>
+<tr><td class=k>32</td><td>1437</td><td class=on>1431</td><td>1515</td><td class=on>1515</td><td>1411</td><td class=rec>1512</td></tr>
+<tr><td class=k>64</td><td>1515</td><td class=on>1515</td><td>1515</td><td class=on>1416</td><td>1465</td><td class=rec>1512</td></tr>
+<tr><td class=k>128</td><td>1489</td><td class=on>1512</td><td>1495</td><td class=on>1512</td><td>1466</td><td class=rec>1512</td></tr>
+<tr><td class=k>256</td><td>1480</td><td class=rec>1512</td><td>1479</td><td class=rec>1512</td><td>1484</td><td class=rec>1512</td></tr>
+<tr><td class=k>512</td><td>1509</td><td class=on>1511</td><td>1508</td><td class=on>1512</td><td>1496</td><td class=on>1511</td></tr>
+<tr><td class=k>1024</td><td>1511</td><td class=on>1511</td><td>1510</td><td class=on>1512</td><td>1506</td><td class=on>1512</td></tr>
+</table>
+<div class=sub>path-4 self-balances with ω7; no-RCN mild HOLB (QP16–256, 1411–1484) → RL pins to ~1511. Green = RL recovers &gt;25 Gbps. ω5 caps low-QP (CC window ceiling).</div></div>
+<div class=card><h2>1a — path-4 QP-scale sweep (active-path ENABLED)</h2>
+<table><tr><th class=k>QP</th><th class=grp colspan=2>RCN ω5</th><th class=grp colspan=2>RCN ω7</th><th class=grp colspan=2>no-RCN</th></tr>
+<tr><th class=k></th><th>RL off</th><th>RL on</th><th>RL off</th><th>RL on</th><th>RL off</th><th>RL on</th></tr>
+<tr><td class=k>8</td><td>1336</td><td class=on>1334</td><td>1510</td><td class=on>1508</td><td>1515</td><td class=on>1517</td></tr>
+<tr><td class=k>16</td><td>1367</td><td class=on>1365</td><td>1517</td><td class=on>1517</td><td>1515</td><td class=on>1512</td></tr>
+<tr><td class=k>32</td><td>1436</td><td class=on>1443</td><td>1515</td><td class=on>1515</td><td>1416</td><td class=rec>1512</td></tr>
+<tr><td class=k>64</td><td>1515</td><td class=on>1514</td><td>1515</td><td class=on>1514</td><td>1515</td><td class=on>1512</td></tr>
+<tr><td class=k>128</td><td>1515</td><td class=on>1512</td><td>1515</td><td class=on>1512</td><td>1515</td><td class=on>1512</td></tr>
+<tr><td class=k>256</td><td>1514</td><td class=on>1511</td><td>1515</td><td class=on>1511</td><td>1515</td><td class=on>1511</td></tr>
+<tr><td class=k>512</td><td>1511</td><td class=on>1510</td><td>1513</td><td class=on>1510</td><td>1515</td><td class=on>1511</td></tr>
+<tr><td class=k>1024</td><td>1515</td><td class=on>1509</td><td>1515</td><td class=on>1415</td><td>1515</td><td class=on>1510</td></tr>
+</table>
+<div class=sub>With active-path enabled every QP keeps 4 active paths → the no-RCN mild HOLB seen with active-path disabled is GONE (no-RCN stays ~1515 across QP). ω5 still caps low-QP (CC ceiling, unchanged). RL-on pins ~1511 (a couple ω7 RL-on transient dips ~1415 to re-verify).</div></div>
+<div class=card><h2>1b — path-1 HOLB proof + path-4 contrast</h2>
+<div class=sub style='margin:6px 0'>path-1 — HOLB generator</div>
+<table><tr><th class=k>QP</th><th class=grp colspan=2>RCN ω5</th><th class=grp colspan=2>RCN ω7</th><th class=grp colspan=2>no-RCN</th></tr>
+<tr><th class=k></th><th>RL off</th><th>RL on</th><th>RL off</th><th>RL on</th><th>RL off</th><th>RL on</th></tr>
+<tr><td class=k>7</td><td>1368</td><td class=on>1367</td><td>1384</td><td class=on>1385</td><td>1330</td><td class=rec>1523</td></tr>
+<tr><td class=k>9</td><td>886</td><td class=rec>1286</td><td>1105</td><td class=rec>1426</td><td>1227</td><td class=rec>1524</td></tr>
+<tr><td class=k>15</td><td>1442</td><td class=on>1443</td><td>1433</td><td class=on>1437</td><td>1426</td><td class=rec>1518</td></tr>
+<tr><td class=k>33</td><td>1476</td><td class=on>1472</td><td>1440</td><td class=rec>1493</td><td>1395</td><td class=rec>1512</td></tr>
+<tr><td class=k>63</td><td>1515</td><td class=on>1514</td><td>1512</td><td class=on>1512</td><td>1492</td><td class=on>1512</td></tr>
+<tr><td class=k>127</td><td>1515</td><td class=on>1512</td><td>1504</td><td class=on>1512</td><td>1504</td><td class=on>1512</td></tr>
+<tr><td class=k>511</td><td>1513</td><td class=on>1512</td><td>1513</td><td class=on>1512</td><td>1513</td><td class=on>1512</td></tr>
+<tr><td class=k>729</td><td>1511</td><td class=on>1512</td><td>1511</td><td class=on>1511</td><td>1511</td><td class=on>1512</td></tr>
+<tr><td class=k>1023</td><td>1514</td><td class=on>1512</td><td>1514</td><td class=on>1512</td><td>1514</td><td class=on>1512</td></tr>
+</table>
+<div class=sub style='margin:6px 0'>path-4 — contrast (self-heals with RCN)</div>
+<table><tr><th class=k>QP</th><th class=grp colspan=2>RCN ω5</th><th class=grp colspan=2>RCN ω7</th><th class=grp colspan=2>no-RCN</th></tr>
+<tr><th class=k></th><th>RL off</th><th>RL on</th><th>RL off</th><th>RL on</th><th>RL off</th><th>RL on</th></tr>
+<tr><td class=k>7</td><td>1346</td><td class=on>1347</td><td>1519</td><td class=on>1518</td><td>1516</td><td class=on>1517</td></tr>
+<tr><td class=k>9</td><td>1343</td><td class=on>1342</td><td>1519</td><td class=on>1520</td><td>1515</td><td class=on>1516</td></tr>
+<tr><td class=k>15</td><td>1375</td><td class=on>1371</td><td>1518</td><td class=on>1518</td><td>1483</td><td class=rec>1512</td></tr>
+<tr><td class=k>33</td><td>1516</td><td class=on>1514</td><td>1515</td><td class=on>1515</td><td>1415</td><td class=rec>1512</td></tr>
+<tr><td class=k>63</td><td>1515</td><td class=on>1515</td><td>1515</td><td class=on>1515</td><td>1474</td><td class=rec>1512</td></tr>
+<tr><td class=k>127</td><td>1472</td><td class=rec>1512</td><td>1409</td><td class=rec>1512</td><td>1433</td><td class=rec>1512</td></tr>
+<tr><td class=k>511</td><td>1511</td><td class=on>1511</td><td>1510</td><td class=on>1511</td><td>1493</td><td class=on>1511</td></tr>
+<tr><td class=k>729</td><td>1510</td><td class=on>1512</td><td>1512</td><td class=on>1512</td><td>1494</td><td class=on>1511</td></tr>
+<tr><td class=k>1023</td><td>1510</td><td class=on>1511</td><td>1511</td><td class=on>1511</td><td>1504</td><td class=on>1511</td></tr>
+</table>
+<div class=sub>path-1 pins all QPs to one port → oversubscription HOLB (worst at 9 QP = 3/2/2/2). RL recovers; no-RCN+RL fully to line rate, RCN partial at sparse QP. ≥63 QP = clean round-robin, RL idle.</div></div>
+<div class=card><h2>1c — live port-shut sweep (path-4, shut during running traffic)</h2>
+<div class=sub style='margin:8px 0 2px'>QP 8</div><table><tr><th class=k>survivors</th><th class=grp colspan=2>RCN ω5</th><th class=grp colspan=2>RCN ω7</th><th class=grp colspan=2>no-RCN</th></tr>
+<tr><th class=k></th><th>RL off</th><th>RL on</th><th>RL off</th><th>RL on</th><th>RL off</th><th>RL on</th></tr>
+<tr><td class=k>4 (baseline)</td><td>1336</td><td class=on>—</td><td>1513</td><td class=on>—</td><td>1516</td><td class=on>—</td></tr>
+<tr><td class=k>3-port</td><td>1147</td><td class=on>1147</td><td>1146</td><td class=on>1146</td><td>1103</td><td class=rec>1147</td></tr>
+<tr><td class=k>2-port</td><td>765</td><td class=on>765</td><td>765</td><td class=on>765</td><td>759</td><td class=on>761</td></tr>
+<tr><td class=k>1-port</td><td>383</td><td class=on>383</td><td>383</td><td class=on>383</td><td>380</td><td class=on>380</td></tr>
+</table>
+<div class=sub style='margin:8px 0 2px'>QP 64</div><table><tr><th class=k>survivors</th><th class=grp colspan=2>RCN ω5</th><th class=grp colspan=2>RCN ω7</th><th class=grp colspan=2>no-RCN</th></tr>
+<tr><th class=k></th><th>RL off</th><th>RL on</th><th>RL off</th><th>RL on</th><th>RL off</th><th>RL on</th></tr>
+<tr><td class=k>4 (baseline)</td><td><span class=na>NA</span></td><td class=on>—</td><td><span class=na>NA</span></td><td class=on>—</td><td><span class=na>NA</span></td><td class=on>—</td></tr>
+<tr><td class=k>3-port</td><td>1139</td><td class=on>1139</td><td>1139</td><td class=on>1138</td><td>1034</td><td class=rec>1136</td></tr>
+<tr><td class=k>2-port</td><td>759</td><td class=on>760</td><td>759</td><td class=on>760</td><td>706</td><td class=rec>758</td></tr>
+<tr><td class=k>1-port</td><td>380</td><td class=on>380</td><td>380</td><td class=on>380</td><td>380</td><td class=on>380</td></tr>
+</table>
+<div class=sub style='margin:8px 0 2px'>QP 256</div><table><tr><th class=k>survivors</th><th class=grp colspan=2>RCN ω5</th><th class=grp colspan=2>RCN ω7</th><th class=grp colspan=2>no-RCN</th></tr>
+<tr><th class=k></th><th>RL off</th><th>RL on</th><th>RL off</th><th>RL on</th><th>RL off</th><th>RL on</th></tr>
+<tr><td class=k>4 (baseline)</td><td>1491</td><td class=on>—</td><td>1463</td><td class=on>—</td><td>1495</td><td class=on>—</td></tr>
+<tr><td class=k>3-port</td><td>1120</td><td class=on>1134</td><td>1132</td><td class=on>1134</td><td>1074</td><td class=rec>1135</td></tr>
+<tr><td class=k>2-port</td><td>603</td><td class=rec>757</td><td>606</td><td class=rec>758</td><td>609</td><td class=rec>757</td></tr>
+<tr><td class=k>1-port</td><td>380</td><td class=on>380</td><td>381</td><td class=on>380</td><td>380</td><td class=on>380</td></tr>
+</table>
+<div class=sub style='margin:8px 0 2px'>QP 1024</div><table><tr><th class=k>survivors</th><th class=grp colspan=2>RCN ω5</th><th class=grp colspan=2>RCN ω7</th><th class=grp colspan=2>no-RCN</th></tr>
+<tr><th class=k></th><th>RL off</th><th>RL on</th><th>RL off</th><th>RL on</th><th>RL off</th><th>RL on</th></tr>
+<tr><td class=k>4 (baseline)</td><td>1513</td><td class=on>—</td><td>1507</td><td class=on>—</td><td>1510</td><td class=on>—</td></tr>
+<tr><td class=k>3-port</td><td>1120</td><td class=on>1134</td><td>1124</td><td class=on>1134</td><td>1124</td><td class=on>1134</td></tr>
+<tr><td class=k>2-port</td><td>577</td><td class=rec>715</td><td>578</td><td class=rec>717</td><td><span class=na>skip</span></td><td class=on><span class=na>skip</span></td></tr>
+<tr><td class=k>1-port</td><td>379</td><td class=on>380</td><td>379</td><td class=on>380</td><td><span class=na>skip</span></td><td class=on><span class=na>skip</span></td></tr>
+</table>
+<div class=sub>Green = RL recovers &gt;25 Gbps. shut-2 is the key cell: active-path-disabled survivor skew → RL rebalances to 2-port line rate (~757 at 256 QP; ~716 at 1024 QP, just short like the prior report). 1024+no-RCN+shut≥2 skipped (host-hang guard).</div></div>
+<div class=card><h2>Findings</h2><ul>
+<li><b>RL recovers HOLB on the scatter build</b> — the hard RED-skip + QP-id scatter is HOLB-safe (unlike soft-steering). Core validation ✅.</li>
+<li><b>1b path-1 9 QP:</b> +45% (ω5), +29% (ω7), +24% (no-RCN). no-RCN+RL fully recovers to line rate; RCN caps recovery at sparse QP (window ceiling).</li>
+<li><b>1c shut-2 survivor skew:</b> RL restores 2 survivors from ~603/577 to 757/716 (+24–25%). At 1024 QP recovery lands ~716 (just short of 756) — thinner per-path rate, matches prior a-115.</li>
+<li><b>no-RCN mild HOLB</b> across the QP range (path-4 1a/1b, active-path disabled) → RL fixes to ~1511.</li>
+<li><b>active-path ENABLED removes the no-RCN mild HOLB</b> (1a re-run): every QP keeps 4 active paths → no-RCN self-balances to ~1515 across QP, so RL has little to recover there. ω5 low-QP cap is unchanged (CC ceiling).</li>
+<li><b>ω5 caps low-QP</b> (1336–1437 at QP≤32) — a CC window ceiling, not HOLB; RL is a ceiling not a floor. Use ω7. (ω5 caps harder on a-129 than old a-115.)</li>
+<li><b>No host hang</b> — the known 1024+no-RCN+shut≥2 corner was guarded.</li>
+</ul></div>
+</div></body></html>
